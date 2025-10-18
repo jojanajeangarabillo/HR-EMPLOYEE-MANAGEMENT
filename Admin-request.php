@@ -20,11 +20,6 @@
 
 <body class="admin-dashboard">
 
-    <!-- HEADER -->
-    <header class="admin-header">
-        <h1 class="admin-header-text">Human Resource</h1>
-    </header>
-
     <!-- SIDEBAR -->
     <aside class="admin-sidebar">
         <div class="sidebar-logo">
