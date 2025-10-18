@@ -1,0 +1,292 @@
+
+
+/*Poppins font import*/
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+/*Roboto font import*/
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+
+*{
+    margin: 0;
+}
+/*Admin Login*/
+.login-body{
+    background-color: #CEE3F5;
+}
+
+.top-bar{
+    background-color: #1E3A8A;
+}
+
+.logo-header{
+    display: flex;
+    padding: 10px;
+}
+
+.top-bar-text{
+    font-family: "Poppins", sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    display: block;
+    padding: 5px;
+    color: white;
+}
+
+img{
+    height: 75px;
+    width: 75px;
+    padding: 10px;
+}
+
+.main-content, .login-button, .forgot-password, .show-password{
+    display: flex;
+    justify-content: center; 
+    
+}
+
+.login-section{
+    margin-top: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #F5F8FF;
+    width: 824px;
+    height: 486px;
+    border-radius: 35px;
+}
+
+.login-input label{
+    font-family: "Poppins", sans-serif;
+    font-weight: 600;
+    font-style: normal;
+    color: #1E3A8A;
+    display: block;
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.login-input button{
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    background-color: #2563EB;
+    border: #2563EB;
+    border-radius: 20px;
+    width: 343px;
+    height: 54px;
+    color: #CEE3F5;
+    font-size: 16px;
+    margin: 10px;
+    font-size: 16px;
+}
+
+.login-email, .login-password{
+    padding: 10px;
+    margin: 10px;
+}
+
+.login-email .fa-solid, .login-password .fa-solid {
+    position:absolute;
+    padding: 10px;
+    min-width: 30px;
+    color: #1E3A8A;
+}
+
+input[type="email"], input[type="password"]{
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    width:500px;
+    height: 2px;
+    padding: 16px;
+    padding-left: 50px;
+    border-radius: 10px;
+    border-color: #D9D9D9;
+}
+
+input[type="checkbox"]{
+    padding: 5px;
+    margin-left: 440px;
+    margin-bottom: 10px;
+}
+
+.login-button .fa-solid{
+    margin-right: 5px;
+}
+
+.forgot-password a{
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    font-size: 16px;
+    text-decoration: none;
+    color: black;
+    margin-top: 0;
+}
+
+/*Admin Dashboard*/
+.admin-dashboard{
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    grid-template-rows: 130px 1fr;
+    grid-template-areas:
+    "side header"
+    "side main"
+    ;
+}
+
+.admin-header{
+    background-color: #CEE3F5;
+    grid-area: header;
+}
+
+.admin-sidebar{
+    background-color: #1E3A8A;
+    grid-area:side;
+}
+
+.admin-header-text{
+    font-family: "Poppins", sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    padding: 20px;
+
+}
+
+.admin-sidebar ul{
+    list-style: none;
+    padding: 20px;
+    margin: 10px;
+}
+
+.nav-item{
+    padding: 20px;
+}
+
+.sidebar-nav span, i{
+    color: white;
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    width:500px;
+    font-size: 24px;
+    padding: 4px;
+}
+
+
+.admin-main{
+    background-color: #F5F8FF;
+    padding: 25px;
+    grid-area: main;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(5, 1fr);
+    gap: 20px;
+}
+
+.banner-card{
+    grid-column: 1/3;
+    grid-row: 1/2;
+    background-color: #7D7EC2;
+    
+}
+
+.employee-card{
+    grid-column: 1/2;
+    grid-row: 2/3;
+    background-color: #CEE3F5;
+    border-radius: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.employee-card .fa-solid{
+    color: #1E3A8A;
+}
+
+.employee-label{
+    font-size: 24px;
+    margin: 20px;
+}
+
+.employee-count{
+    font-size: 24px;
+    margin: 20px;
+}
+
+.applicant-card{
+    grid-column: 2/3;
+    grid-row: 2/3;
+    background-color: #CEE3F5;
+    border-radius: 20px;    
+}
+
+.request-card{
+    grid-column: 1/2;
+    grid-row: 3/4;
+    background-color: #CEE3F5;
+    border-radius: 20px;
+}
+
+.hiring-card{
+    grid-column: 2/3;
+    grid-row: 3/4;
+    background-color: #CEE3F5;
+    border-radius: 20px;
+}
+
+.recent-job-post-card{
+    grid-column: 1/3;
+    grid-row: 4/5;
+    background-color: #7D7EC2;
+}
+
+.newly-hired-card{
+    grid-column: 1/3;
+    grid-row: 5/6;
+    background-color: #7D7EC2;
+}
+
+
+/*
+.cards:nth-child(1){
+    grid-area: banner;
+}
+.cards:nth-child(2){
+    grid-area: banner;
+}
+.cards:nth-child(3){
+    grid-area: employee;
+}
+.cards:nth-child(4){
+    grid-area: applicant;
+}
+.cards:nth-child(5){
+    grid-area: request;
+}
+.cards:nth-child(6){
+    grid-area: hiring;
+}
+.cards:nth-child(7){
+    grid-area: jobpost;
+}
+.cards:nth-child(8){
+    grid-area: jobpost;
+}
+.cards:nth-child(9){
+    grid-area: hired;
+}
+.cards:nth-child(10){
+    grid-area: hired;
+}
+*/
+
+
+.sidebar-nav .nav-link{
+    color: black;
+    text-decoration: none;
+}
