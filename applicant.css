@@ -1,0 +1,228 @@
+
+* {
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.login-body {
+    background-color: #CEE3F5;
+    font-family: "Poppins", sans-serif;
+}
+
+/* Top Bar */
+.top-bar {
+    background-color: #1E3A8A;
+}
+
+.logo-header {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+}
+
+.top-bar-text {
+    color: white;
+    padding: 5px;
+}
+
+img {
+    height: 75px;
+    width: 75px;
+    padding: 10px;
+    border-radius: 50%;
+}
+
+/* Main Container */
+.main-content {
+    display: flex;
+    justify-content: center;
+}
+
+/* ===========================================
+   REGISTRATION PAGE
+=========================================== */
+.login-section {
+    margin-top: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #F5F8FF;
+    width: 824px;
+    height: 486px;
+    border-radius: 35px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* Labels */
+.login-input label {
+    color: #1E3A8A;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* Input Fields */
+.input-container {
+    position: relative;
+}
+
+.input-container i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #1E3A8A;
+}
+
+input[type="email"],
+input[type="password"] {
+    width: 500px;
+    padding: 16px 16px 16px 45px;
+    border-radius: 10px;
+    border: 1px solid #D9D9D9;
+    font-family: "Roboto", sans-serif;
+    font-size: 16px;
+}
+
+/* Buttons */
+.register-button {
+    text-align: center;
+}
+
+button {
+    font-family: "Roboto", sans-serif;
+    background-color: #2563EB;
+    border: none;
+    border-radius: 20px;
+    width: 343px;
+    height: 54px;
+    color: #CEE3F5;
+    font-size: 16px;
+    margin: 20px 10px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background-color: #1E3A8A;
+}
+
+/* ===========================================
+   CHANGE PASSWORD PAGE
+=========================================== */
+.login-input h1 {
+    color: #1E3A8A;
+    font-weight: 700;
+    font-size: 30px;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+
+
+.confirm-button {
+    text-align: center;
+}
+
+/* ===========================================
+   LOGIN PAGE
+=========================================== */
+.main-content, 
+.login-button, 
+.forgot-password, 
+.show-password {
+    display: flex;
+    justify-content: center;
+}
+
+.login-section.login-page {
+    margin-top: 150px;
+    height: 486px;
+    border-radius: 35px;
+}
+
+.login-input.login-page label {
+    font-size: 24px;
+}
+
+.login-email, .login-password {
+    padding: 10px;
+    margin: 10px;
+}
+
+.login-email .fa-solid, 
+.login-password .fa-solid {
+    position: absolute;
+    padding: 10px;
+    min-width: 30px;
+    color: #1E3A8A;
+}
+
+.show-password {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-left: 380px; /* aligns with email/password inputs */
+    margin-top: 10px;
+}
+
+.show-password input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+
+/* ===========================================
+   FORGOT PASSWORD  PAGE
+=========================================== */
+.login-section.forgot-password {
+    margin-top: 100px;
+    height: 400px;
+}
+
+.login-input.forgot-password {
+    text-align: center;
+}
+
+.login-input.forgot-password label {
+    color: #1E3A8A;
+    font-weight: 600;
+    font-size: 22px;
+}
+
+.login-input.forgot-password input[type="email"] {
+    width: 500px;
+    padding: 16px 16px 16px 45px;
+    border-radius: 10px;
+    border: 1px solid #D9D9D9;
+    font-size: 16px;
+}
+
+.login-input.forgot-password .fa-envelope {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #1E3A8A;
+}
+
+.login-button button {
+    width: 343px;
+    height: 54px;
+}
+
+/* ===========================================
+   RESPONSIVE DESIGN
+=========================================== */
+@media (max-width: 850px) {
+    .login-section {
+        width: 90%;
+        height: auto;
+        padding: 20px;
+    }
+
+    input[type="email"],
+    input[type="password"] {
+        width: 100%;
+    }
+}
