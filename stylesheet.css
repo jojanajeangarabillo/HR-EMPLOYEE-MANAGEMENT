@@ -384,6 +384,15 @@ input[type="checkbox"]{
     font-size: 15px;
 }
 
+/* Container to align Apply and Reset side by side */
+.filter-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* space between buttons */
+    margin-top: 10px;
+}
+
+/* Apply Button */
 .apply-btn {
     background-color: #1E3A8A;
     color: white;
@@ -406,6 +415,37 @@ input[type="checkbox"]{
 .apply-btn:hover {
     background-color: #2563EB;
 }
+
+/* Reset Button — with red color and aligned beside Apply */
+.reset-btn {
+    background-color: white;
+    color: #dc3545;
+    border: 1.5px solid #dc3545;
+    border-radius: 8px;
+    padding: 9px 20px;
+    font-family: "Roboto", sans-serif;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s;
+}
+
+.reset-btn i {
+    color: #dc3545;
+    font-size: 16px;
+}
+
+.reset-btn:hover {
+    background-color: #dc3545;
+    color: white;
+}
+
+.reset-btn:hover i {
+    color: white;
+}
+
 
 /* ---- TABLE ---- */
 table {
@@ -477,27 +517,4 @@ tr:nth-child(even) {
     }
 }
 
-/* Reset Button Styling */
-.reset-btn {
-    background-color: #e3f2fd;
-    color: #0d6efd;
-    border: 1px solid #0d6efd;
-    border-radius: 6px;
-    padding: 8px 18px;
-    font-size: 14px;
-    margin-left: 10px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    transition: 0.3s;
-}
-
-.reset-btn i {
-    margin-right: 6px;
-}
-
-.reset-btn:hover {
-    background-color: #0d6efd;
-    color: #fff;
-}
 

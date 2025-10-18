@@ -12,7 +12,7 @@
     <!--Topbar-->
     <nav class="top-bar">
         <div class="logo-header">
-            <img src="Images/Screenshot 2024-12-31 233611.png" alt="Happy Picture" >
+            <img src="Images/hospitallogo.png" alt="Happy Picture" >
             <div class="top-bar-text">
                 <h1>Hospital</h1>
                 <h4>Human Resources</h4>

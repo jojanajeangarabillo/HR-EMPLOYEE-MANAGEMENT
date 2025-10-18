@@ -87,10 +87,11 @@
                 <option>Rejected</option>
             </select>
 
-            <button class="apply-btn"><i class="fa-solid fa-magnifying-glass"></i> Apply</button>
-              <button class="reset-btn">
-    <i class="fas fa-rotate-right"></i> Reset
-  </button>
+           <div class="filter-buttons">
+        <button class="apply-btn"><i class="fa-solid fa-magnifying-glass"></i> Apply</button>
+        <button class="reset-btn"><i class="fas fa-rotate-right"></i> Reset</button>
+        </div>
+
 
         </div>
 

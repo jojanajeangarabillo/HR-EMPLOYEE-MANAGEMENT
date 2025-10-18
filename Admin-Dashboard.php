@@ -16,7 +16,7 @@
 
     <aside class="admin-sidebar">
         <div class="sidebar-logo">
-            <img src="Images/Screenshot 2024-12-31 233611.png" alt="happy" >
+            <img src="Images/hospitallogo.png" alt="happy" >
         </div>
         <nav class="sidebar-nav">
             <!--Primary top nav-->
