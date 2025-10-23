@@ -62,7 +62,7 @@
 
                 <!-- Forgot Password -->
                 <div class="forgot-password">
-                    <a href="Applicant-Forgot-Password.html" class="forgot-password-link">Forgot password?</a>
+                    <a href="Applicant_Forgot-Password.php" class="forgot-password-link">Forgot password?</a>
                 </div>
             </form>
         </section>
