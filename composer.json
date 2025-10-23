@@ -1,0 +1,12 @@
+{
+    "name": "plpasig/hr-employee-management",
+    "authors": [
+        {
+            "name": "Rhoanne Nicole Antonio",
+            "email": "antonio_rhoannenicole@plpasig.edu.ph"
+        }
+    ],
+    "require": {
+        "phpmailer/phpmailer": "^7.0"
+    }
+}
