@@ -45,6 +45,10 @@
                         <i class="fa-solid fa-paper-plane"></i> Send OTP
                     </button>
                 </div>
+
+                <div class="back-link">
+                    <a href="Applicant_LogIn.php"><i class="fa-solid fa-arrow-left"></i> Back</a>
+                </div>
             </form>
         </section>
     </main>

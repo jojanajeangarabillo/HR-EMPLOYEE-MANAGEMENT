@@ -1,12 +1,13 @@
 
 * {
     margin: 0;
+    padding: 0;
     box-sizing: border-box;
 }
 
 .login-body {
     background-color: #CEE3F5;
-    font-family: "Poppins", sans-serif;
+    font-family: "Poppins", "roboto";
 }
 
 /* Top Bar */
@@ -119,6 +120,26 @@ button:hover {
     margin-bottom: 30px;
 }
 
+/* Back Link Below OTP Button */
+.back-link {
+    text-align: center;
+    margin-top: -10px;
+}
+
+.back-link a {
+    text-decoration: none;
+    color: #1E3A8A;
+    font-weight: 600;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+.back-link a:hover {
+    color: #2563EB;
+    text-decoration: underline;
+}
+
+
 
 
 .confirm-button {
@@ -225,4 +246,72 @@ button:hover {
     input[type="password"] {
         width: 100%;
     }
+}
+
+
+/* ===========================================
+   SIDEBAR
+=========================================== */
+.sidebar {
+    width: 230px;
+    background-color: #1E3A8A;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 30px;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+/* Profile Icon */
+.profile i {
+    font-size: 60px;
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    padding: 15px;
+    margin-bottom: 40px;
+}
+
+/* Navigation */
+.nav {
+    list-style: none;
+    width: 100%;
+}
+
+.nav li {
+    color: #ffffff;
+    padding: 15px 25px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav li:hover,
+.nav li.active {
+    background-color: #e5edfb;
+    color: #1E3A8A;
+}
+
+.nav i {
+    width: 20px;
+    text-align: center;
+}
+
+.nav a {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+}
+
+.nav li.active a {
+    color: #1E3A8A;
 }
