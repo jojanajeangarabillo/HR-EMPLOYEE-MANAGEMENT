@@ -1,3 +1,10 @@
+
+/*Poppins font import*/
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+/*Roboto font import*/
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
 /* Sidebar Container */
 .sidebar {
   position: fixed;
@@ -11,22 +18,36 @@
   flex-direction: column;
   align-items: center;
   padding-top: 20px;
+  overflow: hidden; 
 }
 
 /* Logo */
 .sidebar img {
   width: 80px;
   height: 80px;
-  margin-bottom: 30px;
+  margin-bottom: -5px;
   border-radius: 50%;
   background-color: white;
   padding: 5px;
 }
 
+/* Menu Board Title */
+.sidebar-menu .menu-title {
+  font-family:  "Roboto", sans-serif;
+  text-align: left;
+  margin-left: -5px;
+  margin-top:30px;
+  margin-bottom: -10px;
+  font-weight: bold;
+  font-size: 20px;
+  padding: 10px 25px;
+  letter-spacing: 1px;
+}
+
 /* Menu List */
 .sidebar-menu {
   list-style: none;
-  width: 100%;
+  width: 125%;
 }
 
 .sidebar-menu li {
@@ -35,6 +56,7 @@
 }
 
 .sidebar-menu a {
+  font-family: "Roboto", sans-serif;
   display: flex;
   align-items: center;
   text-decoration: none;
@@ -42,10 +64,11 @@
   font-size: 18px;
   padding: 10px 20px;
   transition: background 0.3s;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.sidebar-menu a:hover,
-.sidebar-menu a.active {
+.sidebar-menu a:hover {
   background-color: #142b66;
   border-left: 5px solid #ffffff;
 }
@@ -60,5 +83,28 @@
   margin-top: auto;
   margin-bottom: 20px;
   width: 100%;
+  list-style: none;
 }
 
+.sidebar-bottom li {
+  width: 100%;
+  margin: 15px 0;
+}
+
+.sidebar-bottom a {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: white;
+  font-size: 18px;
+  padding: 10px 20px;
+  transition: background 0.3s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+.sidebar-bottom i {
+  margin-right: 15px;
+  font-size: 20px;
+}
