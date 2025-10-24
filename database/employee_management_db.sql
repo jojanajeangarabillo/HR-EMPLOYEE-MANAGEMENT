@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 23, 2025 at 08:33 AM
+-- Generation Time: Oct 24, 2025 at 08:30 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -28,7 +28,7 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `applicant` (
-  `applicantID` int(11) NOT NULL,
+  `applicantID` varchar(100) NOT NULL,
   `fullName` varchar(150) NOT NULL,
   `position_applied` varchar(100) NOT NULL,
   `department` int(11) NOT NULL,
@@ -46,6 +46,13 @@ CREATE TABLE `applicant` (
   `skills` text NOT NULL,
   `summary` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `applicant`
+--
+
+INSERT INTO `applicant` (`applicantID`, `fullName`, `position_applied`, `department`, `date_applied`, `contact_number`, `email_address`, `home_address`, `job_title`, `company_name`, `date_started`, `in_role`, `university`, `course`, `year_graduated`, `skills`, `summary`) VALUES
+('HOS-001', 'Jojana Jean B. Garabillo', '', 0, '2025-10-24', '', 'garabillo_jojanajean@plpasig.edu.ph', '', '', '', '0000-00-00', '', '', '', '0000', '', '');
 
 -- --------------------------------------------------------
 
@@ -96,28 +103,6 @@ CREATE TABLE `employement_type` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `login_table`
---
-
-CREATE TABLE `login_table` (
-  `emailusername` varchar(100) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `reset_token` varchar(100) NOT NULL,
-  `token_expiry` date NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `login_table`
---
-
-INSERT INTO `login_table` (`emailusername`, `password`, `reset_token`, `token_expiry`) VALUES
-('n0305933@gmail.com', '$2y$10$rjY65JwamUmGt1oYKJ3FSum2cS1TLwOSqR9DvSdoMg3iF0wMufQiK', 'cd322e303269541a9f39884b2feae9445a941851c47ab3081bf4b4bdd45050b4', '2025-10-24'),
-('nikkiantio947@gmail.com', '$2y$10$Yy6IynDlwTmz1A2mM0UdgeR55qDv3pH0JCrV/Bs0vQJK2T.2I53vW', 'dbb6bce1875f91d84c3d0e043c3bb6004e72e449ef82d653fe5016c6bfafb707', '2025-10-24'),
-('test@gmail.com', 'admin123', '', '2025-10-23');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `position`
 --
 
@@ -134,15 +119,25 @@ CREATE TABLE `position` (
 --
 
 CREATE TABLE `user` (
-  `user_id` int(11) NOT NULL,
-  `applicant_emloyee_id` varchar(20) NOT NULL,
+  `user_id` varchar(100) NOT NULL,
+  `applicant_employee_id` varchar(100) DEFAULT NULL,
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
   `role` varchar(50) NOT NULL,
   `fullname` varchar(150) NOT NULL,
   `status` varchar(20) NOT NULL,
-  `created_at` datetime NOT NULL
+  `created_at` datetime NOT NULL,
+  `reset_token` varchar(255) NOT NULL,
+  `token_expiry` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user`
+--
+
+INSERT INTO `user` (`user_id`, `applicant_employee_id`, `email`, `password`, `role`, `fullname`, `status`, `created_at`, `reset_token`, `token_expiry`) VALUES
+('1', 'admin', 'admin@gmail.com', '11', 'Admin', 'Jojana Garabillo', 'Active', '2025-11-10 00:00:00', '', ''),
+('', 'HOS-001', 'garabillo_jojanajean@plpasig.edu.ph', '$2y$10$9i4hR0aGKmS4Gir3.2xtK.0EOd7J2kDoq0OnxMn6f75EtsFZBuoAy', 'Applicant', 'Jojana Jean B. Garabillo', 'Pending', '0000-00-00 00:00:00', '', '');
 
 --
 -- Indexes for dumped tables
@@ -152,7 +147,7 @@ CREATE TABLE `user` (
 -- Indexes for table `applicant`
 --
 ALTER TABLE `applicant`
-  ADD PRIMARY KEY (`applicantID`);
+  ADD KEY `fk_applicant_user` (`applicantID`);
 
 --
 -- Indexes for table `department`
@@ -173,12 +168,6 @@ ALTER TABLE `employement_type`
   ADD PRIMARY KEY (`emtypeID`);
 
 --
--- Indexes for table `login_table`
---
-ALTER TABLE `login_table`
-  ADD PRIMARY KEY (`emailusername`);
-
---
 -- Indexes for table `position`
 --
 ALTER TABLE `position`
@@ -188,7 +177,18 @@ ALTER TABLE `position`
 -- Indexes for table `user`
 --
 ALTER TABLE `user`
-  ADD PRIMARY KEY (`user_id`);
+  ADD PRIMARY KEY (`email`),
+  ADD UNIQUE KEY `uk_applicant_employee_id` (`applicant_employee_id`);
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `applicant`
+--
+ALTER TABLE `applicant`
+  ADD CONSTRAINT `fk_applicant_user` FOREIGN KEY (`applicantID`) REFERENCES `user` (`applicant_employee_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
