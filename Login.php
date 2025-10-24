@@ -2,30 +2,39 @@
 session_start();
 include 'admin/db.connect.php';
 
-$error_msg = "";
-$success_msg = "";
-
 if (isset($_POST['login'])) {
-    $email = $_POST['email'];
-    $password = md5($_POST['password']);
-    $sql = "SELECT * FROM login_table WHERE emailusername = ? AND password = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ss", $email, $password);
+    $email = trim($_POST['email']);
+    $password = trim($_POST['password']);
+
+    $stmt = $conn->prepare("SELECT * FROM user WHERE email = ?");
+    $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
+    if ($result->num_rows === 1) {
         $row = $result->fetch_assoc();
-        /*$_SESSION['login_id'] = $row['id'];
-        $_SESSION['login_type'] = $row['type']; // or whatever your column is */
-        $success_msg = "Login successful!";
+
+        if (password_verify($password, $row['password'])) {
+            $_SESSION['email'] = $row['email'];
+            $_SESSION['role'] = $row['role'];
+
+            if ($row['role'] == 'Admin') {
+                header("Location: Admin_Dashboard.php");
+            } elseif ($row['role'] == 'Applicant') {
+                header("Location: Applicant_Dashboard.php");
+            } elseif ($row['role'] == 'Employee') {
+                header("Location: Employee_Dashboard.php");
+            }
+            exit;
+        } else {
+            echo "<script>alert('Incorrect password.');</script>";
+        }
     } else {
-        $error_msg = "Invalid email or password.";
+        echo "<script>alert('Email not registered.');</script>";
     }
 }
-
-
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -83,8 +92,7 @@ if (isset($_POST['login'])) {
         <div class="logo-header">
             <img src="Images/hospitallogo.png" alt="Happy Picture">
             <div class="top-bar-text">
-                <h1>Hospital</h1>
-                <h4>Human Resources</h4>
+                <h1>H O S P I T A L</h1>
             </div>
         </div>
     </nav>
@@ -111,7 +119,7 @@ if (isset($_POST['login'])) {
                     <button type="submit" name="login"><i class="fa-solid fa-right-from-bracket"></i>Sign In</button>
                 </div>
                 <div class="forgot-password">
-                    <a href="Admin-Forgot-Password.html" class="forgot-password-link">Forgot password?</a>
+                    <a href="Forgot-Password.php" class="forgot-password-link">Forgot password?</a>
                 </div>
             </form>
 

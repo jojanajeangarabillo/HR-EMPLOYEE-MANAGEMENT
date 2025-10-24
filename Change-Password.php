@@ -1,56 +1,73 @@
 <?php
-session_start();
-include 'admin/db.connect.php';
-$error_msg = "";
-$success_msg = "";
+require 'admin/db.connect.php';
+session_start(); // if you want to use logged-in session email later
 
 if (isset($_POST['change_password'])) {
-    $current_pass = $_POST['currentPass'];
-    $new_pass = $_POST['newPass'];
-    $confirm_pass = $_POST['confirmPass'];
+    $newPass = $_POST['newPass'];
+    $confirmPass = $_POST['confirmPass'];
+    $currentPass = $_POST['currentPass'] ?? null;
 
-    // Basic validation
-    if (empty($current_pass) || empty($new_pass) || empty($confirm_pass)) {
-        $error_msg = "All fields are required.";
-    } elseif ($new_pass !== $confirm_pass) {
-        $error_msg = "New password and confirm password do not match.";
-    } elseif (strlen($new_pass) < 8) {
-        $error_msg = "New password must be at least 8 characters long.";
+    // Either from email reset link or from logged-in user
+    $token = $_GET['token'] ?? null;
+
+    if ($newPass !== $confirmPass) {
+        echo "<script>alert('Passwords do not match.');</script>";
+    } elseif (strlen($newPass) < 8) {
+        echo "<script>alert('Password must be at least 8 characters.');</script>";
     } else {
-
-        if (isset($_GET['token'])) {
-            $token = $_GET['token'];
-            $sql = "SELECT emailusername, token_expiry FROM login_table WHERE reset_token = ? AND token_expiry > NOW()";
-            $stmt = $conn->prepare($sql);
+        // Check token method (reset via email)
+        if ($token) {
+            $stmt = $conn->prepare("SELECT email FROM user WHERE reset_token=? AND token_expiry>NOW()");
             $stmt->bind_param("s", $token);
             $stmt->execute();
             $result = $stmt->get_result();
 
-            if ($result->num_rows > 0) {
+            if ($result->num_rows === 1) {
                 $row = $result->fetch_assoc();
-                $alumni_id = $row['emailusername'];
-                // No need to verify current password for token-based change
-                $hashed_new_pass = md5($new_pass); // Using MD5 to match existing hashing
-                $update_sql = "UPDATE login_table SET password = ?, reset_token = NULL, token_expiry = NULL WHERE emailusername = ?";
-                $update_stmt = $conn->prepare($update_sql);
-                $update_stmt->bind_param("ss", $hashed_new_pass, $alumni_id);
-                if ($update_stmt->execute()) {
-                    $success_msg = "Password changed successfully. You can now log in.";
+                $email = $row['email'];
+                $hashed = password_hash($newPass, PASSWORD_DEFAULT);
 
-                    header("Location: Applicant_Login.php"); // Adjust to your login page
-                    exit;
-                } else {
-                    $error_msg = "Error updating password. Please try again.";
-                }
+                $update = $conn->prepare("UPDATE user SET password=?, reset_token=NULL, token_expiry=NULL WHERE email=?");
+                $update->bind_param("ss", $hashed, $email);
+                $update->execute();
+
+                echo "<script>alert('Password changed successfully!');window.location='Login.php';</script>";
             } else {
-                $error_msg = "Invalid or expired token.";
+                echo "<script>alert('Invalid or expired reset link.');</script>";
             }
-        } else {
+        } 
+        // Logged-in user changing password normally
+        else {
+            // Assuming logged-in user email stored in session
+            $email = $_SESSION['email'] ?? null;
 
+            if (!$email) {
+                echo "<script>alert('User not logged in.');window.location='Login.php';</script>";
+                exit;
+            }
+
+            // Verify current password
+            $check = $conn->prepare("SELECT password FROM user WHERE email=?");
+            $check->bind_param("s", $email);
+            $check->execute();
+            $result = $check->get_result();
+            $user = $result->fetch_assoc();
+
+            if (!password_verify($currentPass, $user['password'])) {
+                echo "<script>alert('Current password is incorrect.');</script>";
+            } else {
+                $hashed = password_hash($newPass, PASSWORD_DEFAULT);
+                $update = $conn->prepare("UPDATE user SET password=? WHERE email=?");
+                $update->bind_param("ss", $hashed, $email);
+                $update->execute();
+                echo "<script>alert('Password changed successfully!');window.location='Login.php';</script>";
+            }
         }
     }
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -58,7 +75,7 @@ if (isset($_POST['change_password'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Applicant Change Password</title>
+    <title>Change Password</title>
     <link rel="stylesheet" href="applicant.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
         integrity="sha512-papNMv5z+YdUj4m6rKcxQZZNhpCJ3+VzYDA6kYskk5wDZqB8bJz5K5C9mEeD2iHZG5tLx4yPcXy4A4p4rA7Rqw=="
@@ -83,7 +100,6 @@ if (isset($_POST['change_password'])) {
             <img src="Images/hospitallogo.png" alt="Hospital Logo">
             <div class="top-bar-text">
                 <h1>H O S P I T A L</h1>
-                <h4>Applicant</h4>
             </div>
         </div>
     </header>

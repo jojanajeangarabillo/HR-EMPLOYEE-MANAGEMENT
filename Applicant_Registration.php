@@ -7,39 +7,58 @@ require 'PHPMailer-master/src/SMTP.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
-use PHPMailer\PHPMailer\SMTP;
 
-$config = require 'mailer-config.php'; // Assuming this is 'mailer_config.php' as in the code
+$config = require 'mailer-config.php'; 
 
 $error_msg = "";
 $success_msg = "";
 
 if (isset($_POST['register'])) {
-    $email = $conn->real_escape_string($_POST['email']);
+    $fullname = trim($_POST['fullname']);
+    $email = trim($_POST['email']);
 
-    $check_sql = "SELECT emailusername FROM login_table WHERE emailusername = ?";
-    $check_stmt = $conn->prepare($check_sql);
-    $check_stmt->bind_param("s", $email);
-    $check_stmt->execute();
-    $check_result = $check_stmt->get_result();
+    // Check if email already exists
+    $check = $conn->prepare("SELECT email FROM user WHERE email = ?");
+    $check->bind_param("s", $email);
+    $check->execute();
+    $check_result = $check->get_result();
 
     if ($check_result->num_rows > 0) {
-        $error_msg = "An account with this email already exists.";
+        $error_msg = "Email already exists!";
     } else {
-        $password = bin2hex(random_bytes(8));
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        // Auto-generate Applicant ID (HOS-001 format)
+        $result = $conn->query("SELECT applicantID FROM applicant ORDER BY applicantID DESC LIMIT 1");
+        if ($result->num_rows > 0) {
+            $last = $result->fetch_assoc();
+            $lastID = intval(substr($last['applicantID'], 4)) + 1;
+            $newID = 'HOS-' . str_pad($lastID, 3, '0', STR_PAD_LEFT);
+        } else {
+            $newID = 'HOS-001';
+        }
 
+        // Generate temporary password, token, and expiry
+        $tempPass = bin2hex(random_bytes(4)); // 8-char temp password
+        $hashedPass = password_hash($tempPass, PASSWORD_DEFAULT);
         $token = bin2hex(random_bytes(32));
         $expiry = date('Y-m-d H:i:s', strtotime('+24 hours'));
 
-        $insert_sql = "INSERT INTO login_table (emailusername, password, reset_token, token_expiry) VALUES (?, ?, ?, ?)";
-        $insert_stmt = $conn->prepare($insert_sql);
-        $insert_stmt->bind_param("ssss", $email, $hashed_password, $token, $expiry);
+        // Insert into user table
+        $stmt = $conn->prepare("INSERT INTO user 
+            (applicant_employee_id, email, password, role, fullname, status, reset_token, token_expiry) 
+            VALUES (?, ?, ?, 'Applicant', ?, 'Pending', ?, ?)");
+        $stmt->bind_param("ssssss", $newID, $email, $hashedPass, $fullname, $token, $expiry);
 
-        if ($insert_stmt->execute()) {
+        if ($stmt->execute()) {
+            // Insert into applicant table
+            $stmt2 = $conn->prepare("INSERT INTO applicant 
+                (applicantID, fullName, email_address, date_applied) 
+                VALUES (?, ?, ?, NOW())");
+            $stmt2->bind_param("sss", $newID, $fullname, $email);
+            $stmt2->execute();
+
+            // Send email
             try {
                 $mail = new PHPMailer(true);
-
                 $mail->isSMTP();
                 $mail->Host = $config['host'];
                 $mail->SMTPAuth = true;
@@ -51,31 +70,21 @@ if (isset($_POST['register'])) {
                 $mail->setFrom($config['from_email'], $config['from_name']);
                 $mail->addAddress($email);
 
-                $change_link = "localhost/HR-EMPLOYEE-MANAGEMENT/Applicant_Change-Password.php?token=$token"; // Adjust to your change password page
+                $link = "http://localhost/HR-EMPLOYEE-MANAGEMENT/Change-Password.php?token=$token";
 
                 $mail->isHTML(true);
-                $mail->Subject = 'Welcome to the Employee Management System - Your Account Details';
+                $mail->Subject = "Welcome to the Employee Management System";
                 $mail->Body = "
-                    <h2>Welcome to Employee Management System</h2>
-                    <p>Dear User,</p>
-                    <p>Your account has been created successfully. Here are your login details:</p>
-                    <p><strong>Email:</strong> $email</p>
-                    <p><strong>Temporary Password:</strong> $password</p>
-                    <p>For security reasons, please change your password by clicking the link below:</p>
-                    <p><a href=\"$change_link\">Change Your Password</a></p>
-                    <p>This link will expire in 24 hours.</p>
-                    <p>Thank you,<br>PLP Alumni Portal Team</p>
+                    <h3>Welcome, $fullname!</h3>
+                    <p>Your temporary password is: <b>$tempPass</b></p>
+                    <p>Please change your password within 24 hours using this link:</p>
+                    <a href='$link'>$link</a>
                 ";
 
                 $mail->send();
-                $success_msg = "Registration successful! Check your email for login details.";
+                $success_msg = "Registration successful! Check your email for password setup.";
             } catch (Exception $e) {
-                $error_msg = "Error sending email: " . $mail->ErrorInfo;
-                // Optionally, delete the inserted user if email fails
-                $delete_sql = "DELETE FROM login_table WHERE email = ?";
-                $delete_stmt = $conn->prepare($delete_sql);
-                $delete_stmt->bind_param("s", $email);
-                $delete_stmt->execute();
+                $error_msg = "Account created, but email failed to send. Error: {$mail->ErrorInfo}";
             }
         } else {
             $error_msg = "Error creating account. Please try again.";
@@ -83,18 +92,14 @@ if (isset($_POST['register'])) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Applicant Registration</title>
     <link rel="stylesheet" href="applicant.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-        integrity="sha512-papNMv5z+YdUj4m6rKcxQZZNhpCJ3+VzYDA6kYskk5wDZqB8bJz5K5C9mEeD2iHZG5tLx4yPcXy4A4p4rA7Rqw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         .modal {
             display: none;
@@ -108,7 +113,6 @@ if (isset($_POST['register'])) {
             justify-content: center;
             align-items: center;
         }
-
         .modal-content {
             background-color: #fff;
             padding: 30px;
@@ -116,11 +120,7 @@ if (isset($_POST['register'])) {
             text-align: center;
             max-width: 400px;
         }
-
-        .modal-content h2 {
-            color: #333;
-        }
-
+        .modal-content h2 { color: #333; }
         .close-btn {
             background-color: #007bff;
             color: #fff;
@@ -130,16 +130,10 @@ if (isset($_POST['register'])) {
             border-radius: 5px;
             cursor: pointer;
         }
-
-        .error-msg {
-            color: red;
-            margin-top: 10px;
-        }
+        .error-msg { color: red; margin-top: 10px; }
     </style>
 </head>
-
 <body class="login-body">
-    <!-- Topbar -->
     <header class="top-bar">
         <div class="logo-header">
             <img src="Images/hospitallogo.png" alt="Hospital Logo">
@@ -150,17 +144,21 @@ if (isset($_POST['register'])) {
         </div>
     </header>
 
-    <!-- Registration Section -->
     <main class="main-content">
         <section class="login-section">
             <form class="login-input" method="POST">
-                <div class="login-email">
-                    <h1 style="font-size: 50px;"><b>Register</b></h1>
-                    <label for="email">Email</label>
-                    <div class="input-container">
-                        <i class="fa-solid fa-envelope"></i>
-                        <input type="email" name="email" id="email" placeholder="Enter your Email" required>
-                    </div>
+                <h1 style="font-size: 50px;"><b>Register</b></h1>
+
+                <label for="fullname">Full Name</label>
+                <div class="input-container">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="fullname" name="fullname" id="fullname" placeholder="Enter your Full Name" required>
+                </div>
+
+                <label for="email">Email</label>
+                <div class="input-container">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" name="email" id="email" placeholder="Enter your Email" required>
                 </div>
 
                 <div class="register-button">
@@ -168,6 +166,7 @@ if (isset($_POST['register'])) {
                         <i class="fa-solid fa-right-to-bracket"></i> Register
                     </button>
                 </div>
+
                 <?php if (!empty($error_msg)): ?>
                     <div class="error-msg"><?php echo $error_msg; ?></div>
                 <?php endif; ?>
@@ -175,7 +174,6 @@ if (isset($_POST['register'])) {
         </section>
     </main>
 
-    <!-- Modal -->
     <div id="successModal" class="modal">
         <div class="modal-content">
             <h2>Check your email!</h2>
@@ -185,20 +183,19 @@ if (isset($_POST['register'])) {
     </div>
 
     <script>
-        function showModal() {
-            document.getElementById("successModal").style.display = "flex";
-        }
+    function showModal() {
+    document.getElementById("successModal").style.display = "flex";
+    }
+    function closeModal() {
+    document.getElementById("successModal").style.display = "none";
+    }
 
-        function closeModal() {
-            document.getElementById("successModal").style.display = "none";
-        }
-
-        // Show modal if registration was successful
-        <?php if (!empty($success_msg)): ?>
-            showModal();
-        <?php endif; ?>
+    // Only show modal if registration actually succeeded and POST request was made
+    <?php if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register']) && !empty($success_msg)): ?>
+    showModal();
+    <?php endif; ?>
     </script>
 
-</body>
 
+</body>
 </html>

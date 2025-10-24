@@ -10,7 +10,7 @@
 *{
     margin: 0;
 }
-/*Admin Login*/
+/*Login*/
 .login-body{
     background-color: #CEE3F5;
 }
@@ -123,6 +123,18 @@ input[type="checkbox"]{
     text-decoration: none;
     color: black;
     margin-top: 0;
+}
+.login-password input[type="password"],
+.login-password input[type="text"] {
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    width: 500px;
+    height: 2px;
+    padding: 16px;
+    padding-left: 50px;
+    border-radius: 10px;
+    border-color: #D9D9D9;
 }
 
 /*Admin Dashboard*/
