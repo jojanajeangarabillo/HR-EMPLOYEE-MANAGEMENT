@@ -1,39 +1,55 @@
 <?php
+ob_start();
 session_start();
 include 'admin/db.connect.php';
 
+// Check if form was submitted
 if (isset($_POST['login'])) {
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
 
+    // Prepare statement to find user by email
     $stmt = $conn->prepare("SELECT * FROM user WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
 
+    // Check if user exists
     if ($result->num_rows === 1) {
         $row = $result->fetch_assoc();
 
-        if (password_verify($password, $row['password'])) {
+        // ✅ If your passwords are hashed:
+        // if (password_verify($password, $row['password'])) {
+
+        // ⚠️ Or if passwords are plain text (for testing only):
+        if ($password === $row['password']) {
+
             $_SESSION['email'] = $row['email'];
             $_SESSION['role'] = $row['role'];
 
-            if ($row['role'] == 'Admin') {
-                header("Location: Admin_Dashboard.php");
-            } elseif ($row['role'] == 'Applicant') {
+            // Redirect based on role
+            $role = strtolower($row['role']); // case-insensitive
+            if ($role === 'admin') {
+                header("Location: Admin-Dashboard.php");
+                exit;
+            } elseif ($role === 'applicant') {
                 header("Location: Applicant_Dashboard.php");
-            } elseif ($row['role'] == 'Employee') {
-                header("Location: Employee_Dashboard.php");
+                exit;
+            } elseif ($role === 'employee') {
+                header("Location: Employee_DashBoard.php");
+                exit;
+            } else {
+                echo "<script>alert('Unknown role for this account.');</script>";
             }
-            exit;
         } else {
             echo "<script>alert('Incorrect password.');</script>";
         }
     } else {
-        echo "<script>alert('Email not registered.');</script>";
+        echo "<script>alert('Email not found.');</script>";
     }
 }
 ?>
+
 
 
 <!DOCTYPE html>

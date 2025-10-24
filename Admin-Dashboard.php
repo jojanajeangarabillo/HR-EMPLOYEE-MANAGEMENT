@@ -28,25 +28,25 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="Admin_Employee.php" class="nav-link">
                         <i class="fa-solid fa-user-group"></i>
                         <span class="nav-label">Employees</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="Admin_Applicants.php" class="nav-link">
                         <i class="fa-solid fa-user-group"></i>
                         <span class="nav-label">Applicants</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="Admin-request.php" class="nav-link">
                         <i class="fa-solid fa-code-pull-request"></i>
                         <span class="nav-label">Requests</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="Admin-JobPosting.php" class="nav-link">
                         <i class="fa-solid fa-folder"></i>
                         <span class="nav-label">Job Post</span>
                     </a>
@@ -63,13 +63,13 @@
             <!--Secondary bottom nav-->
             <ul class="secondary-buttom-nav">
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="Admin-Settings.php" class="nav-link">
                         <i class="fa-solid fa-gear"></i>
                         <span class="nav-label">Settings</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="Login.php" class="nav-link">
                         <i class="fa-solid fa-right-from-bracket"></i>
                         <span class="nav-label">Logout</span>
                     </a>

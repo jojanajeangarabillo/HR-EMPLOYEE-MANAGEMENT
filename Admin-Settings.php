@@ -28,17 +28,17 @@
 
         <nav class="sidebar-nav">
             <ul class="primary-top-nav">
-                <li class="nav-item"><a href="#"><i class="fa-solid fa-grip"></i><span class="nav-label">Dashboard</span></a></li>
-                <li class="nav-item"><a href="#"><i class="fa-solid fa-user-group"></i><span class="nav-label">Employees</span></a></li>
-                <li class="nav-item"><a href="#"><i class="fa-solid fa-user-group"></i><span class="nav-label">Applicants</span></a></li>
-                <li class="nav-item active"><a href="#"><i class="fa-solid fa-code-pull-request"></i><span class="nav-label">Requests</span></a></li>
-                <li class="nav-item"><a href="#"><i class="fa-solid fa-folder"></i><span class="nav-label">Job Post</span></a></li>
-                <li class="nav-item"><a href="#"><i class="fa-solid fa-chart-simple"></i><span class="nav-label">Reports</span></a></li>
+                <li class="nav-item"><a href="Admin-Dashboard.php"><i class="fa-solid fa-grip"></i><span class="nav-label">Dashboard</span></a></li>
+                <li class="nav-item"><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i><span class="nav-label">Employees</span></a></li>
+                <li class="nav-item"><a href="Admin_Applicants.php"><i class="fa-solid fa-user-group"></i><span class="nav-label">Applicants</span></a></li>
+                <li class="nav-item "><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i><span class="nav-label">Requests</span></a></li>
+                <li class="nav-item "><a href="Admin-JobPosting.php"><i class="fa-solid fa-folder"></i><span class="nav-label">Job Post</span></a></li>
+                <li class="nav-item"><a href="Login.php"><i class="fa-solid fa-chart-simple"></i><span class="nav-label">Reports</span></a></li>
             </ul>
 
             <ul class="secondary-buttom-nav">
-                <li class="nav-item"><a href="#"><i class="fa-solid fa-gear"></i><span class="nav-label">Settings</span></a></li>
-                <li class="nav-item"><a href="#"><i class="fa-solid fa-right-from-bracket"></i><span class="nav-label">Logout</span></a></li>
+                <li class="nav-item active"><a href="#"><i class="fa-solid fa-gear"></i><span class="nav-label">Settings</span></a></li>
+                <li class="nav-item"><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i><span class="nav-label">Logout</span></a></li>
             </ul>
         </nav>
     </aside>
