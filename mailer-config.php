@@ -9,6 +9,4 @@ return [
     'from_email' => 'hr.plpemployeemanagementsystem@gmail.com',
     'from_name' => 'Employee Management System'
 ];
-
-
 ?>

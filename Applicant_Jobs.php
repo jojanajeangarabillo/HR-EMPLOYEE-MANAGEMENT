@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Job Listing</title>
 
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Roboto:wght@400;500&display=swap"
+    rel="stylesheet">
 
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -24,8 +26,8 @@
     }
 
     .main-content {
-      margin-left: 220px; 
-        padding: 20px 40px;
+      margin-left: 220px;
+      padding: 20px 40px;
       width: calc(100% - 230px);
     }
 
@@ -35,8 +37,8 @@
       color: #1E3A8A;
       gap: 25px;
       margin-bottom: 10px;
-      white-space: nowrap; 
-    display: inline-block;
+      white-space: nowrap;
+      display: inline-block;
     }
 
     hr {
@@ -75,11 +77,11 @@
 
     /* Job Listing Layout */
     .job-container {
-    display: grid;
-    margin-top: 70px; 
-    grid-template-columns: 1fr 1.4fr;
-    gap: 30px;
-    align-items: start; 
+      display: grid;
+      margin-top: 70px;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 30px;
+      align-items: start;
     }
 
     /* Left: Job Titles */
@@ -186,9 +188,9 @@
 <body>
   <!-- Sidebar -->
   <div class="sidebar">
-    <div class="profile">
+    <a href="Applicant_Profile.php" class="profile">
       <i class="fa-solid fa-user"></i>
-    </div>
+    </a>
 
     <ul class="nav">
       <li><a href="Applicant_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
@@ -223,10 +225,13 @@
         <div class="job-info">
           <div><i class="fa-solid fa-location-dot"></i><strong>Location:</strong> Manila, Philippines</div>
           <div><i class="fa-solid fa-building"></i><strong>Department:</strong> Anesthetics Department</div>
-          <div><i class="fa-solid fa-money-bill-wave"></i><strong>Expected Salary:</strong> ₱50,000 - ₱70,000/month</div>
-          <div><i class="fa-solid fa-graduation-cap"></i><strong>Qualification:</strong> Doctor of Medicine / Nursing Degree</div>
+          <div><i class="fa-solid fa-money-bill-wave"></i><strong>Expected Salary:</strong> ₱50,000 - ₱70,000/month
+          </div>
+          <div><i class="fa-solid fa-graduation-cap"></i><strong>Qualification:</strong> Doctor of Medicine / Nursing
+            Degree</div>
           <div><i class="fa-solid fa-book"></i><strong>Educational Level:</strong> Graduate / Postgraduate</div>
-          <div><i class="fa-solid fa-lightbulb"></i><strong>Skills:</strong> Anesthesia administration, critical care, teamwork</div>
+          <div><i class="fa-solid fa-lightbulb"></i><strong>Skills:</strong> Anesthesia administration, critical care,
+            teamwork</div>
           <div><i class="fa-solid fa-clock"></i><strong>Experience in Years:</strong> 2 - 5 years</div>
           <div><i class="fa-solid fa-user-tie"></i><strong>Employment Type:</strong> Full-Time</div>
           <div><i class="fa-solid fa-users"></i><strong>Vacancies:</strong> 4</div>
@@ -238,10 +243,14 @@
 
         <div class="job-description">
           <h3>Job Description</h3>
-          <p>The Anesthetics Department provides expert care in pain management and anesthesia during surgical procedures. We are looking for skilled medical professionals dedicated to patient safety and comfort. Successful candidates will collaborate closely with surgeons, nurses, and specialists to ensure optimal patient outcomes.</p>
+          <p>The Anesthetics Department provides expert care in pain management and anesthesia during surgical
+            procedures. We are looking for skilled medical professionals dedicated to patient safety and comfort.
+            Successful candidates will collaborate closely with surgeons, nurses, and specialists to ensure optimal
+            patient outcomes.</p>
         </div>
       </div>
     </div>
   </div>
 </body>
+
 </html>

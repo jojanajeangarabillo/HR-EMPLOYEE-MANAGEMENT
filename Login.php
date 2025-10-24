@@ -65,6 +65,11 @@ if (isset($_POST['login'])) {
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
+        .login-btn:hover {
+            background-color: #1E3A8A;
+            cursor: pointer;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -132,7 +137,8 @@ if (isset($_POST['login'])) {
                     <input type="checkbox" name="Show-password" id="show"> Show password
                 </div>
                 <div class="login-button">
-                    <button type="submit" name="login"><i class="fa-solid fa-right-from-bracket"></i>Sign In</button>
+                    <button type="submit" name="login" class="login-btn"><i
+                            class="fa-solid fa-right-from-bracket"></i>Sign In</button>
                 </div>
                 <div class="forgot-password">
                     <a href="Forgot-Password.php" class="forgot-password-link">Forgot password?</a>

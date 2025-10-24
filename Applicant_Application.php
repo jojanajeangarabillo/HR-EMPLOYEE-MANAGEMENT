@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -117,13 +118,14 @@
 <body>
   <!-- Sidebar -->
   <div class="sidebar">
-    <div class="profile">
+    <a href="Applicant_Profile.php" class="profile">
       <i class="fa-solid fa-user"></i>
-    </div>
+    </a>
 
     <ul class="nav">
       <li><a href="Applicant_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-      <li class="active"><a href="Applicant_Applications.php"><i class="fa-solid fa-file-lines"></i>Applications</a></li>
+      <li class="active"><a href="Applicant_Applications.php"><i class="fa-solid fa-file-lines"></i>Applications</a>
+      </li>
       <li><a href="Applicant_Jobs.php"><i class="fa-solid fa-briefcase"></i>Jobs</a></li>
       <li><a href="Applicant_Login.php"><i class="fa-solid fa-right-from-bracket"></i>Log Out</a></li>
     </ul>
@@ -158,4 +160,5 @@
     </div>
   </div>
 </body>
+
 </html>
