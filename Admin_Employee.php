@@ -20,49 +20,50 @@
             height: 100vh;
             overflow: hidden;
         }
-  <style>
 
-  /* Table header */
-  .custom-table thead th {
+        /* Table header */
+      .custom-table thead th {
+    font-size: 12px;       /* smaller text */
+    padding: 8px 10px;     /* smaller padding */
     background-color: #1e40af !important;
     color: white !important;
     font-weight: 600;
-    font-size: 1.35rem;
-  }
+    text-align: center;    /* center-align header text */
+}
 
-  /* Table body rows */
-  .custom-table tbody tr {
-    background-color: #3b82f6;
-    color: white;
-    border-bottom: 12px solid #f3f4f6;
-  }
+        /* Table body rows */
+        .custom-table tbody tr {
+            background-color: #3b82f6;
+            color: white;
+            border-bottom: 12px solid #f3f4f6;
+        }
 
-  .custom-table tbody tr:hover {
-    background-color: #2563eb; /* darker blue on hover */
-  }
+        .custom-table tbody tr:hover {
+            background-color: #2563eb;
+        }
 
-  /* Reduce padding for thinner rows */
-  .custom-table th, 
-  .custom-table td {
-    padding: 1rem 1.4rem; /* smaller than before */
-  }
+        /* Reduce padding for thinner rows */
+        .custom-table th, 
+        .custom-table td {
+            padding: 1rem 1.4rem;
+        }
 
-  /* Table width */
- .table-container {
+        /* Table width */
+        .table-container {
             width: 100%;
-            max-width: none;
-            margin: 0 -30px;
+            max-width: 100%;
+            margin: 0 ;
             padding: 0;
             background: white;
             border-radius: 0;
             overflow: hidden;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-  /* Make the table actually 150% wide */
-.custom-table {
-  width: 100%;           /* expands beyond the screen */
-  border-collapse: collapse;
-}
+
+        .custom-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
         .main-content {
             flex: 1;
@@ -275,13 +276,6 @@
             background: #fef2f2;
         }
 
-        .table-container {
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
         table {
             width: 100%;
             border-collapse: collapse;
@@ -317,57 +311,60 @@
         }
 
         .action-btns {
-    display: flex;
-    justify-content: center; /* center horizontally */
-    align-items: center;     /* center vertically */
-    gap: 8px;
-}
-
-/* Edit/Delete buttons */
-.edit-btn, .delete-btn {
-    width: 32px;               /* same width */
-    height: 32px;              /* same height */
-    border: none;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;       /* vertical center */
-    justify-content: center;   /* horizontal center */
-    cursor: pointer;
-    padding: 0;
-    margin: 0;
-    font-size: 0;              /* removes inline spacing */
-    transition: transform 0.2s;
-}
-
-.edit-btn i, .delete-btn i {
-    font-size: 14px;            /* icon size */
-    display: block;
-    line-height: 1;
-}
-
-/* Button colors */
-.edit-btn { background: #fbbf24; color: white; }
-.delete-btn { background: #ef4444; color: white; }
-        .edit-btn {
-            background: #fbbf24;
-            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
         }
 
-        .delete-btn {
-            background: #ef4444;
-            color: white;
+        .edit-btn, .delete-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+            font-size: 0;
+            transition: transform 0.2s;
+        }
+
+        .edit-btn i, .delete-btn i {
+            font-size: 14px;
+            display: block;
+            line-height: 1;
+        }
+
+        .edit-btn { 
+            background: #fbbf24; 
+            color: white; 
+        }
+        
+        .delete-btn { 
+            background: #ef4444; 
+            color: white; 
         }
 
         .edit-btn:hover, .delete-btn:hover {
             transform: scale(1.1);
         }
 
+        .profile-form {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+
         .profile-container {
-            display: none;
+            display: none !important;
         }
 
         .profile-container.active {
-            display: block;
+            display: block !important;
         }
 
         .profile-header {
@@ -381,19 +378,6 @@
             font-size: 28px;
             color: #1e40af;
             font-weight: 700;
-        }
-
-        .export-as-btn {
-            padding: 10px 20px;
-            border: 1px solid #d1d5db;
-            background: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .profile-card {
@@ -439,16 +423,12 @@
             font-size: 14px;
         }
 
-        .profile-info a {
-            color: white;
-            text-decoration: underline;
-        }
-
         .profile-form {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 20px;
         }
+        
 
         .form-group {
             display: flex;
@@ -468,6 +448,7 @@
             border-radius: 6px;
             font-size: 14px;
             outline: none;
+            color: #1f2937;
         }
 
         .form-actions {
@@ -517,8 +498,7 @@
             transition: background 0.3s;
             display: flex;
             align-items: center;
-            justify-content: center;
-            width: 150px;
+            gap: 8px;
         }
 
         .back-btn:hover {
@@ -526,7 +506,7 @@
         }
 
         .hidden {
-            display: none;
+            display: none !important;
         }
     </style>
 </head>
@@ -537,10 +517,9 @@
 
     <aside class="admin-sidebar">
         <div class="sidebar-logo">
-            <img src="Images/hospitallogo.png" alt="happy" >
+            <img src="Images/hospitallogo.png" alt="happy">
         </div>
         <nav class="sidebar-nav">
-            <!--Primary top nav-->
             <ul class="primary-top-nav">
                 <li class="nav-item">
                     <a href="Admin-Dashboard.php" class="nav-link">
@@ -578,10 +557,7 @@
                         <span class="nav-label">Reports</span>
                     </a>
                 </li>
-                
-                
             </ul>
-            <!--Secondary bottom nav-->
             <ul class="secondary-buttom-nav">
                 <li class="nav-item">
                     <a href="Admin-Settings.php" class="nav-link">
@@ -596,10 +572,7 @@
                     </a>
                 </li>
             </ul>
-
-            
         </nav>
-
     </aside>
 
     <div class="main-content">
@@ -672,92 +645,183 @@
                 </div>
             </div>
 
-<div class="table-container py-4">
-  <div class="table-responsive">
-    <table class="table align-middle table-borderless text-center custom-table">
-      <thead>
-        <thead>
-  <tr>
-    <th style="background-color: #1e40af; color: white;">ID</th>
-    <th style="background-color: #1e40af; color: white;">Full Name</th>
-    <th style="background-color: #1e40af; color: white;">Department</th>
-    <th style="background-color: #1e40af; color: white;">Position</th>
-    <th style="background-color: #1e40af; color: white;">Employment Type</th>
-    <th style="background-color: #1e40af; color: white;">Email Address</th>
-    <th style="background-color: #1e40af; color: white;">Remarks</th>
-    <th style="background-color: #1e40af; color: white;">Action</th>
-  </tr>
-</thead>
-      <tbody id="employeeTable">
-        <tr>
-          <td>25-0001</td>
-          <td>Garabillo, Jojana Jean</td>
-          <td>Admin</td>
-          <td>Admin Moderator</td>
-          <td>Regular</td>
-          <td>garabillo_jojana@gmail.com</td>
-          <td>Approved</td>
-         <td>
-  <div class="action-btns">
-    <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
-    <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
-  </div>
-</td>
-        </tr>
-        <tr>
-          <td>25-0002</td>
-          <td>Cacho, Shane Ella Mae</td>
-          <td>Admin</td>
-          <td>Admin Moderator</td>
-          <td>Regular</td>
-          <td>cacho_shane@gmail.com</td>
-          <td>Pending</td>
-         <td>
-  <div class="action-btns">
-    <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
-    <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
-  </div>
-</td>
+            <div class="table-container py-4">
+                <div class="table-responsive">
+                    <table class="table align-middle table-borderless text-center custom-table">
+                        <thead>
+                            <tr>
+                                <th style="background-color: #1e40af; color: white;">ID</th>
+                                <th style="background-color: #1e40af; color: white;">Full Name</th>
+                                <th style="background-color: #1e40af; color: white;">Department</th>
+                                <th style="background-color: #1e40af; color: white;">Position</th>
+                                <th style="background-color: #1e40af; color: white;">Employment Type</th>
+                                <th style="background-color: #1e40af; color: white;">Email Address</th>
+                                <th style="background-color: #1e40af; color: white;">Remarks</th>
+                                <th style="background-color: #1e40af; color: white;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeeTable">
+                            <tr>
+                                <td>25-0001</td>
+                                <td>Garabillo, Jojana Jean</td>
+                                <td>Admin</td>
+                                <td>Admin Moderator</td>
+                                <td>Regular</td>
+                                <td>garabillo_jojana@gmail.com</td>
+                                <td>Approved</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+                                        <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>25-0002</td>
+                                <td>Cacho, Shane Ella Mae</td>
+                                <td>Admin</td>
+                                <td>Admin Moderator</td>
+                                <td>Regular</td>
+                                <td>cacho_shane@gmail.com</td>
+                                <td>Pending</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+                                        <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>25-0003</td>
+                                <td>Gutierrez, Jodie Lyn</td>
+                                <td>Admin</td>
+                                <td>Admin Moderator</td>
+                                <td>Regular</td>
+                                <td>gutierrez_jodie@gmail.com</td>
+                                <td>Approved</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+                                        <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-        </tr>
-        <tr>
-          <td>25-0003</td>
-          <td>Gutierrez, Jodie Lyn</td>
-          <td>Admin</td>
-          <td>Admin Moderator</td>
-          <td>Regular</td>
-          <td>gutierrez_jodie@gmail.com</td>
-          <td>Approved</td>
-         <td>
-  <div class="action-btns">
-    <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
-    <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
-  </div>
-</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+        <div id="employeeProfileView" class="profile-container">
+            <div class="profile-header">
+                <h1 class="profile-title">Employee Profile</h1>
+                <button class="back-btn" onclick="showListView()">
+                    <i class="fa-solid fa-arrow-left"></i> Back
+                </button>
+            </div>
+            
+            <div class="profile-card">
+                <div class="profile-top">
+                    <div class="profile-avatar">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div class="profile-info">
+                        <h2 id="profileName">Name Here</h2>
+                        <p><strong>ID:</strong> <span id="profileId">...</span></p>
+                        <p><strong>Department:</strong> <span id="profileDepartment">...</span></p>
+                        <p><strong>Position:</strong> <span id="profilePosition">...</span></p>
+                        <p><strong>Type:</strong> <span id="profileType">...</span></p>
+                        <p><strong>Email:</strong> <span id="profileEmail">...</span></p>
+                        <p><strong>Remarks:</strong> <span id="profileRemarks">...</span></p>
+                    </div>
+                </div>
 
-<div id="employeeProfileView" class="profile-container">
-  <div class="profile-header">
-    <h1 class="profile-title">Employee Profile</h1>
-    <button class="back-btn" onclick="showListView()">Back</button>
-  </div>
-  <div class="profile-card">
-    <div class="profile-top">
-      <div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
-      <div class="profile-info">
-        <h2 id="profileName">Name Here</h2>
-        <p id="profileDepartment">Department: ...</p>
-        <p id="profilePosition">Position: ...</p>
-        <p id="profileEmail">Email: ...</p>
-        <p id="profileRemarks">Remarks: ...</p>
-      </div>
+                <hr style="border-color: rgba(255,255,255,0.3); margin: 20px 0;">
+
+                <div class="profile-form">
+    <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="fullNameInput" class="fixed-input">
     </div>
-  </div>
+    <div class="form-group">
+        <label>Employee ID</label>
+        <input type="text" id="employeeIdInput" class="fixed-input">
+    </div>
+    <div class="form-group">
+        <label>Position</label>
+        <input type="text" id="positionInput" class="fixed-input">
+    </div>
+    <div class="form-group">
+        <label>Department</label>
+        <input type="text" id="departmentInput" class="fixed-input">
+    </div>
+    <div class="form-group">
+        <label>Employment Status</label>
+        <select id="employmentStatusInput" class="fixed-input">
+            <option>Regular</option>
+            <option>Probationary</option>
+            <option>Contract</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="emailInput" class="fixed-input" style="height: 45px; padding: 10px 15px; font-size: 14px;">
+
+    </div>
+    <div class="form-group">
+        <label>Date of Birth</label>
+        <input type="date" id="dobInput" class="fixed-input">
+    </div>
+    <div class="form-group">
+        <label>Gender</label>
+        <select id="genderInput" class="fixed-input">
+            <option>Male</option>
+            <option>Female</option>
+            <option>Other</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label>Home Address</label>
+        <input type="text" id="homeAddressInput" class="fixed-input">
+    </div>
+    <div class="form-group">
+        <label>Contact Number</label>
+        <input type="tel" id="contactNumberInput" class="fixed-input">
+    </div>
+    <div class="form-group">
+        <label>Emergency Contact Number</label>
+        <input type="tel" id="emergencyContactInput" class="fixed-input">
+    </div>
+    <div class="form-group">
+        <label>TIN Number</label>
+        <input type="text" id="tinInput" class="fixed-input">
+    </div>
+    <div class="form-group">
+        <label>PhilHealth Number</label>
+        <input type="text" id="philhealthInput" class="fixed-input">
+    </div>
+    <div class="form-group">
+        <label>SSS Number</label>
+        <input type="text" id="sssInput" class="fixed-input">
+    </div>
+    <div class="form-group">
+        <label>Pag-ibig Number</label>
+        <input type="text" id="pagIbigInput" class="fixed-input">
+    </div>
 </div>
+
+                <div class="form-actions">
+                    <button class="reset-btn" onclick="resetForm()">
+                        <i class="fa-solid fa-rotate-right"></i> Reset
+                    </button>
+                    <button class="save-btn" onclick="saveProfile()">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function toggleFilter() {
             const filterPanel = document.getElementById('filterPanel');
@@ -793,52 +857,89 @@
                 row.style.display = '';
             });
         }
-        // Show profile view
-function showProfile(employeeData) {
-    document.getElementById('employeeListView').classList.add('hidden');
-    document.getElementById('employeeProfileView').classList.add('active');
 
-    // Fill profile fields
-    document.getElementById('profileName').textContent = employeeData.name;
-    document.getElementById('profileDepartment').textContent = "Department: " + employeeData.department;
-    document.getElementById('profilePosition').textContent = "Position: " + employeeData.position;
-    document.getElementById('profileEmail').textContent = "Email: " + employeeData.email;
-    document.getElementById('profileRemarks').textContent = "Remarks: " + employeeData.remarks;
-}
+        function showProfile(employeeData) {
+            const listView = document.getElementById('employeeListView');
+            const profileView = document.getElementById('employeeProfileView');
+            
+            listView.classList.add('hidden');
+            profileView.classList.add('active');
 
-// Show list view
-function showListView() {
-    document.getElementById('employeeListView').classList.remove('hidden');
-    document.getElementById('employeeProfileView').classList.remove('active');
-}
+            // Fill profile display fields
+            document.getElementById('profileId').textContent = employeeData.id;
+            document.getElementById('profileName').textContent = employeeData.name;
+            document.getElementById('profileDepartment').textContent = employeeData.department;
+            document.getElementById('profilePosition').textContent = employeeData.position;
+            document.getElementById('profileType').textContent = employeeData.type;
+            document.getElementById('profileEmail').textContent = employeeData.email;
+            document.getElementById('profileRemarks').textContent = employeeData.remarks;
 
-// Add click events for rows and edit buttons
-document.querySelectorAll('#employeeTable tr').forEach(row => {
-    const cells = row.querySelectorAll('td');
-    const employeeData = {
-        id: cells[0].textContent,
-        name: cells[1].textContent,
-        department: cells[2].textContent,
-        position: cells[3].textContent,
-        type: cells[4].textContent,
-        email: cells[5].textContent,
-        remarks: cells[6].textContent
-    };
-
-    // Clicking the row
-    row.addEventListener('click', (e) => {
-        // Avoid triggering when clicking delete button
-        if (!e.target.closest('.delete-btn')) {
-            showProfile(employeeData);
+            // Fill form fields
+            const nameParts = employeeData.name.split(', ');
+            document.getElementById('lastName').value = nameParts[0] || '';
+            document.getElementById('firstName').value = nameParts[1] || '';
+            document.getElementById('emailInput').value = employeeData.email;
+            document.getElementById('departmentInput').value = employeeData.department;
+            document.getElementById('positionInput').value = employeeData.position;
+            document.getElementById('employmentTypeInput').value = employeeData.type;
+            document.getElementById('statusInput').value = employeeData.remarks;
         }
-    });
 
-    // Clicking the edit button
-    row.querySelector('.edit-btn').addEventListener('click', (e) => {
-        e.stopPropagation(); // prevent row click from firing
-        showProfile(employeeData);
-    });
-});
+        function showListView() {
+            const listView = document.getElementById('employeeListView');
+            const profileView = document.getElementById('employeeProfileView');
+            
+            listView.classList.remove('hidden');
+            profileView.classList.remove('active');
+        }
+
+        function resetForm() {
+            if(confirm('Are you sure you want to reset all changes?')) {
+                document.querySelectorAll('#employeeProfileView input, #employeeProfileView select').forEach(field => {
+                    field.value = '';
+                });
+            }
+        }
+
+        function saveProfile() {
+            alert('Profile saved successfully!');
+            showListView();
+        }
+
+        // Initialize after DOM loads
+        setTimeout(function() {
+            document.querySelectorAll('#employeeTable tr').forEach(function(row) {
+                const cells = row.querySelectorAll('td');
+                
+                if(cells.length < 7) return;
+                
+                const employeeData = {
+                    id: cells[0].textContent.trim(),
+                    name: cells[1].textContent.trim(),
+                    department: cells[2].textContent.trim(),
+                    position: cells[3].textContent.trim(),
+                    type: cells[4].textContent.trim(),
+                    email: cells[5].textContent.trim(),
+                    remarks: cells[6].textContent.trim()
+                };
+
+                // Click on row
+                row.onclick = function(e) {
+                    if (!e.target.closest('.delete-btn') && !e.target.closest('.edit-btn')) {
+                        showProfile(employeeData);
+                    }
+                };
+
+                // Click on edit button
+                const editBtn = row.querySelector('.edit-btn');
+                if(editBtn) {
+                    editBtn.onclick = function(e) {
+                        e.stopPropagation();
+                        showProfile(employeeData);
+                    };
+                }
+            });
+        }, 100);
     </script>
 </body>
 </html>
