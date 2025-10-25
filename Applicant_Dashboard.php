@@ -162,7 +162,7 @@
             <div class="status-cards">
                 <div class="status-card">
                     <p>Pending</p>
-                    <h2>0</h2>
+                    <h2>test</h2>
                 </div>
                 <div class="status-card">
                     <p>Interview</p>
