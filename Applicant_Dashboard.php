@@ -1,185 +1,302 @@
+<?php
+session_start();
+require 'admin/db.connect.php';
+
+$employees = 0;
+$requests = 0;
+$hirings = 0;
+$applicants = 0;
+
+$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
+if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
+    $employees = $row['count'];
+}
+
+$applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Applicant'");
+if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
+    $applicants = $row['count'];
+}
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Applicant Dashboard</title>
-
-    <!-- Google Fonts -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Roboto:wght@400;500&display=swap"
-        rel="stylesheet">
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-    <!-- Sidebar CSS -->
-    <link rel="stylesheet" href="applicant.css">
-
-    <!-- Internal CSS for dashboard contents -->
+    <title>Document</title>
+    <link rel="stylesheet" href="stylesheet.css">
+    <!--For icons-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        body {
-            font-family: 'Poppins', 'Roboto', sans-serif;
-            margin: 0;
+        .admin-main {
+            padding: 25px;
+            grid-area: main;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto;
+            gap: 35px;
+            margin: 15px;
+        }
+
+        .banner-card {
+            grid-column: 1/3;
+            grid-row: 1/2;
+            background-color: #6E7BED;
+            border-radius: 20px;
+            padding: 40px;
+
+        }
+
+        .employee-card {
+            grid-column: 1/2;
+            grid-row: 2/3;
+            background-color: #dfe0ed;
+            border-radius: 20px;
             display: flex;
-            background-color: #f1f5fc;
-            color: #111827;
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 30px 80px;
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-        }
-
-        /* Welcome Box */
-        .welcome-box {
-            background-color: #1E3A8A;
-            color: white;
-            padding: 33px 30px;
-            margin-left: 200px;
-            border-radius: 15px;
-            width: 1200px;
-            height: 100px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-            font-size: 20px;
-            font-weight: 500;
-        }
-
-        /* Application Status */
-        .status-section {
-            display: flex;
-            margin-left: 200px;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .status-section h3 {
-            margin-left: 200px;
-            font-weight: 600;
-            font-size: 18px;
-            margin: 0;
-        }
-
-        .status-cards {
-            display: flex;
-            gap: 40px;
-        }
-
-        .status-card {
-
-            background-color: #2563EB;
-            color: #fff;
-            width: 140px;
-            height: 110px;
-            border-radius: 18px;
-            text-align: center;
-            font-weight: 500;
-            display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease;
+            padding: 20px;
+            width: 480px;
+            height: 139px;
+            margin-left: 120px;
         }
 
-        .status-card:hover {
-            transform: translateY(-3px);
+        .admin-main .fa-solid {
+            height: 20px;
+            width: 20px;
+            color: #1E3A8A;
         }
 
-        .status-card p {
-            margin: 0;
-            font-size: 15px;
-            font-weight: 500;
+        .admin-main h1,
+        .admin-main h4 {
+            font-family: "Poppins", sans-serif;
+            font-weight: 700;
+            font-style: normal;
+            color: white;
         }
 
-        .status-card h2 {
-            margin: 6px 0 0 0;
-            font-size: 24px;
-            font-weight: 600;
+        .admin-main label {
+            font-family: "Poppins", sans-serif;
+            font-weight: 700;
+            font-style: normal;
+            font-size: 36px;
+            margin: 20px;
         }
 
-        /* Notifications */
-        .notifications-section {
-            height: 200px;
-            width: 1200px;
-            margin-left: 200px;
+        .admin-main h3 {
+            font-family: "Poppins", sans-serif;
+            font-weight: 700;
+            font-style: normal;
+            font-size: 46px;
+            margin: 20px;
+        }
+
+        .applicant-card {
+            grid-column: 2/3;
+            grid-row: 2/3;
+            background-color: #dfe0ed;
+            border-radius: 20px;
             display: flex;
-            flex-direction: column;
-            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            width: 480px;
+            height: 139px;
+            margin-left: 120px;
         }
 
-        .notifications-section h3 {
-            margin-left: 200px;
-            font-weight: 600;
-            font-size: 18px;
-            margin: 0;
+        .request-card {
+            grid-column: 1/2;
+            grid-row: 3/4;
+            background-color: #dfe0ed;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            width: 480px;
+            height: 139px;
+            margin-left: 120px;
         }
 
-        .notification-box {
-            background-color: #dbe2f0;
-            border-radius: 15px;
-            height: 100px;
-            width: 1200px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .hiring-card {
+            grid-column: 2/3;
+            grid-row: 3/4;
+            background-color: #dfe0ed;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            width: 480px;
+            height: 139px;
+            margin-left: 120px;
+        }
+
+        .recent-job-post-header {
+            background-color: white;
+            grid-column: 1/3;
+            grid-row: 4/5;
+        }
+
+        .recent-job-post-card {
+            grid-column: 1/3;
+            grid-row: 5/6;
+            background-color: #6E7BED;
+            border-radius: 20px;
+        }
+
+        .newly-hired-header {
+            grid-column: 1/3;
+            grid-row: 6/7;
+            background-color: white;
+        }
+
+        .newly-hired-card {
+            grid-column: 1/3;
+            grid-row: 7/8;
+            background-color: #6E7BED;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto;
+            grid-template-areas:
+                "newly-hired-1 newly-hired-2";
+        }
+
+        .sub-newly-hired-card {
+            background-color: #D9D9D9;
+            grid-area: newly-hired-1;
+        }
+
+        .sidebar-nav .nav-link {
+            color: black;
+            text-decoration: none;
         }
     </style>
-
-
+</head>
 </head>
 
-<body>
-    <!-- Sidebar -->
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <a href="Applicant_Profile.php" class="profile">
-            <i class="fa-solid fa-user"></i>
-        </a>
+<body class="admin-dashboard">
+    <header class="admin-header">
+        <h1 class="admin-header-text">Human Resource</h1>
+    </header>
 
-        <ul class="nav">
-            <li class="active"><a href="Applicant_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
-            </li>
-            <li><a href="Applicant_Application.php"><i class="fa-solid fa-file-lines"></i>Applications</a></li>
-            <li><a href="Applicant_Jobs.php"><i class="fa-solid fa-briefcase"></i>Jobs</a></li>
-            <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Log Out</a></li>
-        </ul>
-    </div>
-
-    </div>
-
-
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="welcome-box">
-            Welcome back, User!
+    <aside class="admin-sidebar">
+        <div class="sidebar-logo">
+            <img src="Images/hospitallogo.png" alt="happy">
         </div>
-
-        <div class="status-section">
-            <h3>Application status</h3>
-            <div class="status-cards">
-                <div class="status-card">
-                    <p>Pending</p>
-                    <h2>0</h2>
-                </div>
-                <div class="status-card">
-                    <p>Interview</p>
-                    <h2>0</h2>
-                </div>
-                <div class="status-card">
-                    <p>Rejected</p>
-                    <h2>0</h2>
-                </div>
-            </div>
+        <nav class="sidebar-nav">
+            <!--Primary top nav-->
+            <ul class="primary-top-nav">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fa-solid fa-grip"></i>
+                        <span class="nav-label">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fa-solid fa-user-group"></i>
+                        <span class="nav-label">Employees</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fa-solid fa-user-group"></i>
+                        <span class="nav-label">Applicants</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fa-solid fa-code-pull-request"></i>
+                        <span class="nav-label">Requests</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fa-solid fa-folder"></i>
+                        <span class="nav-label">Job Post</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fa-solid fa-chart-simple"></i>
+                        <span class="nav-label">Reports</span>
+                    </a>
+                </li>
+            </ul>
+            <!--Secondary bottom nav-->
+            <ul class="secondary-buttom-nav">
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fa-solid fa-gear"></i>
+                        <span class="nav-label">Settings</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span class="nav-label">Logout</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+    <main class="admin-main">
+        <div class="banner-card">
+            <h1>Welcome to Admin Dashboard</h1>
+            <h4>Overview of statistics</h4>
         </div>
-
-        <div class="notifications-section">
-            <h3>Notifications</h3>
-            <div class="notification-box"></div>
+        <div class="employee-card">
+            <i class="fa-solid fa-user-group"></i>
+            <label for="employees" class="employee-label">Employees</label>
+            <h3 class="employee-count" name="employees">
+                <?php echo $employees; ?>
+            </h3>
         </div>
-    </div>
+        <div class="applicant-card">
+            <i class="fa-solid fa-user-group"></i>
+            <label for="applicants" class="applicant-label">Applicants</label>
+            <h3 class="applicant-count" name="applicants">
+                <?php echo $applicants; ?>
+            </h3>
+        </div>
+        <div class="request-card">
+            <i class="fa-solid fa-code-pull-request"></i>
+            <label for="requests" class="request-label">Requests</label>
+            <h3 class="request-count" name="requests">
+                <?php echo $requests ?>
+            </h3>
+        </div>
+        <div class="hiring-card">
+            <i class="fa-solid fa-folder"></i>
+            <label for="hirings" class="hiring-label">Hiring</label>
+            <h3 class="hiring-count" name="hirings">
+                <?php echo $hirings ?>
+            </h3>
+        </div>
+        <div class="recent-job-post-header">
+            <i class="fa-solid fa-folder"></i>
+            <label for="recent-job-post" class="recent-job-post-label">Recent Job Posts</label>
+        </div>
+        <div class="recent-job-post-card">
+            <h3></h3>
+        </div>
+        <div class="newly-hired-header">
+            <i class="fa-solid fa-user-group"></i>
+            <label for="newly-hired" class="newly-hired-label">Newly Hired</label>
+        </div>
+        <div class="newly-hired-card">
+            <div class="sub-newly-hired-card">test</div>
+            <div class="sub-newly-hired-card"></div>
+        </div>
+    </main>
+
 </body>
 
 </html>
