@@ -20,7 +20,7 @@ if (isset($_POST['login'])) {
             $_SESSION['email'] = $row['email'];
             $_SESSION['role'] = $row['role'];
 
-            $role = strtolower($row['role']);
+            $role = strtolower(trim($row['role']));
 
             if ($role === 'admin') {
                 header("Location: Admin-Dashboard.php");

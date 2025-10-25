@@ -1,3 +1,33 @@
+<?php
+session_start();
+require 'admin/db.connect.php';
+
+$name = "";
+$email = "";
+
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['applicantID'];
+
+    // Fetch applicant information
+    $sql = "SELECT fullName, email FROM applicant WHERE applicantID = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($row = $result->fetch_assoc()) {
+        $name = $row['name'];
+        $email = $row['email'];
+    }
+
+    $stmt->close();
+} else {
+    // If not logged in, redirect to login page
+    header("Location: Login.php");
+    exit;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -220,7 +250,9 @@
 
         <div class="personal-info">
             <div class="info">
-                <h1 name="full-name">Name</h1>
+                <h1 name="full-name">
+                    <?php echo $name; ?>
+                </h1>
                 <div class="phone">
                     <i class="fa-solid fa-phone"></i>
                     <p name="phone">Phone number</p>
@@ -231,7 +263,9 @@
                 </div>
                 <div class="email">
                     <i class="fa-solid fa-envelope"></i>
-                    <p name="email">Email</p>
+                    <p name="email">
+                        <?php echo $name; ?>
+                    </p>
                 </div>
                 <button onclick="openModal('editModal')" class="edit-btn"><i class="fa-solid fa-pen"></i>
                     Edit</button>
