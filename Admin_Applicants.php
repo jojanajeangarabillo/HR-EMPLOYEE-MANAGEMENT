@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hospital Applicant Management</title>
+    <link rel="stylesheet" href="stylesheet.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -17,72 +19,6 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
-        }
-
-        .admin-sidebar {
-            width: 200px;
-            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
-            color: white;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .sidebar-logo {
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            font-size: 20px;
-            font-weight: bold;
-        }
-
-        .sidebar-nav {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 20px 0;
-        }
-
-        .primary-top-nav,
-        .secondary-buttom-nav {
-            list-style: none;
-        }
-
-        .nav-item {
-            margin-bottom: 5px;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 20px;
-            cursor: pointer;
-            transition: background 0.3s;
-            color: white;
-            text-decoration: none;
-        }
-
-        .nav-link:hover {
-            background: rgba(255,255,255,0.1);
-        }
-
-        .nav-item:has(.nav-link.active) .nav-link {
-            background: rgba(255,255,255,0.15);
-            border-left: 3px solid #60a5fa;
-        }
-
-        .nav-link i {
-            width: 20px;
-            text-align: center;
-            font-size: 16px;
-        }
-
-        .nav-label {
-            font-size: 14px;
-            font-weight: 500;
         }
 
         .main-content {
@@ -446,8 +382,16 @@
         }
 
         .profile-container.active {
-            display: block;
-        }
+           display: block;
+    max-height: calc(100vh - 60px); /* Adjust based on header height */
+    overflow-y: auto;
+    padding-right: 10px; /* optional, to avoid scrollbar overlapping content */
+}
+
+.profile-card {
+    max-width: 800px;
+    margin: 0 auto;
+}
 
         .profile-header {
             display: flex;
@@ -671,10 +615,14 @@
         }
     </style>
 </head>
-<body>
+<body class="admin-dashboard">
+    <header class="admin-header">
+        <h1 class="admin-header-text">Human Resource</h1>
+    </header>
+
     <aside class="admin-sidebar">
         <div class="sidebar-logo">
-            Hospital
+            <img src="Images/hospitallogo.png" alt="happy">
         </div>
         <nav class="sidebar-nav">
             <ul class="primary-top-nav">
@@ -691,7 +639,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link active">
+                    <a href="Admin_Applicants.php" class="nav-link">
                         <i class="fa-solid fa-user-group"></i>
                         <span class="nav-label">Applicants</span>
                     </a>
@@ -699,7 +647,7 @@
                 <li class="nav-item">
                     <a href="Admin-request.php" class="nav-link">
                         <i class="fa-solid fa-code-pull-request"></i>
-                        <span class="nav-label">Request</span>
+                        <span class="nav-label">Requests</span>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -715,7 +663,6 @@
                     </a>
                 </li>
             </ul>
-            
             <ul class="secondary-buttom-nav">
                 <li class="nav-item">
                     <a href="Admin-Settings.php" class="nav-link">
@@ -726,7 +673,7 @@
                 <li class="nav-item">
                     <a href="Login.php" class="nav-link">
                         <i class="fa-solid fa-right-from-bracket"></i>
-                        <span class="nav-label">Log out</span>
+                        <span class="nav-label">Logout</span>
                     </a>
                 </li>
             </ul>
@@ -734,17 +681,13 @@
     </aside>
 
     <div class="main-content">
-        <!-- Applicant List View -->
-        <div id="listView" class="list-view">
-            <div class="header">
-                <div class="header-title">
-                    <div class="header-icon">
-                        <i class="fa-solid fa-user-group"></i>
-                    </div>
-                    <h1>Applicant List</h1>
-                </div>
+    <!-- Applicant List View -->
+    <div id="listView" class="list-view">
+        <div class="header">
+            <div class="header-title">
+                <h1>Applicant List</h1>
             </div>
-
+        </div>
             <div class="controls">
                 <div class="search-box">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
@@ -869,9 +812,6 @@
         <div id="profileView" class="profile-container">
             <div class="profile-header">
                 <div class="header-title">
-                    <div class="header-icon">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
                     <h1>Applicant Profile</h1>
                 </div>
                 <div class="export-buttons">
