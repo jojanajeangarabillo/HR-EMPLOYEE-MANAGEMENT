@@ -14,13 +14,13 @@ if (isset($_POST['login'])) {
 
     if ($result->num_rows === 1) {
         $row = $result->fetch_assoc();
-        $hashedPassword = $row['password']; // ✅ FIXED
+        $hashedPassword = $row['password'];
 
         if (password_verify($password, $hashedPassword)) {
             $_SESSION['email'] = $row['email'];
             $_SESSION['role'] = $row['role'];
 
-            $role = strtolower($row['role']); // ✅ lowercase role
+            $role = strtolower($row['role']);
 
             if ($role === 'admin') {
                 header("Location: Admin-Dashboard.php");
@@ -42,9 +42,6 @@ if (isset($_POST['login'])) {
     }
 }
 ?>
-
-
-
 
 <!DOCTYPE html>
 <html lang="en">

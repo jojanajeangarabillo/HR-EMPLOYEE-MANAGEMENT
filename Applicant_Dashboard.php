@@ -35,16 +35,6 @@
             gap: 40px;
         }
 
-        .profile:hover {
-            background-color: rgba(44, 79, 176, 0.3);
-        }
-
-        .profile a {
-            display: block;
-            text-decoration: none;
-            color: inherit;
-        }
-
         /* Welcome Box */
         .welcome-box {
             background-color: #1E3A8A;
