@@ -1,32 +1,28 @@
 <?php
 session_start();
-require 'admin/db.connect.php';
+include 'admin/db.connect.php';
 
-$name = "";
-$email = "";
+if (!isset($_SESSION['applicantID'])) {
+    die("No applicant session found. Please log in again.");
+}
 
-if (isset($_SESSION['user_id'])) {
-    $user_id = $_SESSION['applicantID'];
+$user_id = $_SESSION['applicantID'];
 
-    // Fetch applicant information
-    $sql = "SELECT fullName, email FROM applicant WHERE applicantID = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
+$sql = "SELECT fullName, emailAddress FROM applicant WHERE applicantID = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
 
-    if ($row = $result->fetch_assoc()) {
-        $name = $row['name'];
-        $email = $row['email'];
-    }
-
-    $stmt->close();
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $name = $row['fullName'];
+    $email = $row['emailAddress'];
 } else {
-    // If not logged in, redirect to login page
-    header("Location: Login.php");
-    exit;
+    echo "No applicant data found.";
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

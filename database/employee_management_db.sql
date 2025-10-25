@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 24, 2025 at 08:30 AM
+-- Generation Time: Oct 25, 2025 at 02:35 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -52,7 +52,11 @@ CREATE TABLE `applicant` (
 --
 
 INSERT INTO `applicant` (`applicantID`, `fullName`, `position_applied`, `department`, `date_applied`, `contact_number`, `email_address`, `home_address`, `job_title`, `company_name`, `date_started`, `in_role`, `university`, `course`, `year_graduated`, `skills`, `summary`) VALUES
-('HOS-001', 'Jojana Jean B. Garabillo', '', 0, '2025-10-24', '', 'garabillo_jojanajean@plpasig.edu.ph', '', '', '', '0000-00-00', '', '', '', '0000', '', '');
+('HOS-001', 'Jojana Jean B. Garabillo', '', 0, '2025-10-24', '', 'garabillo_jojanajean@plpasig.edu.ph', '', '', '', '0000-00-00', '', '', '', '0000', '', ''),
+('HOS-002', '', '', 0, '2025-10-24', '', 'antonio_rhoannenicole@plpasig.edu.ph', '', '', '', '0000-00-00', '', '', '', '0000', '', ''),
+('HOS-003', 'Rhaonne', '', 0, '2025-10-25', '', 'lucasesterossa@gmail.com', '', '', '', '0000-00-00', '', '', '', '0000', '', ''),
+('HOS-005', 'Rhoanne Nicole', '', 0, '2025-10-25', '', 'bruhemoment00@gmail.com', '', '', '', '0000-00-00', '', '', '', '0000', '', ''),
+('HOS-006', 'lol', '', 0, '2025-10-25', '', 'n0305933@gmail.com', '', '', '', '0000-00-00', '', '', '', '0000', '', '');
 
 -- --------------------------------------------------------
 
@@ -136,8 +140,15 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`user_id`, `applicant_employee_id`, `email`, `password`, `role`, `fullname`, `status`, `created_at`, `reset_token`, `token_expiry`) VALUES
-('1', 'admin', 'admin@gmail.com', '11', 'Admin', 'Jojana Garabillo', 'Active', '2025-11-10 00:00:00', '', ''),
-('', 'HOS-001', 'garabillo_jojanajean@plpasig.edu.ph', '$2y$10$9i4hR0aGKmS4Gir3.2xtK.0EOd7J2kDoq0OnxMn6f75EtsFZBuoAy', 'Applicant', 'Jojana Jean B. Garabillo', 'Pending', '0000-00-00 00:00:00', '', '');
+('', NULL, 'admin@gmail.com', '$2y$10$0AljaQmbIMBrTZ1R8rVDxOUp9JX4KVtMU1W3162A5vg0axILe9/va', 'Admin', '', '', '0000-00-00 00:00:00', '', ''),
+('', 'HOS-002', 'antonio_rhoannenicole@plpasig.edu.ph', '$2y$10$i.5PvZYRP7kcfZ3TC9naUu7LSZPB.NBqzOKOEjTPY6G3vb2uLVJpy', 'Applicant', '', 'Pending', '0000-00-00 00:00:00', '37556e6a57ac99393a9ce313dfd15cd3d1ac7321d5d3898d6fe45ec5db2da500', '2025-10-25 13:46:17'),
+('', 'HOS-005', 'bruhemoment00@gmail.com', '$2y$10$fOgKiEA6TwtzV9sC53ETXOeuPWYapJdm31DZVhDMPpNiz8kKCZiSi', 'Applicant', 'Rhoanne Nicole', 'Pending', '0000-00-00 00:00:00', '', ''),
+('', 'HOS-001', 'garabillo_jojanajean@plpasig.edu.ph', '$2y$10$9i4hR0aGKmS4Gir3.2xtK.0EOd7J2kDoq0OnxMn6f75EtsFZBuoAy', 'Applicant', 'Jojana Jean B. Garabillo', 'Pending', '0000-00-00 00:00:00', '', ''),
+('', 'HOS-003', 'lucasesterossa@gmail.com', '$2y$10$Z6pR1nSJusgp8cNpVRvDQ.8a.rUSUbu0AiBYRKMLftakI33AX3ZYa', 'Applicant', 'Rhaonne', 'Pending', '0000-00-00 00:00:00', '', ''),
+('', 'HOS-006', 'n0305933@gmail.com', '$2y$10$cNz9xKwONDhvG/efULOCJuYV/CCeGZ3eXv9A0kq8XHr/Qt5.irjnS', 'Applicant', 'lol', 'Pending', '0000-00-00 00:00:00', '', ''),
+('', NULL, 'test2@gmail.com', '$2y$10$OcBqYLhncgM9OO7zknbPjONpm2rstuhbGvqGgeKI/x2CKpb3tyerW', 'Employee', '', '', '0000-00-00 00:00:00', '', ''),
+('', NULL, 'test3@gmail.com', '$2y$10$OcBqYLhncgM9OO7zknbPjONpm2rstuhbGvqGgeKI/x2CKpb3tyerW', 'Applicant', '', '', '0000-00-00 00:00:00', '', ''),
+('', NULL, 'test@gmail.com', '$2y$10$0AljaQmbIMBrTZ1R8rVDxOUp9JX4KVtMU1W3162A5vg0axILe9/va', 'Employee', '', '', '0000-00-00 00:00:00', '', '');
 
 --
 -- Indexes for dumped tables
