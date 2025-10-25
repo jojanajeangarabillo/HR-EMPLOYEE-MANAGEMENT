@@ -1,3 +1,25 @@
+<?php
+session_start();
+require 'admin/db.connect.php';
+
+$employees = 0;
+$requests = 0;
+$hirings = 0;
+$applicants = 0;
+
+$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
+if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
+    $employees = $row['count'];
+}
+
+$applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Applicant'");
+if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
+    $applicants = $row['count'];
+}
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -233,22 +255,30 @@
         <div class="employee-card">
             <i class="fa-solid fa-user-group"></i>
             <label for="employees" class="employee-label">Employees</label>
-            <h3 class="employee-count">0</h3>
+            <h3 class="employee-count" name="employees">
+                <?php echo $employees; ?>
+            </h3>
         </div>
         <div class="applicant-card">
             <i class="fa-solid fa-user-group"></i>
             <label for="applicants" class="applicant-label">Applicants</label>
-            <h3 class="applicant-count">0</h3>
+            <h3 class="applicant-count" name="applicants">
+                <?php echo $applicants; ?>
+            </h3>
         </div>
         <div class="request-card">
             <i class="fa-solid fa-code-pull-request"></i>
             <label for="requests" class="request-label">Requests</label>
-            <h3 class="request-count">0</h3>
+            <h3 class="request-count" name="requests">
+                <?php echo $requests ?>
+            </h3>
         </div>
         <div class="hiring-card">
             <i class="fa-solid fa-folder"></i>
             <label for="hirings" class="hiring-label">Hiring</label>
-            <h3 class="hiring-count">0</h3>
+            <h3 class="hiring-count" name="hirings">
+                <?php echo $hirings ?>
+            </h3>
         </div>
         <div class="recent-job-post-header">
             <i class="fa-solid fa-folder"></i>

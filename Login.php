@@ -3,32 +3,25 @@ ob_start();
 session_start();
 include 'admin/db.connect.php';
 
-// Check if form was submitted
 if (isset($_POST['login'])) {
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
 
-    // Prepare statement to find user by email
     $stmt = $conn->prepare("SELECT * FROM user WHERE email = ?");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    // Check if user exists
     if ($result->num_rows === 1) {
         $row = $result->fetch_assoc();
+        $hashedPassword = $row['password']; // ✅ FIXED
 
-        // ✅ If your passwords are hashed:
-        // if (password_verify($password, $row['password'])) {
-
-        // ⚠️ Or if passwords are plain text (for testing only):
-        if ($password === $row['password']) {
-
+        if (password_verify($password, $hashedPassword)) {
             $_SESSION['email'] = $row['email'];
             $_SESSION['role'] = $row['role'];
 
-            // Redirect based on role
-            $role = strtolower($row['role']); // case-insensitive
+            $role = strtolower($row['role']); // ✅ lowercase role
+
             if ($role === 'admin') {
                 header("Location: Admin-Dashboard.php");
                 exit;
@@ -36,7 +29,7 @@ if (isset($_POST['login'])) {
                 header("Location: Applicant_Dashboard.php");
                 exit;
             } elseif ($role === 'employee') {
-                header("Location: Employee_DashBoard.php");
+                header("Location: Employee_Dashboard.php");
                 exit;
             } else {
                 echo "<script>alert('Unknown role for this account.');</script>";
@@ -49,6 +42,7 @@ if (isset($_POST['login'])) {
     }
 }
 ?>
+
 
 
 
