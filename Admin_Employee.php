@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hospital Employee Management</title>
+    <link rel="stylesheet" href="stylesheet.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -18,72 +20,49 @@
             height: 100vh;
             overflow: hidden;
         }
+  <style>
 
-        .admin-sidebar {
-            width: 200px;
-            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
-            color: white;
-            display: flex;
-            flex-direction: column;
-        }
+  /* Table header */
+  .custom-table thead th {
+    background-color: #1e40af !important;
+    color: white !important;
+    font-weight: 600;
+    font-size: 1.35rem;
+  }
 
-        .sidebar-logo {
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            font-size: 18px;
-            font-weight: bold;
-        }
+  /* Table body rows */
+  .custom-table tbody tr {
+    background-color: #3b82f6;
+    color: white;
+    border-bottom: 12px solid #f3f4f6;
+  }
 
-        .sidebar-nav {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 20px 0;
-        }
+  .custom-table tbody tr:hover {
+    background-color: #2563eb; /* darker blue on hover */
+  }
 
-        .primary-top-nav,
-        .secondary-buttom-nav {
-            list-style: none;
-        }
+  /* Reduce padding for thinner rows */
+  .custom-table th, 
+  .custom-table td {
+    padding: 1rem 1.4rem; /* smaller than before */
+  }
 
-        .nav-item {
-            margin-bottom: 5px;
+  /* Table width */
+ .table-container {
+            width: 100%;
+            max-width: none;
+            margin: 0 -30px;
+            padding: 0;
+            background: white;
+            border-radius: 0;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 20px;
-            cursor: pointer;
-            transition: background 0.3s;
-            color: white;
-            text-decoration: none;
-        }
-
-        .nav-link:hover {
-            background: rgba(255,255,255,0.1);
-        }
-
-        .nav-item:has(.nav-link.active) .nav-link {
-            background: rgba(255,255,255,0.15);
-            border-left: 3px solid #60a5fa;
-        }
-
-        .nav-link i {
-            width: 20px;
-            text-align: center;
-            font-size: 16px;
-        }
-
-        .nav-label {
-            font-size: 14px;
-            font-weight: 500;
-        }
+  /* Make the table actually 150% wide */
+.custom-table {
+  width: 100%;           /* expands beyond the screen */
+  border-collapse: collapse;
+}
 
         .main-content {
             flex: 1;
@@ -132,12 +111,14 @@
             gap: 15px;
             margin-bottom: 20px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .search-box {
             flex: 1;
             position: relative;
-            max-width: 350px;
+            min-width: 300px;
+            max-width: 400px;
         }
 
         .search-box input {
@@ -336,23 +317,37 @@
         }
 
         .action-btns {
-            display: flex;
-            gap: 8px;
-        }
+    display: flex;
+    justify-content: center; /* center horizontally */
+    align-items: center;     /* center vertically */
+    gap: 8px;
+}
 
-        .edit-btn, .delete-btn {
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s;
-            font-size: 14px;
-        }
+/* Edit/Delete buttons */
+.edit-btn, .delete-btn {
+    width: 32px;               /* same width */
+    height: 32px;              /* same height */
+    border: none;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;       /* vertical center */
+    justify-content: center;   /* horizontal center */
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    font-size: 0;              /* removes inline spacing */
+    transition: transform 0.2s;
+}
 
+.edit-btn i, .delete-btn i {
+    font-size: 14px;            /* icon size */
+    display: block;
+    line-height: 1;
+}
+
+/* Button colors */
+.edit-btn { background: #fbbf24; color: white; }
+.delete-btn { background: #ef4444; color: white; }
         .edit-btn {
             background: #fbbf24;
             color: white;
@@ -535,12 +530,17 @@
         }
     </style>
 </head>
-<body>
+<body class="admin-dashboard">
+    <header class="admin-header">
+        <h1 class="admin-header-text">Human Resource</h1>
+    </header>
+
     <aside class="admin-sidebar">
         <div class="sidebar-logo">
-            Hospital
+            <img src="Images/hospitallogo.png" alt="happy" >
         </div>
         <nav class="sidebar-nav">
+            <!--Primary top nav-->
             <ul class="primary-top-nav">
                 <li class="nav-item">
                     <a href="Admin-Dashboard.php" class="nav-link">
@@ -549,7 +549,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link active">
+                    <a href="Admin_Employee.php" class="nav-link">
                         <i class="fa-solid fa-user-group"></i>
                         <span class="nav-label">Employees</span>
                     </a>
@@ -578,8 +578,10 @@
                         <span class="nav-label">Reports</span>
                     </a>
                 </li>
+                
+                
             </ul>
-            
+            <!--Secondary bottom nav-->
             <ul class="secondary-buttom-nav">
                 <li class="nav-item">
                     <a href="Admin-Settings.php" class="nav-link">
@@ -594,7 +596,10 @@
                     </a>
                 </li>
             </ul>
+
+            
         </nav>
+
     </aside>
 
     <div class="main-content">
@@ -667,102 +672,92 @@
                 </div>
             </div>
 
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Full Name</th>
-                            <th>Department</th>
-                            <th>Position</th>
-                            <th>Employment Type</th>
-                            <th>Email Address</th>
-                            <th>Remarks</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="employeeTable">
-                        <tr data-department="Admin" data-type="Regular" data-remarks="Approved">
-                            <td>25-0001</td>
-                            <td>Garabillo, Jojana Jean</td>
-                            <td>Admin</td>
-                            <td>Admin Moderator</td>
-                            <td>Regular</td>
-                            <td>garabillo_jojana@gmail.com</td>
-                            <td>Approved</td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr data-department="Admin" data-type="Regular" data-remarks="Pending">
-                            <td>25-0002</td>
-                            <td>Cacho, Shane Ella Mae</td>
-                            <td>Admin</td>
-                            <td>Admin Moderator</td>
-                            <td>Regular</td>
-                            <td>cacho_shane@gmail.com</td>
-                            <td>Pending</td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr data-department="Admin" data-type="Regular" data-remarks="Approved">
-                            <td>25-0003</td>
-                            <td>Gutierrez, Jodie Lyn</td>
-                            <td>Admin</td>
-                            <td>Admin Moderator</td>
-                            <td>Regular</td>
-                            <td>gutierrez_jodie@gmail.com</td>
-                            <td>Approved</td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr data-department="Medical" data-type="Regular" data-remarks="In Review">
-                            <td>25-0004</td>
-                            <td>Jaroda, Jhanna Rayne</td>
-                            <td>Medical</td>
-                            <td>Cardiologist Doctor</td>
-                            <td>Regular</td>
-                            <td>jaroda_jhanna@gmail.com</td>
-                            <td>In Review</td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr data-department="Nursing" data-type="Probationary" data-remarks="Approved">
-                            <td>25-0005</td>
-                            <td>Antonio, Rhoanne Nicole</td>
-                            <td>Nursing</td>
-                            <td>Nurse</td>
-                            <td>Probationary</td>
-                            <td>antonio_rhoanne@gmail.com</td>
-                            <td>Approved</td>
-                            <td>
-                                <div class="action-btns">
-                                    <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
-                                    <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+<div class="table-container py-4">
+  <div class="table-responsive">
+    <table class="table align-middle table-borderless text-center custom-table">
+      <thead>
+        <thead>
+  <tr>
+    <th style="background-color: #1e40af; color: white;">ID</th>
+    <th style="background-color: #1e40af; color: white;">Full Name</th>
+    <th style="background-color: #1e40af; color: white;">Department</th>
+    <th style="background-color: #1e40af; color: white;">Position</th>
+    <th style="background-color: #1e40af; color: white;">Employment Type</th>
+    <th style="background-color: #1e40af; color: white;">Email Address</th>
+    <th style="background-color: #1e40af; color: white;">Remarks</th>
+    <th style="background-color: #1e40af; color: white;">Action</th>
+  </tr>
+</thead>
+      <tbody id="employeeTable">
+        <tr>
+          <td>25-0001</td>
+          <td>Garabillo, Jojana Jean</td>
+          <td>Admin</td>
+          <td>Admin Moderator</td>
+          <td>Regular</td>
+          <td>garabillo_jojana@gmail.com</td>
+          <td>Approved</td>
+         <td>
+  <div class="action-btns">
+    <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+    <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
+  </div>
+</td>
+        </tr>
+        <tr>
+          <td>25-0002</td>
+          <td>Cacho, Shane Ella Mae</td>
+          <td>Admin</td>
+          <td>Admin Moderator</td>
+          <td>Regular</td>
+          <td>cacho_shane@gmail.com</td>
+          <td>Pending</td>
+         <td>
+  <div class="action-btns">
+    <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+    <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
+  </div>
+</td>
 
+        </tr>
+        <tr>
+          <td>25-0003</td>
+          <td>Gutierrez, Jodie Lyn</td>
+          <td>Admin</td>
+          <td>Admin Moderator</td>
+          <td>Regular</td>
+          <td>gutierrez_jodie@gmail.com</td>
+          <td>Approved</td>
+         <td>
+  <div class="action-btns">
+    <button class="edit-btn"><i class="fa-solid fa-pen"></i></button>
+    <button class="delete-btn"><i class="fa-solid fa-trash"></i></button>
+  </div>
+</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div id="employeeProfileView" class="profile-container">
+  <div class="profile-header">
+    <h1 class="profile-title">Employee Profile</h1>
+    <button class="back-btn" onclick="showListView()">Back</button>
+  </div>
+  <div class="profile-card">
+    <div class="profile-top">
+      <div class="profile-avatar"><i class="fa-solid fa-user"></i></div>
+      <div class="profile-info">
+        <h2 id="profileName">Name Here</h2>
+        <p id="profileDepartment">Department: ...</p>
+        <p id="profilePosition">Position: ...</p>
+        <p id="profileEmail">Email: ...</p>
+        <p id="profileRemarks">Remarks: ...</p>
+      </div>
+    </div>
+  </div>
+</div>
     <script>
         function toggleFilter() {
             const filterPanel = document.getElementById('filterPanel');
@@ -798,6 +793,52 @@
                 row.style.display = '';
             });
         }
+        // Show profile view
+function showProfile(employeeData) {
+    document.getElementById('employeeListView').classList.add('hidden');
+    document.getElementById('employeeProfileView').classList.add('active');
+
+    // Fill profile fields
+    document.getElementById('profileName').textContent = employeeData.name;
+    document.getElementById('profileDepartment').textContent = "Department: " + employeeData.department;
+    document.getElementById('profilePosition').textContent = "Position: " + employeeData.position;
+    document.getElementById('profileEmail').textContent = "Email: " + employeeData.email;
+    document.getElementById('profileRemarks').textContent = "Remarks: " + employeeData.remarks;
+}
+
+// Show list view
+function showListView() {
+    document.getElementById('employeeListView').classList.remove('hidden');
+    document.getElementById('employeeProfileView').classList.remove('active');
+}
+
+// Add click events for rows and edit buttons
+document.querySelectorAll('#employeeTable tr').forEach(row => {
+    const cells = row.querySelectorAll('td');
+    const employeeData = {
+        id: cells[0].textContent,
+        name: cells[1].textContent,
+        department: cells[2].textContent,
+        position: cells[3].textContent,
+        type: cells[4].textContent,
+        email: cells[5].textContent,
+        remarks: cells[6].textContent
+    };
+
+    // Clicking the row
+    row.addEventListener('click', (e) => {
+        // Avoid triggering when clicking delete button
+        if (!e.target.closest('.delete-btn')) {
+            showProfile(employeeData);
+        }
+    });
+
+    // Clicking the edit button
+    row.querySelector('.edit-btn').addEventListener('click', (e) => {
+        e.stopPropagation(); // prevent row click from firing
+        showProfile(employeeData);
+    });
+});
     </script>
 </body>
 </html>
