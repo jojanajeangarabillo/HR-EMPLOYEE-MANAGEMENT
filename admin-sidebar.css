@@ -1,3 +1,9 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 .sidebar {
     width: 230px;
     background-color: #1E3A8A;
@@ -9,6 +15,17 @@
     position: fixed;
     left: 0;
     top: 0;
+    overflow: hidden;  /* Optional: Clips any overflow to prevent bleed */
+}
+
+/* Profile Icon */
+.profile i {
+    font-size: 60px;
+    color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 50%;
+    padding: 15px;
+    margin-bottom: 40px;
 }
 
 /* Navigation */
@@ -26,6 +43,8 @@
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
+    box-sizing: border-box;  /* Includes padding in width calculation */
+    width: 100%;  /* Ensures li fills the nav width */
 }
 
 .nav li:hover,
