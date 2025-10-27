@@ -545,7 +545,7 @@
             <li class="active"><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
             </li>
             <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
-            <li><a href="Admin-JobPosting.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
+            <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
             <li><a href="#"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
             <li><a href="#"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
             <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>

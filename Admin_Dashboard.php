@@ -61,10 +61,21 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             flex-direction: column
         }
 
-        .main-content-header h1 {
+        .main-content-header h1{
+             padding: 25px 30px;
             margin: 0;
             font-size: 2rem;
             margin-bottom: 40px;
+             color: #1E3A8A;
+
+        }
+
+        .job-posts h2{
+             padding: 25px 30px;
+            margin: 0;
+            font-size: 2rem;
+            margin-bottom: 40px;
+             color: #1E3A8A;
 
         }
 
@@ -111,10 +122,11 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             <li class="active"><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
             </li>
             <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
-            <li><a href="Admin-JobPosting.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
+            <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
             <li><a href="#"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
             <li><a href="#"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
             <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+            <li><a href="#"><i class="fa-solid fa-code-pull-request"></i>Reports</a></li>
             <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
             <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
         </ul>
@@ -146,6 +158,13 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             <div class="section">
                 <label for="hirings" class="hirings-label">Hirings</label>
                 <h3 class="hiring-count" name="hirings">
+                    0
+                </h3>
+            </div>
+
+            <div class="section">
+                <label for="pending-applicants" class="pending">Pending Applicants</label>
+                <h3 class="pending-count" name="pendings">
                     0
                 </h3>
             </div>

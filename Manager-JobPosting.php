@@ -7,7 +7,7 @@
   <title>Job Posting</title>
 
   <!-- Global stylesheet (for sidebar & header) -->
-  <link rel="stylesheet" href="stylesheet.css">
+  <link rel="stylesheet" href="admin-sidebar.css">
 
   <!-- Page-specific stylesheet (left in place as requested) -->
   <link rel="stylesheet" href="employee-request.css">
