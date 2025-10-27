@@ -425,11 +425,11 @@
     <img src="images/hospital-logo.png" alt="Profile" width="80" height="80">
 
     <ul class="sidebar-menu">
-      <li class="profile">My Profile</li>
+      <li><a href="Employee_Profile.php" style="display: block; text-align: center; padding-right: 75px;">My Profile</a></li>
       <li class="menu-title">Menu Board</li>
       <li><a href="Employee_Dashboard.php"><i class="fa-solid fa-grip"></i> Dashboard</a></li>
       <li><a href="Employee_SalarySlip.php" class="active"><i class="fa-solid fa-user-group"></i> Salary Slip</a></li>
-      <li><a href="#"><i class="fa-solid fa-code-branch"></i> Requests</a></li>
+      <li><a href="Employee_Requests.php"><i class="fa-solid fa-code-branch"></i> Requests</a></li>
       <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
     </ul>
   </aside>
