@@ -1,5 +1,16 @@
+<?php
+session_start();
+require 'admin/db.connect.php';
+
+$adminanmeQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin'");
+if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
+  $adminname = $row['fullname'];
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,6 +37,15 @@
     .sidebar-logo img {
       height: 120px;
       width: 120px;
+    }
+
+    .sidebar-name {
+      display: flex;
+      justify-content: center;
+      color: white;
+      padding: 10px;
+      margin-bottom: 30px;
+      font-size: 20px;
     }
 
     .main-content {
@@ -128,8 +148,15 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
 
     .modal-container {
@@ -142,8 +169,15 @@
     }
 
     @keyframes slideUp {
-      from { transform: translateY(40px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
     }
 
     .modal-header {
@@ -174,7 +208,9 @@
       transition: color 0.3s;
     }
 
-    .close-btn:hover { color: #fbbf24; }
+    .close-btn:hover {
+      color: #fbbf24;
+    }
 
     .modal-body {
       padding: 25px 30px;
@@ -221,6 +257,10 @@
     <div class="sidebar-logo">
       <img src="Images/hospitallogo.png" alt="">
     </div>
+
+    <div class="sidebar-name">
+      <p><?php echo "Welcome, $adminname"; ?></p>
+    </div>
     <ul class="nav">
       <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
       <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
@@ -228,7 +268,7 @@
       <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
       <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
       <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-       <li><a href="#"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
+      <li><a href="#"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
       <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
       <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
     </ul>
@@ -260,7 +300,8 @@
           <tr>
             <td>25-0002</td>
             <td>Garabillo, Jojana Jean</td>
-            <td><button class="view-btn" onclick="viewApplicant('25-0002', 'Garabillo, Jojana Jean')">View Applicant</button></td>
+            <td><button class="view-btn" onclick="viewApplicant('25-0002', 'Garabillo, Jojana Jean')">View
+                Applicant</button></td>
             <td><span class="status-badge status-rejected">Rejected</span></td>
           </tr>
         </tbody>
@@ -296,12 +337,12 @@
         "25-0001": {
           email: "john.smith@example.com",
           status: "Pending",
-          
+
         },
         "25-0002": {
           email: "jojana.garabillo@example.com",
           status: "Pending",
-        
+
         }
       };
 
@@ -321,4 +362,5 @@
     }
   </script>
 </body>
+
 </html>

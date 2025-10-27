@@ -1,3 +1,13 @@
+<?php
+session_start();
+require 'admin/db.connect.php';
+
+$adminanmeQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin'");
+if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
+    $adminname = $row['fullname'];
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -19,7 +29,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <style>
-         body {
+        body {
             font-family: 'Poppins', 'Roboto', sans-serif;
             margin: 0;
             display: flex;
@@ -37,6 +47,16 @@
             height: 120px;
             width: 120px;
         }
+
+
+        .sidebar-name {
+            display: flex;
+            justify-content: center;
+            color: white;
+            padding: 10px;
+            margin-bottom: 30px;
+            font-size: 20px;
+        }
     </style>
 </head>
 
@@ -47,6 +67,9 @@
 
         <div class="sidebar-logo">
             <img src="Images/hospitallogo.png" alt="">
+        </div>
+        <div class="sidebar-name">
+            <p><?php echo "Welcome, $adminname"; ?></p>
         </div>
 
         <ul class="nav">

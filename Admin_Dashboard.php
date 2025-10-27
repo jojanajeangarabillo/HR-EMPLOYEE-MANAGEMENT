@@ -7,6 +7,12 @@ $requests = 0;
 $hirings = 0;
 $applicants = 0;
 
+$adminanmeQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin'");
+if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
+    $adminname = $row['fullname'];
+}
+
+
 $employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
 if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
     $employees = $row['count'];
@@ -54,6 +60,15 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
         }
 
 
+        .sidebar-name {
+            display: flex;
+            justify-content: center;
+            color: white;
+            padding: 10px;
+            margin-bottom: 30px;
+            font-size: 20px;
+        }
+
         .main-content {
             padding: 40px 30px;
             margin-left: 220px;
@@ -61,21 +76,21 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             flex-direction: column
         }
 
-        .main-content-header h1{
-             padding: 25px 30px;
+        .main-content-header h1 {
+            padding: 25px 30px;
             margin: 0;
             font-size: 2rem;
             margin-bottom: 40px;
-             color: #1E3A8A;
+            color: #1E3A8A;
 
         }
 
-        .job-posts h2{
-             padding: 25px 30px;
+        .job-posts h2 {
+            padding: 25px 30px;
             margin: 0;
             font-size: 2rem;
             margin-bottom: 40px;
-             color: #1E3A8A;
+            color: #1E3A8A;
 
         }
 
@@ -118,6 +133,10 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             <img src="Images/hospitallogo.png" alt="">
         </div>
 
+        <div class="sidebar-name">
+            <p><?php echo "Welcome, $adminname"; ?></p>
+        </div>
+
         <ul class="nav">
             <li class="active"><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
             </li>
@@ -126,7 +145,7 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
             <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
             <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-             <li><a href="#"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
+            <li><a href="#"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
             <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
             <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
         </ul>

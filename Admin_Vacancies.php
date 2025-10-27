@@ -1,3 +1,13 @@
+<?php
+session_start();
+require 'admin/db.connect.php';
+
+$adminanmeQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin'");
+if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
+    $adminname = $row['fullname'];
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -30,6 +40,15 @@
             width: 120px;
         }
 
+        .sidebar-name {
+            display: flex;
+            justify-content: center;
+            color: white;
+            padding: 10px;
+            margin-bottom: 30px;
+            font-size: 20px;
+        }
+
         .main-content {
             padding: 40px 30px;
             margin-left: 250px;
@@ -42,8 +61,8 @@
             margin: 0;
             font-size: 2rem;
             margin-bottom: 40px;
-             margin-left: 50px;
-             color: #1E3A8A;
+            margin-left: 50px;
+            color: #1E3A8A;
         }
 
         .set-vacancies {
@@ -174,6 +193,9 @@
         <div class="sidebar-logo">
             <img src="Images/hospitallogo.png" alt="">
         </div>
+        <div class="sidebar-name">
+            <p><?php echo "Welcome, $adminname"; ?></p>
+        </div>
 
         <ul class="nav">
             <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
@@ -192,6 +214,7 @@
         <div class="main-content-header">
             <h1>Upload Vacancies</h1>
         </div>
+
 
         <div class="set-vacancies">
             <div class="select-options">
