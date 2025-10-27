@@ -232,41 +232,40 @@
             overflow: hidden;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             margin-bottom: 100px;
-            min-height: 600px;
-            padding-bottom: 50px;
+            overflow-x: auto;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .table {
+            min-width: 1400px;
         }
 
-        thead {
+        /* Bootstrap Table Customization */
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
             background: #1e40af;
             color: white;
-        }
-
-        th {
-            padding: 15px;
-            text-align: left;
             font-weight: 600;
             font-size: 13px;
+            border: none;
+            padding: 15px;
+            vertical-align: middle;
         }
 
-        tbody tr {
-            background: #3b82f6;
-            color: white;
-            border-bottom: 8px solid #f3f4f6;
-            transition: background 0.3s;
+        .table tbody tr {
+            border-bottom: 1px solid #e5e7eb;
         }
 
-        tbody tr:hover {
-            background: #2563eb;
-        }
-
-        td {
+        .table tbody td {
             padding: 15px;
             font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f9fafb;
         }
 
         .action-column {
@@ -746,7 +745,7 @@
             </div>
 
             <div class="table-container">
-                <table>
+                <table class="table table-hover">
                     <thead>
                         <tr>
                             <th>Applicant ID</th>
@@ -898,6 +897,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Toggle filter panel
         function toggleFilter() {
