@@ -162,12 +162,7 @@ input[type="checkbox"]{
 }
 
 .nav-item{
-    padding: 5px;
-}
-
-.sidebar-logo{
-    display: grid;
-    align-items: center;
+    padding: 20px;
 }
 
 .sidebar-nav span, i{
