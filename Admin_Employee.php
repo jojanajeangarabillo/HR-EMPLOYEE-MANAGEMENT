@@ -1,3 +1,13 @@
+<?php
+session_start();
+require 'admin/db.connect.php';
+
+$adminanmeQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin'");
+if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
+  $adminname = $row['fullname'];
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -10,9 +20,9 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
     integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
-<link rel="stylesheet" href="admin-sidebar.css">
+  <link rel="stylesheet" href="admin-sidebar.css">
 
- <style>
+  <style>
     body {
       font-family: 'Poppins', 'Roboto', sans-serif;
       margin: 0;
@@ -32,24 +42,36 @@
       width: 120px;
     }
 
-  
-        .main-content {
-            padding: 40px 30px;
-            margin-left: 250px;
-            display: flex;
-            flex-direction: column
-        }
+    .sidebar-name {
+      display: flex;
+      justify-content: center;
+      color: white;
+      padding: 10px;
+      margin-bottom: 30px;
+      font-size: 20px;
+    }
 
-        .main-content-header h1 {
-            margin: 0;
-            font-size: 2rem;
-            margin-bottom: 40px;
-        }
+
+    .main-content {
+      padding: 40px 30px;
+      margin-left: 250px;
+      display: flex;
+      flex-direction: column
+    }
+
+    .main-content-header h1 {
+      margin: 0;
+      font-size: 2rem;
+      margin-bottom: 40px;
+      margin-left: 230x;
+      color: #1E3A8A;
+    }
 
     /* Content section wrapper */
     .content-section {
       max-width: 1400px;
       margin: 0 auto;
+
     }
 
     /* Controls bar */
@@ -124,19 +146,22 @@
       box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
     }
 
-.table-container {
-  width: 100%;        /* full width of main-content */
-  padding: 30 30px;    /* equal left & right spacing */
-  margin-top: 20px;   /* keep your top spacing */
-  margin-left: 150px;
-  box-sizing: border-box;
-  width: fit-content;
-}
+    .table-container {
+      width: 100%;
+      /* full width of main-content */
+      padding: 30 30px;
+      /* equal left & right spacing */
+      margin-top: 20px;
+      /* keep your top spacing */
+      margin-left: 150px;
+      box-sizing: border-box;
+      width: fit-content;
+    }
 
-.table-responsive table {
-   width: 100%;
-  table-layout: auto;
-}
+    .table-responsive table {
+      width: 100%;
+      table-layout: auto;
+    }
 
 
     table {
@@ -150,9 +175,11 @@
 
     th,
     td {
-        min-width: 150px; /* adjust as needed for wider cells */
-        padding: 16px 20px; /* more horizontal padding also widens cells */
-        text-align: center;
+      min-width: 150px;
+      /* adjust as needed for wider cells */
+      padding: 16px 20px;
+      /* more horizontal padding also widens cells */
+      text-align: center;
       border: 1px solid #e0e0e0;
       padding: 16px 12px;
       text-align: center;
@@ -206,66 +233,70 @@
     <div class="sidebar-logo">
       <img src="Images/hospitallogo.png" alt="Hospital Logo">
     </div>
+    <div class="sidebar-name">
+      <p><?php echo "Welcome, $adminname"; ?></p>
+    </div>
+
 
     <ul class="nav">
       <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
       <li class="active"><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
       <li><a href="Admin-JobPosting.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-      <li><a href="#"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
-      <li><a href="#"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
+      <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
+      <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
       <li><a href="Admin-request"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
       <li><a href="Admin-Settings"><i class="fa-solid fa-gear"></i>Settings</a></li>
       <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
     </ul>
   </div>
 
- <div class="main-content">
-  <div class="main-content-header">
-    <h1>Employee List</h1>
-  </div>
-
-  <div class="table-container">
-    <div class="controls-bar">
-      <div class="search-box">
-        <input type="text" id="searchInput" placeholder="Search employees..." onkeyup="filterTable()">
-      </div>
-      <div class="button-group">
-        <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Employee</button>
-        <button class="btn btn-success"><i class="fa-solid fa-file-export"></i> Export</button>
-      </div>
+  <div class="main-content">
+    <div class="main-content-header">
+      <h1>Employee List</h1>
     </div>
 
-    <div class="table-responsive">
-      <table>
-        <thead>
-          <tr>
-            <th>Employee ID</th>
-            <th>Full Name</th>
-            <th>Department</th>
-            <th>Position</th>
-            <th>Employment Type</th>
-            <th>Email Address</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="employeeTable">
-          <tr>
-            <td>EMP001</td>
-            <td>Juan Dela Cruz</td>
-            <td>Human Resources</td>
-            <td>HR Manager</td>
-            <td>Full-Time</td>
-            <td>juan.delacruz@example.com</td>
-            <td class="action-icons">
-              <a href="#" class="edit"><i class="fa-solid fa-pen"></i></a>
-              <a href="#" class="delete"><i class="fa-solid fa-trash"></i></a>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="table-container">
+      <div class="controls-bar">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="Search employees..." onkeyup="filterTable()">
+        </div>
+        <div class="button-group">
+          <button class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Employee</button>
+          <button class="btn btn-success"><i class="fa-solid fa-file-export"></i> Export</button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>Employee ID</th>
+              <th>Full Name</th>
+              <th>Department</th>
+              <th>Position</th>
+              <th>Employment Type</th>
+              <th>Email Address</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="employeeTable">
+            <tr>
+              <td>EMP001</td>
+              <td>Juan Dela Cruz</td>
+              <td>Human Resources</td>
+              <td>HR Manager</td>
+              <td>Full-Time</td>
+              <td>juan.delacruz@example.com</td>
+              <td class="action-icons">
+                <a href="#" class="edit"><i class="fa-solid fa-pen"></i></a>
+                <a href="#" class="delete"><i class="fa-solid fa-trash"></i></a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
-</div>
 
   <script>
     function filterTable() {

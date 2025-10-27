@@ -182,6 +182,7 @@
             <img src="Images/hospitallogo.png" alt="">
         </div>
 
+<<<<<<< HEAD
         <ul class="nav">
             <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
             <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
@@ -194,6 +195,23 @@
             <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
         </ul>
     </div>
+=======
+        <nav class="sidebar-nav">
+           <ul class="nav">
+            <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
+            </li>
+            <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
+            <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
+            <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
+            <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
+            <li class="active"><a href="#"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+             <li><a href="#"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
+            <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
+            <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+        </ul>
+        </nav>
+    </aside>
+>>>>>>> 164bc9bc05c9732950c38b37fbd5b010d9b8866f
 
     <!-- MAIN CONTENT -->
     <main class="request-container">

@@ -1,4 +1,14 @@
-<!DOCTYPE html>
+<?php
+session_start();
+require 'admin/db.connect.php';
+
+$adminanmeQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin'");
+if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
+    $adminname = $row['fullname'];
+}
+?>
+
+!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -32,12 +42,22 @@
             width: 120px;
         }
 
+        .sidebar-name {
+            display: flex;
+            justify-content: center;
+            color: white;
+            padding: 10px;
+            margin-bottom: 30px;
+            font-size: 20px;
+        }
+
 
         .main-content {
             padding: 40px 30px;
-            margin-left: 220px;
+            margin-left: 250px;
             display: flex;
-            flex-direction: column
+            flex-direction: column;
+            color: #1e3a8a;
         }
 
         .main-content-header h1 {
@@ -567,15 +587,19 @@
             <img src="Images/hospitallogo.png" alt="">
         </div>
 
+        <div class="sidebar-name">
+            <p><?php echo "Welcome, $adminname"; ?></p>
+        </div>
+
         <ul class="nav">
             <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
             </li>
             <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
             <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
             <li class="active"><a href="#"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
-            <li><a href="#"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
+            <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
             <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-             <li><a href="#"><i class="fa-solid fa-clipboard-list"></i>Reports</a></li>
+            <li><a href="#"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
             <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
             <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
         </ul>
@@ -583,7 +607,7 @@
 
     <main class="main-content">
         <div class="main-content-header">
-            <h1>Applicant List</h1>
+            <h1>Pending Applicants</h1>
         </div>
         <div id="listView" class="list-view">
             <div class="controls">
