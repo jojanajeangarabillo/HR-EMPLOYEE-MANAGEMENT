@@ -530,106 +530,6 @@
             color: #1e40af;
         }
 
-        .profile-section {
-            margin-bottom: 35px;
-        }
-
-        .section-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: #1e40af;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #e5e7eb;
-        }
-
-        .job-entry {
-            margin-bottom: 25px;
-        }
-
-        .job-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #1f2937;
-            margin-bottom: 5px;
-        }
-
-        .job-company {
-            font-size: 14px;
-            color: #6b7280;
-            margin-bottom: 10px;
-        }
-
-        .job-details {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        .job-details li {
-            padding-left: 20px;
-            position: relative;
-            color: #4b5563;
-            font-size: 14px;
-            line-height: 1.8;
-        }
-
-        .job-details li:before {
-            content: "•";
-            position: absolute;
-            left: 5px;
-            color: #1e40af;
-            font-weight: bold;
-        }
-
-        .education-entry {
-            margin-bottom: 10px;
-        }
-
-        .degree {
-            font-size: 16px;
-            font-weight: 600;
-            color: #1f2937;
-        }
-
-        .university {
-            font-size: 14px;
-            color: #6b7280;
-            margin-top: 3px;
-        }
-
-        .graduation {
-            font-size: 13px;
-            color: #9ca3af;
-            margin-top: 3px;
-        }
-
-        .skills-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-        }
-
-        .skill-item {
-            padding-left: 20px;
-            position: relative;
-            color: #4b5563;
-            font-size: 14px;
-        }
-
-        .skill-item:before {
-            content: "•";
-            position: absolute;
-            left: 5px;
-            color: #1e40af;
-            font-weight: bold;
-        }
-
-        .summary-text {
-            color: #4b5563;
-            font-size: 14px;
-            line-height: 1.8;
-        }
-
         .back-btn {
             padding: 12px 30px;
             background: #1e40af;
@@ -816,59 +716,6 @@
 
     </main>
 
-
-<<<<<<< HEAD:Admin-Applicants.php
-=======
-                <div class="profile-section">
-                    <h3 class="section-title">Career History</h3>
-                    <div class="job-entry">
-                        <div class="job-title">Front-End Developer</div>
-                        <div class="job-company">abc Tech Solutions Jan 2023 – Present</div>
-                        <ul class="job-details">
-                            <li>Designed and maintained responsive websites using HTML, CSS, and JavaScript.</li>
-                            <li>Collaborated with UI/UX designers to improve user experience.</li>
-                            <li>Optimized website performance for mobile and desktop.</li>
-                        </ul>
-                    </div>
-                    <div class="job-entry">
-                        <div class="job-title">Intern – Web Development</div>
-                        <div class="job-company">DigitalWorks Inc. | Jun 2022 – Dec 2022</div>
-                        <ul class="job-details">
-                            <li>Assisted in creating landing pages and updating website content.</li>
-                            <li>Learned the basics of version control using GitHub.</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="profile-section">
-                    <h3 class="section-title">Education</h3>
-                    <div class="education-entry">
-                        <div class="degree">Bachelor of Science in Information Technology</div>
-                        <div class="university">University of the East – Manila</div>
-                        <div class="graduation">Graduated: 2023</div>
-                    </div>
-                </div>
-
-                <div class="profile-section">
-                    <h3 class="section-title">Skills</h3>
-                    <div class="skills-grid">
-                        <div class="skill-item">HTML & CSS</div>
-                        <div class="skill-item">Responsive Web Design</div>
-                        <div class="skill-item">JavaScript</div>
-                        <div class="skill-item">Team Collaboration</div>
-                    </div>
-                </div>
-
-                <div class="profile-section">
-                    <h3 class="section-title">Summary</h3>
-                    <p class="summary-text">I am a motivated and detail-oriented front-end developer with hands-on experience in creating user-friendly and visually appealing websites. I am passionate about learning new technologies and continuously improving my skills to deliver high-quality web solutions.</p>
-                </div>
-
-                <button class="back-btn" onclick="backToList()">Back</button>
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Toggle filter panel
@@ -882,20 +729,20 @@
         const table = document.getElementById('applicantTable');
         const rows = table.getElementsByTagName('tr');
 
-        searchInput.addEventListener('keyup', function() {
+        searchInput.addEventListener('keyup', function () {
             const filter = searchInput.value.toLowerCase();
-            
+
             for (let i = 0; i < rows.length; i++) {
                 const cells = rows[i].getElementsByTagName('td');
                 let found = false;
-                
+
                 for (let j = 0; j < cells.length; j++) {
                     if (cells[j].textContent.toLowerCase().indexOf(filter) > -1) {
                         found = true;
                         break;
                     }
                 }
-                
+
                 rows[i].style.display = found ? '' : 'none';
             }
         });
@@ -917,7 +764,7 @@
 
         // Dropdown functionality
         document.querySelectorAll('.dropdown-icon').forEach(icon => {
-            icon.addEventListener('click', function(e) {
+            icon.addEventListener('click', function (e) {
                 e.stopPropagation();
                 alert('Dropdown menu would appear here with options');
             });
@@ -926,20 +773,20 @@
         // Toggle status dropdown
         function toggleStatusDropdown(container, event) {
             event.stopPropagation();
-            
+
             // Close all other dropdowns
             document.querySelectorAll('.status-dropdown-menu').forEach(menu => {
                 if (menu !== container.nextElementSibling) {
                     menu.classList.remove('active');
                 }
             });
-            
+
             document.querySelectorAll('.dropdown-icon').forEach(icon => {
                 if (icon !== container.querySelector('.dropdown-icon')) {
                     icon.classList.remove('open');
                 }
             });
-            
+
             // Toggle current dropdown
             const menu = container.nextElementSibling;
             const icon = container.querySelector('.dropdown-icon');
@@ -950,27 +797,27 @@
         // Change status
         function changeStatus(option, statusText, statusClass) {
             event.stopPropagation();
-            
+
             const menu = option.parentElement;
             const container = menu.previousElementSibling;
             const icon = container.querySelector('.dropdown-icon');
-            
+
             // Remove all status color classes from container
             container.className = 'status-dropdown-container';
-            
+
             // Add new status class to container
             container.classList.add(statusClass);
-            
+
             // Update badge text
             container.querySelector('.status-badge').textContent = statusText;
-            
+
             // Close dropdown
             menu.classList.remove('active');
             icon.classList.remove('open');
         }
 
         // Close dropdowns when clicking outside
-        document.addEventListener('click', function() {
+        document.addEventListener('click', function () {
             document.querySelectorAll('.status-dropdown-menu').forEach(menu => {
                 menu.classList.remove('active');
             });
@@ -979,7 +826,7 @@
             });
         });
     </script>
->>>>>>> 1471b6daa478888d940c7fcaa033548dde8271e3:Admin_Applicants.php
+
 </body>
 
 </html>
