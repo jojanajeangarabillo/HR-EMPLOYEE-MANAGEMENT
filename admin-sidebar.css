@@ -286,6 +286,7 @@ button:hover {
 .nav li {
     color: #ffffff;
     padding: 15px 25px;
+    width: 100%;
     display: flex;
     align-items: center;
     gap: 10px;
