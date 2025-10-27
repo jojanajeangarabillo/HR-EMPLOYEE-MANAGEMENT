@@ -222,41 +222,40 @@
             overflow: hidden;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             margin-bottom: 100px;
-            min-height: 600px;
-            padding-bottom: 50px;
+            overflow-x: auto;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .table {
+            min-width: 1400px;
         }
 
-        thead {
+        /* Bootstrap Table Customization */
+        .table {
+            margin-bottom: 0;
+        }
+
+        .table thead th {
             background: #1e40af;
             color: white;
-        }
-
-        th {
-            padding: 15px;
-            text-align: left;
             font-weight: 600;
             font-size: 13px;
+            border: none;
+            padding: 15px;
+            vertical-align: middle;
         }
 
-        tbody tr {
-            background: #3b82f6;
-            color: white;
-            border-bottom: 8px solid #f3f4f6;
-            transition: background 0.3s;
+        .table tbody tr {
+            border-bottom: 1px solid #e5e7eb;
         }
 
-        tbody tr:hover {
-            background: #2563eb;
-        }
-
-        td {
+        .table tbody td {
             padding: 15px;
             font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #f9fafb;
         }
 
         .action-column {
@@ -744,7 +743,7 @@
             </div>
 
             <div class="table-container">
-                <table>
+                <table class="table table-hover">
                     <thead>
                         <tr>
                             <th>Applicant ID</th>
@@ -818,6 +817,169 @@
     </main>
 
 
+<<<<<<< HEAD:Admin-Applicants.php
+=======
+                <div class="profile-section">
+                    <h3 class="section-title">Career History</h3>
+                    <div class="job-entry">
+                        <div class="job-title">Front-End Developer</div>
+                        <div class="job-company">abc Tech Solutions Jan 2023 – Present</div>
+                        <ul class="job-details">
+                            <li>Designed and maintained responsive websites using HTML, CSS, and JavaScript.</li>
+                            <li>Collaborated with UI/UX designers to improve user experience.</li>
+                            <li>Optimized website performance for mobile and desktop.</li>
+                        </ul>
+                    </div>
+                    <div class="job-entry">
+                        <div class="job-title">Intern – Web Development</div>
+                        <div class="job-company">DigitalWorks Inc. | Jun 2022 – Dec 2022</div>
+                        <ul class="job-details">
+                            <li>Assisted in creating landing pages and updating website content.</li>
+                            <li>Learned the basics of version control using GitHub.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <h3 class="section-title">Education</h3>
+                    <div class="education-entry">
+                        <div class="degree">Bachelor of Science in Information Technology</div>
+                        <div class="university">University of the East – Manila</div>
+                        <div class="graduation">Graduated: 2023</div>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <h3 class="section-title">Skills</h3>
+                    <div class="skills-grid">
+                        <div class="skill-item">HTML & CSS</div>
+                        <div class="skill-item">Responsive Web Design</div>
+                        <div class="skill-item">JavaScript</div>
+                        <div class="skill-item">Team Collaboration</div>
+                    </div>
+                </div>
+
+                <div class="profile-section">
+                    <h3 class="section-title">Summary</h3>
+                    <p class="summary-text">I am a motivated and detail-oriented front-end developer with hands-on experience in creating user-friendly and visually appealing websites. I am passionate about learning new technologies and continuously improving my skills to deliver high-quality web solutions.</p>
+                </div>
+
+                <button class="back-btn" onclick="backToList()">Back</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle filter panel
+        function toggleFilter() {
+            const filterPanel = document.getElementById('filterPanel');
+            filterPanel.classList.toggle('active');
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const table = document.getElementById('applicantTable');
+        const rows = table.getElementsByTagName('tr');
+
+        searchInput.addEventListener('keyup', function() {
+            const filter = searchInput.value.toLowerCase();
+            
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                let found = false;
+                
+                for (let j = 0; j < cells.length; j++) {
+                    if (cells[j].textContent.toLowerCase().indexOf(filter) > -1) {
+                        found = true;
+                        break;
+                    }
+                }
+                
+                rows[i].style.display = found ? '' : 'none';
+            }
+        });
+
+        // View Applicant Function
+        function viewApplicant(id, name) {
+            document.getElementById('listView').classList.add('hidden');
+            document.getElementById('profileView').classList.add('active');
+            document.getElementById('profileName').textContent = name;
+            window.scrollTo(0, 0);
+        }
+
+        // Back to List Function
+        function backToList() {
+            document.getElementById('profileView').classList.remove('active');
+            document.getElementById('listView').classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        // Dropdown functionality
+        document.querySelectorAll('.dropdown-icon').forEach(icon => {
+            icon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                alert('Dropdown menu would appear here with options');
+            });
+        });
+
+        // Toggle status dropdown
+        function toggleStatusDropdown(container, event) {
+            event.stopPropagation();
+            
+            // Close all other dropdowns
+            document.querySelectorAll('.status-dropdown-menu').forEach(menu => {
+                if (menu !== container.nextElementSibling) {
+                    menu.classList.remove('active');
+                }
+            });
+            
+            document.querySelectorAll('.dropdown-icon').forEach(icon => {
+                if (icon !== container.querySelector('.dropdown-icon')) {
+                    icon.classList.remove('open');
+                }
+            });
+            
+            // Toggle current dropdown
+            const menu = container.nextElementSibling;
+            const icon = container.querySelector('.dropdown-icon');
+            menu.classList.toggle('active');
+            icon.classList.toggle('open');
+        }
+
+        // Change status
+        function changeStatus(option, statusText, statusClass) {
+            event.stopPropagation();
+            
+            const menu = option.parentElement;
+            const container = menu.previousElementSibling;
+            const icon = container.querySelector('.dropdown-icon');
+            
+            // Remove all status color classes from container
+            container.className = 'status-dropdown-container';
+            
+            // Add new status class to container
+            container.classList.add(statusClass);
+            
+            // Update badge text
+            container.querySelector('.status-badge').textContent = statusText;
+            
+            // Close dropdown
+            menu.classList.remove('active');
+            icon.classList.remove('open');
+        }
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function() {
+            document.querySelectorAll('.status-dropdown-menu').forEach(menu => {
+                menu.classList.remove('active');
+            });
+            document.querySelectorAll('.dropdown-icon').forEach(icon => {
+                icon.classList.remove('open');
+            });
+        });
+    </script>
+>>>>>>> 1471b6daa478888d940c7fcaa033548dde8271e3:Admin_Applicants.php
 </body>
 
 </html>
