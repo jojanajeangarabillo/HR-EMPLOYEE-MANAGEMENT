@@ -1,61 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hospital Applicant Management</title>
-    <link rel="stylesheet" href="stylesheet.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Admin Applicants</title>
+    <link rel="stylesheet" href="admin-sidebar.css">
+    <!--For icons-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <style>
-        * {
+        body {
+            font-family: 'Poppins', 'Roboto', sans-serif;
             margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            display: flex;
+            background-color: #f1f5fc;
+            color: #111827;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+
+        .sidebar-logo {
             display: flex;
-            height: 100vh;
-            overflow: hidden;
+            justify-content: center;
+            margin-bottom: 50px;
         }
+
+        .sidebar-logo img {
+            height: 120px;
+            width: 120px;
+        }
+
 
         .main-content {
-            flex: 1;
-            background: #f3f4f6;
-            overflow-y: auto;
-            padding: 30px;
-            min-height: 100vh;
-        }
-
-        .header {
+            padding: 40px 30px;
+            margin-left: 220px;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 30px;
+            flex-direction: column
         }
 
-        .header-title {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .header-icon {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #1e40af;
-        }
-
-        .header-title h1 {
-            font-size: 28px;
-            color: #1e40af;
-            font-weight: 700;
+        .main-content-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            margin-bottom: 40px;
         }
 
         .controls {
@@ -92,7 +80,8 @@
             color: #6b7280;
         }
 
-        .filter-btn, .export-btn {
+        .filter-btn,
+        .export-btn {
             padding: 10px 20px;
             border: 1px solid #d1d5db;
             background: white;
@@ -107,7 +96,8 @@
             position: relative;
         }
 
-        .filter-btn:hover, .export-btn:hover {
+        .filter-btn:hover,
+        .export-btn:hover {
             border-color: #1e40af;
             color: #1e40af;
         }
@@ -122,7 +112,7 @@
             border-radius: 8px;
             padding: 25px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .filter-panel.active {
@@ -230,7 +220,7 @@
             background: white;
             border-radius: 8px;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             margin-bottom: 100px;
             min-height: 600px;
             padding-bottom: 50px;
@@ -317,19 +307,70 @@
             font-weight: 600;
         }
 
-        .status-submitted { background: #9ca3af; color: white; }
-        .status-under-review { background: #3b82f6; color: white; }
-        .status-shortlisted { background: #8b5cf6; color: white; }
-        .status-assessment { background: #06b6d4; color: white; }
-        .status-interview-scheduled { background: #10b981; color: white; }
-        .status-interview { background: #16a34a; color: white; }
-        .status-interview-completed { background: #059669; color: white; }
-        .status-final-interview { background: #047857; color: white; }
-        .status-offer-made { background: #84cc16; color: white; }
-        .status-hired { background: #22c55e; color: white; }
-        .status-rejected { background: #dc2626; color: white; }
-        .status-on-hold { background: #f59e0b; color: white; }
-        .status-withdrawn { background: #6b7280; color: white; }
+        .status-submitted {
+            background: #9ca3af;
+            color: white;
+        }
+
+        .status-under-review {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .status-shortlisted {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .status-assessment {
+            background: #06b6d4;
+            color: white;
+        }
+
+        .status-interview-scheduled {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-interview {
+            background: #16a34a;
+            color: white;
+        }
+
+        .status-interview-completed {
+            background: #059669;
+            color: white;
+        }
+
+        .status-final-interview {
+            background: #047857;
+            color: white;
+        }
+
+        .status-offer-made {
+            background: #84cc16;
+            color: white;
+        }
+
+        .status-hired {
+            background: #22c55e;
+            color: white;
+        }
+
+        .status-rejected {
+            background: #dc2626;
+            color: white;
+        }
+
+        .status-on-hold {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .status-withdrawn {
+            background: #6b7280;
+            color: white;
+        }
 
         .dropdown-icon {
             font-size: 14px;
@@ -348,7 +389,7 @@
             background: white;
             border: 1px solid #d1d5db;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             z-index: 1000;
             min-width: 160px;
             margin-top: 5px;
@@ -382,16 +423,18 @@
         }
 
         .profile-container.active {
-           display: block;
-    max-height: calc(100vh - 60px); /* Adjust based on header height */
-    overflow-y: auto;
-    padding-right: 10px; /* optional, to avoid scrollbar overlapping content */
-}
+            display: block;
+            max-height: calc(100vh - 60px);
+            /* Adjust based on header height */
+            overflow-y: auto;
+            padding-right: 10px;
+            /* optional, to avoid scrollbar overlapping content */
+        }
 
-.profile-card {
-    max-width: 800px;
-    margin: 0 auto;
-}
+        .profile-card {
+            max-width: 800px;
+            margin: 0 auto;
+        }
 
         .profile-header {
             display: flex;
@@ -405,7 +448,8 @@
             gap: 10px;
         }
 
-        .export-pdf-btn, .export-excel-btn {
+        .export-pdf-btn,
+        .export-excel-btn {
             padding: 10px 20px;
             border: 1px solid #d1d5db;
             background: white;
@@ -419,7 +463,8 @@
             transition: all 0.3s;
         }
 
-        .export-pdf-btn:hover, .export-excel-btn:hover {
+        .export-pdf-btn:hover,
+        .export-excel-btn:hover {
             border-color: #1e40af;
         }
 
@@ -427,7 +472,7 @@
             background: white;
             border-radius: 12px;
             padding: 40px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             max-width: 800px;
             margin: 0 auto;
         }
@@ -615,79 +660,32 @@
         }
     </style>
 </head>
-<body class="admin-dashboard">
-    <header class="admin-header">
-        <h1 class="admin-header-text">Human Resource</h1>
-    </header>
 
-    <aside class="admin-sidebar">
+<body>
+    <div class="sidebar">
+
         <div class="sidebar-logo">
-            <img src="Images/hospitallogo.png" alt="happy">
+            <img src="Images/hospitallogo.png" alt="">
         </div>
-        <nav class="sidebar-nav">
-            <ul class="primary-top-nav">
-                <li class="nav-item">
-                    <a href="Admin-Dashboard.php" class="nav-link">
-                        <i class="fa-solid fa-grip"></i>
-                        <span class="nav-label">Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="Admin_Employee.php" class="nav-link">
-                        <i class="fa-solid fa-user-group"></i>
-                        <span class="nav-label">Employees</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="Admin_Applicants.php" class="nav-link">
-                        <i class="fa-solid fa-user-group"></i>
-                        <span class="nav-label">Applicants</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="Admin-request.php" class="nav-link">
-                        <i class="fa-solid fa-code-pull-request"></i>
-                        <span class="nav-label">Requests</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="Admin-JobPosting.php" class="nav-link">
-                        <i class="fa-solid fa-folder"></i>
-                        <span class="nav-label">Job Post</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fa-solid fa-chart-simple"></i>
-                        <span class="nav-label">Reports</span>
-                    </a>
-                </li>
-            </ul>
-            <ul class="secondary-buttom-nav">
-                <li class="nav-item">
-                    <a href="Admin-Settings.php" class="nav-link">
-                        <i class="fa-solid fa-gear"></i>
-                        <span class="nav-label">Settings</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="Login.php" class="nav-link">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        <span class="nav-label">Logout</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </aside>
 
-    <div class="main-content">
-    <!-- Applicant List View -->
-    <div id="listView" class="list-view">
-        <div class="header">
-            <div class="header-title">
-                <h1>Applicant List</h1>
-            </div>
+        <ul class="nav">
+            <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
+            </li>
+            <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
+            <li class="active"><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
+            <li><a href="#"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
+            <li><a href="#"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
+            <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+            <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
+            <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+        </ul>
+    </div>
+
+    <main class="main-content">
+        <div class="main-content-header">
+            <h1>Applicant List</h1>
         </div>
+        <div id="listView" class="list-view">
             <div class="controls">
                 <div class="search-box">
                     <i class="fa-solid fa-magnifying-glass search-icon"></i>
@@ -697,7 +695,7 @@
                     Filter <i class="fa-solid fa-filter"></i>
                 </button>
                 <button class="export-btn">
-                    Export As 
+                    Export As
                     <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i>
                     <i class="fa-solid fa-file-excel" style="color: #10b981;"></i>
                 </button>
@@ -767,17 +765,21 @@
                             <td>October 15, 2025</td>
                             <td>
                                 <div class="action-column">
-                                    <button class="view-btn" onclick="viewApplicant('25-0001', 'John Smith')">View Applicant</button>
+                                    <button class="view-btn" onclick="viewApplicant('25-0001', 'John Smith')">View
+                                        Applicant</button>
                                 </div>
                             </td>
                             <td class="status-cell">
-                                <div class="status-dropdown-container status-interview" onclick="toggleStatusDropdown(this, event)">
+                                <div class="status-dropdown-container status-interview"
+                                    onclick="toggleStatusDropdown(this, event)">
                                     <span class="status-badge">Interview</span>
                                     <i class="fa-solid fa-chevron-down dropdown-icon"></i>
                                 </div>
                                 <div class="status-dropdown-menu">
-                                    <div class="status-option" onclick="changeStatus(this, 'Interview', 'status-interview')">Interview</div>
-                                    <div class="status-option" onclick="changeStatus(this, 'Rejected', 'status-rejected')">Rejected</div>
+                                    <div class="status-option"
+                                        onclick="changeStatus(this, 'Interview', 'status-interview')">Interview</div>
+                                    <div class="status-option"
+                                        onclick="changeStatus(this, 'Rejected', 'status-rejected')">Rejected</div>
                                 </div>
                             </td>
                         </tr>
@@ -789,17 +791,22 @@
                             <td>October 15, 2025</td>
                             <td>
                                 <div class="action-column">
-                                    <button class="view-btn" onclick="viewApplicant('25-0002', 'Garabillo, Jojana Jean')">View Applicant</button>
+                                    <button class="view-btn"
+                                        onclick="viewApplicant('25-0002', 'Garabillo, Jojana Jean')">View
+                                        Applicant</button>
                                 </div>
                             </td>
                             <td class="status-cell">
-                                <div class="status-dropdown-container status-rejected" onclick="toggleStatusDropdown(this, event)">
+                                <div class="status-dropdown-container status-rejected"
+                                    onclick="toggleStatusDropdown(this, event)">
                                     <span class="status-badge">Rejected</span>
                                     <i class="fa-solid fa-chevron-down dropdown-icon"></i>
                                 </div>
                                 <div class="status-dropdown-menu">
-                                    <div class="status-option" onclick="changeStatus(this, 'Interview', 'status-interview')">Interview</div>
-                                    <div class="status-option" onclick="changeStatus(this, 'Rejected', 'status-rejected')">Rejected</div>
+                                    <div class="status-option"
+                                        onclick="changeStatus(this, 'Interview', 'status-interview')">Interview</div>
+                                    <div class="status-option"
+                                        onclick="changeStatus(this, 'Rejected', 'status-rejected')">Rejected</div>
                                 </div>
                             </td>
                         </tr>
@@ -808,204 +815,9 @@
             </div>
         </div>
 
-        <!-- Applicant Profile View -->
-        <div id="profileView" class="profile-container">
-            <div class="profile-header">
-                <div class="header-title">
-                    <h1>Applicant Profile</h1>
-                </div>
-                <div class="export-buttons">
-                    <button class="export-pdf-btn">
-                        Export As <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i>
-                    </button>
-                    <button class="export-excel-btn">
-                        <i class="fa-solid fa-file-excel" style="color: #10b981;"></i>
-                    </button>
-                </div>
-            </div>
+    </main>
 
-            <div class="profile-card">
-                <div class="profile-top">
-                    <div class="profile-avatar">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <div class="profile-info">
-                        <h2 class="profile-name" id="profileName">John Smith</h2>
-                        <div class="profile-contact">
-                            <div class="contact-item">
-                                <i class="fa-solid fa-phone"></i>
-                                <span>0912 345 6789</span>
-                            </div>
-                            <div class="contact-item">
-                                <i class="fa-solid fa-location-dot"></i>
-                                <span>Pasig City, Philippines</span>
-                            </div>
-                            <div class="contact-item">
-                                <i class="fa-solid fa-envelope"></i>
-                                <span>johnsmith@gmail.com</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="profile-section">
-                    <h3 class="section-title">Career History</h3>
-                    <div class="job-entry">
-                        <div class="job-title">Front-End Developer</div>
-                        <div class="job-company">abc Tech Solutions Jan 2023 – Present</div>
-                        <ul class="job-details">
-                            <li>Designed and maintained responsive websites using HTML, CSS, and JavaScript.</li>
-                            <li>Collaborated with UI/UX designers to improve user experience.</li>
-                            <li>Optimized website performance for mobile and desktop.</li>
-                        </ul>
-                    </div>
-                    <div class="job-entry">
-                        <div class="job-title">Intern – Web Development</div>
-                        <div class="job-company">DigitalWorks Inc. | Jun 2022 – Dec 2022</div>
-                        <ul class="job-details">
-                            <li>Assisted in creating landing pages and updating website content.</li>
-                            <li>Learned the basics of version control using GitHub.</li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="profile-section">
-                    <h3 class="section-title">Education</h3>
-                    <div class="education-entry">
-                        <div class="degree">Bachelor of Science in Information Technology</div>
-                        <div class="university">University of the East – Manila</div>
-                        <div class="graduation">Graduated: 2023</div>
-                    </div>
-                </div>
-
-                <div class="profile-section">
-                    <h3 class="section-title">Skills</h3>
-                    <div class="skills-grid">
-                        <div class="skill-item">HTML & CSS</div>
-                        <div class="skill-item">Responsive Web Design</div>
-                        <div class="skill-item">JavaScript</div>
-                        <div class="skill-item">Team Collaboration</div>
-                    </div>
-                </div>
-
-                <div class="profile-section">
-                    <h3 class="section-title">Summary</h3>
-                    <p class="summary-text">I am a motivated and detail-oriented front-end developer with hands-on experience in creating user-friendly and visually appealing websites. I am passionate about learning new technologies and continuously improving my skills to deliver high-quality web solutions.</p>
-                </div>
-
-                <button class="back-btn" onclick="backToList()">Back</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // Toggle filter panel
-        function toggleFilter() {
-            const filterPanel = document.getElementById('filterPanel');
-            filterPanel.classList.toggle('active');
-        }
-
-        // Search functionality
-        const searchInput = document.getElementById('searchInput');
-        const table = document.getElementById('applicantTable');
-        const rows = table.getElementsByTagName('tr');
-
-        searchInput.addEventListener('keyup', function() {
-            const filter = searchInput.value.toLowerCase();
-            
-            for (let i = 0; i < rows.length; i++) {
-                const cells = rows[i].getElementsByTagName('td');
-                let found = false;
-                
-                for (let j = 0; j < cells.length; j++) {
-                    if (cells[j].textContent.toLowerCase().indexOf(filter) > -1) {
-                        found = true;
-                        break;
-                    }
-                }
-                
-                rows[i].style.display = found ? '' : 'none';
-            }
-        });
-
-        // View Applicant Function
-        function viewApplicant(id, name) {
-            document.getElementById('listView').classList.add('hidden');
-            document.getElementById('profileView').classList.add('active');
-            document.getElementById('profileName').textContent = name;
-            window.scrollTo(0, 0);
-        }
-
-        // Back to List Function
-        function backToList() {
-            document.getElementById('profileView').classList.remove('active');
-            document.getElementById('listView').classList.remove('hidden');
-            window.scrollTo(0, 0);
-        }
-
-        // Dropdown functionality
-        document.querySelectorAll('.dropdown-icon').forEach(icon => {
-            icon.addEventListener('click', function(e) {
-                e.stopPropagation();
-                alert('Dropdown menu would appear here with options');
-            });
-        });
-
-        // Toggle status dropdown
-        function toggleStatusDropdown(container, event) {
-            event.stopPropagation();
-            
-            // Close all other dropdowns
-            document.querySelectorAll('.status-dropdown-menu').forEach(menu => {
-                if (menu !== container.nextElementSibling) {
-                    menu.classList.remove('active');
-                }
-            });
-            
-            document.querySelectorAll('.dropdown-icon').forEach(icon => {
-                if (icon !== container.querySelector('.dropdown-icon')) {
-                    icon.classList.remove('open');
-                }
-            });
-            
-            // Toggle current dropdown
-            const menu = container.nextElementSibling;
-            const icon = container.querySelector('.dropdown-icon');
-            menu.classList.toggle('active');
-            icon.classList.toggle('open');
-        }
-
-        // Change status
-        function changeStatus(option, statusText, statusClass) {
-            event.stopPropagation();
-            
-            const menu = option.parentElement;
-            const container = menu.previousElementSibling;
-            const icon = container.querySelector('.dropdown-icon');
-            
-            // Remove all status color classes from container
-            container.className = 'status-dropdown-container';
-            
-            // Add new status class to container
-            container.classList.add(statusClass);
-            
-            // Update badge text
-            container.querySelector('.status-badge').textContent = statusText;
-            
-            // Close dropdown
-            menu.classList.remove('active');
-            icon.classList.remove('open');
-        }
-
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function() {
-            document.querySelectorAll('.status-dropdown-menu').forEach(menu => {
-                menu.classList.remove('active');
-            });
-            document.querySelectorAll('.dropdown-icon').forEach(icon => {
-                icon.classList.remove('open');
-            });
-        });
-    </script>
 </body>
+
 </html>

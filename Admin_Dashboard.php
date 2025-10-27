@@ -25,7 +25,7 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboardt</title>
+    <title>Admin Dashboard</title>
     <link rel="stylesheet" href="admin-sidebar.css">
     <!--For icons-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
@@ -41,6 +41,7 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             color: #111827;
         }
 
+
         .sidebar-logo {
             display: flex;
             justify-content: center;
@@ -51,6 +52,7 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             height: 120px;
             width: 120px;
         }
+
 
         .main-content {
             padding: 40px 30px;
@@ -112,8 +114,8 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             <li><a href="Admin-JobPosting.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
             <li><a href="#"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
             <li><a href="#"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
-            <li><a href="Admin-request"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-            <li><a href="Admin-Settings"><i class="fa-solid fa-gear"></i>Settings</a></li>
+            <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+            <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
             <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
         </ul>
     </div>

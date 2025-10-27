@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hospital Employee Management</title>
-    <link rel="stylesheet" href="stylesheet.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="admin-sidebar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         * {
@@ -21,15 +24,29 @@
             overflow: hidden;
         }
 
+        .sidebar-logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+
+        .sidebar-logo img {
+            height: 120px;
+            width: 120px;
+        }
+
         /* Table header */
-      .custom-table thead th {
-    font-size: 12px;       /* smaller text */
-    padding: 8px 10px;     /* smaller padding */
-    background-color: #1e40af !important;
-    color: white !important;
-    font-weight: 600;
-    text-align: center;    /* center-align header text */
-}
+        .custom-table thead th {
+            font-size: 12px;
+            /* smaller text */
+            padding: 8px 10px;
+            /* smaller padding */
+            background-color: #1e40af !important;
+            color: white !important;
+            font-weight: 600;
+            text-align: center;
+            /* center-align header text */
+        }
 
         /* Table body rows */
         .custom-table tbody tr {
@@ -43,7 +60,7 @@
         }
 
         /* Reduce padding for thinner rows */
-        .custom-table th, 
+        .custom-table th,
         .custom-table td {
             padding: 1rem 1.4rem;
         }
@@ -52,12 +69,12 @@
         .table-container {
             width: 100%;
             max-width: 100%;
-            margin: 0 ;
+            margin: 0;
             padding: 0;
             background: white;
             border-radius: 0;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .custom-table {
@@ -143,7 +160,8 @@
             color: #6b7280;
         }
 
-        .filter-btn, .export-btn {
+        .filter-btn,
+        .export-btn {
             padding: 10px 20px;
             border: 1px solid #d1d5db;
             background: white;
@@ -157,7 +175,8 @@
             transition: all 0.3s;
         }
 
-        .filter-btn:hover, .export-btn:hover {
+        .filter-btn:hover,
+        .export-btn:hover {
             border-color: #1e40af;
             color: #1e40af;
         }
@@ -172,7 +191,7 @@
             border-radius: 8px;
             padding: 25px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
         .filter-panel.active {
@@ -317,7 +336,8 @@
             gap: 8px;
         }
 
-        .edit-btn, .delete-btn {
+        .edit-btn,
+        .delete-btn {
             width: 32px;
             height: 32px;
             border: none;
@@ -332,31 +352,33 @@
             transition: transform 0.2s;
         }
 
-        .edit-btn i, .delete-btn i {
+        .edit-btn i,
+        .delete-btn i {
             font-size: 14px;
             display: block;
             line-height: 1;
         }
 
-        .edit-btn { 
-            background: #fbbf24; 
-            color: white; 
-        }
-        
-        .delete-btn { 
-            background: #ef4444; 
-            color: white; 
+        .edit-btn {
+            background: #fbbf24;
+            color: white;
         }
 
-        .edit-btn:hover, .delete-btn:hover {
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+        }
+
+        .edit-btn:hover,
+        .delete-btn:hover {
             transform: scale(1.1);
         }
 
         .profile-form {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-}
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
 
 
         .profile-container {
@@ -428,7 +450,7 @@
             grid-template-columns: repeat(4, 1fr);
             gap: 20px;
         }
-        
+
 
         .form-group {
             display: flex;
@@ -458,7 +480,8 @@
             margin-top: 20px;
         }
 
-        .reset-btn, .save-btn {
+        .reset-btn,
+        .save-btn {
             padding: 12px 30px;
             border: none;
             border-radius: 6px;
@@ -510,70 +533,26 @@
         }
     </style>
 </head>
-<body class="admin-dashboard">
-    <header class="admin-header">
-        <h1 class="admin-header-text">Human Resource</h1>
-    </header>
 
-    <aside class="admin-sidebar">
+<body>
+    <div class="sidebar">
+
         <div class="sidebar-logo">
-            <img src="Images/hospitallogo.png" alt="happy">
+            <img src="Images/hospitallogo.png" alt="">
         </div>
-        <nav class="sidebar-nav">
-            <ul class="primary-top-nav">
-                <li class="nav-item">
-                    <a href="Admin-Dashboard.php" class="nav-link">
-                        <i class="fa-solid fa-grip"></i>
-                        <span class="nav-label">Dashboard</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="Admin_Employee.php" class="nav-link">
-                        <i class="fa-solid fa-user-group"></i>
-                        <span class="nav-label">Employees</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="Admin_Applicants.php" class="nav-link">
-                        <i class="fa-solid fa-user-group"></i>
-                        <span class="nav-label">Applicants</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="Admin-request.php" class="nav-link">
-                        <i class="fa-solid fa-code-pull-request"></i>
-                        <span class="nav-label">Requests</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="Admin-JobPosting.php" class="nav-link">
-                        <i class="fa-solid fa-folder"></i>
-                        <span class="nav-label">Job Post</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fa-solid fa-chart-simple"></i>
-                        <span class="nav-label">Reports</span>
-                    </a>
-                </li>
-            </ul>
-            <ul class="secondary-buttom-nav">
-                <li class="nav-item">
-                    <a href="Admin-Settings.php" class="nav-link">
-                        <i class="fa-solid fa-gear"></i>
-                        <span class="nav-label">Settings</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="Login.php" class="nav-link">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        <span class="nav-label">Logout</span>
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </aside>
+
+        <ul class="nav">
+            <li class="active"><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
+            </li>
+            <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
+            <li><a href="Admin-JobPosting.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
+            <li><a href="#"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
+            <li><a href="#"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
+            <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+            <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
+            <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+        </ul>
+    </div>
 
     <div class="main-content">
         <div id="employeeListView">
@@ -593,7 +572,7 @@
                     Filter <i class="fa-solid fa-filter"></i>
                 </button>
                 <button class="export-btn">
-                    Export As 
+                    Export As
                     <i class="fa-solid fa-file-pdf" style="color: #ef4444;"></i>
                     <i class="fa-solid fa-file-excel" style="color: #10b981;"></i>
                 </button>
@@ -719,7 +698,7 @@
                     <i class="fa-solid fa-arrow-left"></i> Back
                 </button>
             </div>
-            
+
             <div class="profile-card">
                 <div class="profile-top">
                     <div class="profile-avatar">
@@ -739,76 +718,77 @@
                 <hr style="border-color: rgba(255,255,255,0.3); margin: 20px 0;">
 
                 <div class="profile-form">
-    <div class="form-group">
-        <label>Full Name</label>
-        <input type="text" id="fullNameInput" class="fixed-input">
-    </div>
-    <div class="form-group">
-        <label>Employee ID</label>
-        <input type="text" id="employeeIdInput" class="fixed-input">
-    </div>
-    <div class="form-group">
-        <label>Position</label>
-        <input type="text" id="positionInput" class="fixed-input">
-    </div>
-    <div class="form-group">
-        <label>Department</label>
-        <input type="text" id="departmentInput" class="fixed-input">
-    </div>
-    <div class="form-group">
-        <label>Employment Status</label>
-        <select id="employmentStatusInput" class="fixed-input">
-            <option>Regular</option>
-            <option>Probationary</option>
-            <option>Contract</option>
-        </select>
-    </div>
-    <div class="form-group">
-        <label>Email Address</label>
-        <input type="email" id="emailInput" class="fixed-input" style="height: 45px; padding: 10px 15px; font-size: 14px;">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="fullNameInput" class="fixed-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Employee ID</label>
+                        <input type="text" id="employeeIdInput" class="fixed-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Position</label>
+                        <input type="text" id="positionInput" class="fixed-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Department</label>
+                        <input type="text" id="departmentInput" class="fixed-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Employment Status</label>
+                        <select id="employmentStatusInput" class="fixed-input">
+                            <option>Regular</option>
+                            <option>Probationary</option>
+                            <option>Contract</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="emailInput" class="fixed-input"
+                            style="height: 45px; padding: 10px 15px; font-size: 14px;">
 
-    </div>
-    <div class="form-group">
-        <label>Date of Birth</label>
-        <input type="date" id="dobInput" class="fixed-input">
-    </div>
-    <div class="form-group">
-        <label>Gender</label>
-        <select id="genderInput" class="fixed-input">
-            <option>Male</option>
-            <option>Female</option>
-            <option>Other</option>
-        </select>
-    </div>
-    <div class="form-group">
-        <label>Home Address</label>
-        <input type="text" id="homeAddressInput" class="fixed-input">
-    </div>
-    <div class="form-group">
-        <label>Contact Number</label>
-        <input type="tel" id="contactNumberInput" class="fixed-input">
-    </div>
-    <div class="form-group">
-        <label>Emergency Contact Number</label>
-        <input type="tel" id="emergencyContactInput" class="fixed-input">
-    </div>
-    <div class="form-group">
-        <label>TIN Number</label>
-        <input type="text" id="tinInput" class="fixed-input">
-    </div>
-    <div class="form-group">
-        <label>PhilHealth Number</label>
-        <input type="text" id="philhealthInput" class="fixed-input">
-    </div>
-    <div class="form-group">
-        <label>SSS Number</label>
-        <input type="text" id="sssInput" class="fixed-input">
-    </div>
-    <div class="form-group">
-        <label>Pag-ibig Number</label>
-        <input type="text" id="pagIbigInput" class="fixed-input">
-    </div>
-</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Date of Birth</label>
+                        <input type="date" id="dobInput" class="fixed-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select id="genderInput" class="fixed-input">
+                            <option>Male</option>
+                            <option>Female</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Home Address</label>
+                        <input type="text" id="homeAddressInput" class="fixed-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Number</label>
+                        <input type="tel" id="contactNumberInput" class="fixed-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Emergency Contact Number</label>
+                        <input type="tel" id="emergencyContactInput" class="fixed-input">
+                    </div>
+                    <div class="form-group">
+                        <label>TIN Number</label>
+                        <input type="text" id="tinInput" class="fixed-input">
+                    </div>
+                    <div class="form-group">
+                        <label>PhilHealth Number</label>
+                        <input type="text" id="philhealthInput" class="fixed-input">
+                    </div>
+                    <div class="form-group">
+                        <label>SSS Number</label>
+                        <input type="text" id="sssInput" class="fixed-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Pag-ibig Number</label>
+                        <input type="text" id="pagIbigInput" class="fixed-input">
+                    </div>
+                </div>
 
                 <div class="form-actions">
                     <button class="reset-btn" onclick="resetForm()">
@@ -851,7 +831,7 @@
             document.getElementById('departmentFilter').value = '';
             document.getElementById('typeFilter').value = '';
             document.getElementById('remarksFilter').value = '';
-            
+
             const rows = document.querySelectorAll('#employeeTable tr');
             rows.forEach(row => {
                 row.style.display = '';
@@ -861,7 +841,7 @@
         function showProfile(employeeData) {
             const listView = document.getElementById('employeeListView');
             const profileView = document.getElementById('employeeProfileView');
-            
+
             listView.classList.add('hidden');
             profileView.classList.add('active');
 
@@ -888,13 +868,13 @@
         function showListView() {
             const listView = document.getElementById('employeeListView');
             const profileView = document.getElementById('employeeProfileView');
-            
+
             listView.classList.remove('hidden');
             profileView.classList.remove('active');
         }
 
         function resetForm() {
-            if(confirm('Are you sure you want to reset all changes?')) {
+            if (confirm('Are you sure you want to reset all changes?')) {
                 document.querySelectorAll('#employeeProfileView input, #employeeProfileView select').forEach(field => {
                     field.value = '';
                 });
@@ -907,12 +887,12 @@
         }
 
         // Initialize after DOM loads
-        setTimeout(function() {
-            document.querySelectorAll('#employeeTable tr').forEach(function(row) {
+        setTimeout(function () {
+            document.querySelectorAll('#employeeTable tr').forEach(function (row) {
                 const cells = row.querySelectorAll('td');
-                
-                if(cells.length < 7) return;
-                
+
+                if (cells.length < 7) return;
+
                 const employeeData = {
                     id: cells[0].textContent.trim(),
                     name: cells[1].textContent.trim(),
@@ -924,7 +904,7 @@
                 };
 
                 // Click on row
-                row.onclick = function(e) {
+                row.onclick = function (e) {
                     if (!e.target.closest('.delete-btn') && !e.target.closest('.edit-btn')) {
                         showProfile(employeeData);
                     }
@@ -932,8 +912,8 @@
 
                 // Click on edit button
                 const editBtn = row.querySelector('.edit-btn');
-                if(editBtn) {
-                    editBtn.onclick = function(e) {
+                if (editBtn) {
+                    editBtn.onclick = function (e) {
                         e.stopPropagation();
                         showProfile(employeeData);
                     };
@@ -942,4 +922,5 @@
         }, 100);
     </script>
 </body>
+
 </html>
