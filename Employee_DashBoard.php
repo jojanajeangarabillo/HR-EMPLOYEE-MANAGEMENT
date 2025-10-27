@@ -31,7 +31,6 @@
       font-size: 35px;
     }
 
-    /* Profile */
     .sidebar-menu .profile {
       display: flex;
       font-size: 20px;
@@ -57,49 +56,134 @@
       border-left: 5px solid #ffffff;
     }
 
-    /* MAIN CONTENT */
     .main-content {
-      margin-left: 250px; /* same as sidebar width */
+      margin-left: 270px;
       padding: 30px;
-      width: calc(100% - 250px);
-      background-color: #f7f9fc;
-      min-height: 100vh;
+      font-family: 'Roboto', sans-serif;
     }
 
-    .main-content h2 {
-      font-size: 28px;
-      color: #1f3b83;
-    }
-
-    .dashboard-header {
-      background-color: #6d8ff0;
+    /* Welcome Section */
+    .welcome-card {
+      background-color: #6674cc;
       color: white;
       padding: 20px;
       border-radius: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
     }
 
-    .dashboard-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    .welcome-card h3 {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .welcome-card p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    /* Card Container */
+    .card-container {
+      display: flex;
+      flex-wrap: wrap;
       gap: 20px;
+      margin-bottom: 40px;
     }
 
+    /* Card Style */
     .card {
-      background-color: white;
-      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      background-color: #f3f3f9;
       border-radius: 10px;
+      padding: 20px;
+      width: 500px;
+      height: 100px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      text-align: center;
-      font-size: 18px;
+      transition: transform 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
     }
 
     .card i {
-      font-size: 30px;
-      margin-bottom: 10px;
-      display: block;
+      font-size: 35px;
+      margin-right: 20px;
+      color:#1E3A8A;
     }
 
+    .info h2 {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .info p {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 0;
+    }
+
+    /* Border Colors */
+    .salary { border-left: 5px solid #3b82f6; }
+    .attendance { border-left: 5px solid #ec4899; }
+    .requests { border-left: 5px solid #dc2626; }
+    .announcements { border-left: 5px solid #3b82f6; }
+
+    /* Announcements Section */
+    .announcement-section {
+      margin-top: 30px;
+    }
+
+    .announcement-section h1 {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+    }
+
+    .announcement-section h1 i {
+      color: #1E3A8A;
+      margin-right: 10px;
+    }
+
+    .announcement-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #6674cc;
+      color: white;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .announcement-table th, .announcement-table td {
+      padding: 15px;
+      text-align: left;
+    }
+
+    .announcement-table th {
+      background-color: #4c5ecf;
+      font-weight: bold;
+    }
+
+    .announcement-table td {
+      background-color: #6674cc;
+    }
+
+    .announcement-table button {
+      background-color: #1E3A8A;
+      border: none;
+      color: white;
+      padding: 8px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .announcement-table button:hover {
+      background-color: #142b66;
+    }
   </style>
 </head>
 
@@ -112,27 +196,72 @@
     <ul class="sidebar-menu">
       <li class="profile">My Profile</li>
       <li class="menu-title">Menu Board</li>
-      <li><a href="#" class="active"><i class="fa-solid fa-grip"></i> Dashboard</a></li>
-      <li><a href="#"><i class="fa-solid fa-user-group"></i> Salary Slip</a></li>
+      <li><a href="Employee_Dashboard.php" class="active"><i class="fa-solid fa-grip"></i> Dashboard</a></li>
+      <li><a href="Employee_SalarySlip.php"><i class="fa-solid fa-user-group"></i> Salary Slip</a></li>
       <li><a href="#"><i class="fa-solid fa-code-branch"></i> Requests</a></li>
       <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
     </ul>
   </aside>
 
   <!-- Main Content -->
-  <div class="main-content">
-    <h2>Employee</h2>
-    <div class="dashboard-header">
+  <main class="main-content">
+    <h1>Employee</h1>
+
+    <div class="welcome-card">
       <h3>Welcome to Employee Dashboard</h3>
-      <p>Here’s a quick summary of your payslip, requests, attendance, and recent announcements.</p>
+      <p>Here's a quick summary of your payslip, requests, attendance record, and recent announcements.</p>
     </div>
 
-    <div class="dashboard-cards">
-      <div class="card"><i class="fa-solid fa-file-invoice-dollar"></i>Salary Slip<br><strong>20</strong></div>
-      <div class="card"><i class="fa-solid fa-calendar-check"></i>Attendance<br><strong>20</strong></div>
-      <div class="card"><i class="fa-solid fa-code-branch"></i>Requests<br><strong>5</strong></div>
-      <div class="card"><i class="fa-solid fa-bullhorn"></i>Announcements<br><strong>5</strong></div>
+    <div class="card-container">
+      <div class="card salary">
+        <i class="fa-solid fa-folder"></i>
+        <div class="info">
+          <h2>Salary Slip</h2>
+          <p>20</p>
+        </div>
+      </div>
+
+      <div class="card attendance">
+        <i class="fa-solid fa-chart-column"></i>
+        <div class="info">
+          <h2>Attendance</h2>
+          <p>20</p>
+        </div>
+      </div>
+
+      <div class="card requests">
+        <i class="fa-solid fa-code-branch"></i>
+        <div class="info">
+          <h2>Requests</h2>
+          <p>5</p>
+        </div>
+      </div>
+
+      <div class="card announcements">
+        <i class="fa-solid fa-comment"></i>
+        <div class="info">
+          <h2>Announcements</h2>
+          <p>5</p>
+        </div>
+      </div>
     </div>
-  </div>
+
+    <!-- Announcements Section at Bottom -->
+    <div class="announcement-section">
+      <h1><i class="fa-solid fa-comment"></i> Announcements</h1>
+      <table class="announcement-table">
+        <tr>
+          <th>Position</th>
+          <th>Date Posted</th>
+          <th>Action</th>
+        </tr>
+        <tr>
+          <td>New Uniform Policy</td>
+          <td>October 10, 2025</td>
+          <td><button>View</button></td>
+        </tr>
+      </table>
+    </div>
+  </main>
 </body>
 </html>
