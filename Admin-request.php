@@ -1,3 +1,33 @@
+
+<?php
+session_start();
+require 'admin/db.connect.php';
+
+$employees = 0;
+$requests = 0;
+$hirings = 0;
+$applicants = 0;
+
+$adminanmeQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin'");
+if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
+    $adminname = $row['fullname'];
+}
+
+
+$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
+if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
+    $employees = $row['count'];
+}
+
+$applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Applicant'");
+if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
+    $applicants = $row['count'];
+}
+
+?>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -16,7 +46,13 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <style>
-        /* MAIN CONTENT */
+        body {
+            font-family: 'Poppins', 'Roboto', sans-serif;
+            margin: 0;
+            display: flex;
+            background-color: #f1f5fc;
+            color: #111827;
+        }
         .request-container {
             margin-left: 220px; /* space for sidebar */
             padding: 40px 30px; /* top/bottom and left/right spacing */
@@ -172,46 +208,47 @@
             color: #ef4444;
             font-weight: 600;
         }
+
+        .sidebar-name {
+        display: flex;
+        justify-content: center; 
+        align-items: center;      
+        text-align: center;       
+        color: white;
+        padding: 10px;
+        margin-bottom: 30px;
+        font-size: 18px; 
+        flex-direction: column; 
+        }
+
     </style>
 </head>
 
 <body>
 
-    <div class="sidebar">
+     <div class="sidebar">
+
         <div class="sidebar-logo">
             <img src="Images/hospitallogo.png" alt="">
         </div>
 
-<<<<<<< HEAD
+        <div class="sidebar-name">
+            <p><?php echo "Welcome, $adminname"; ?></p>
+        </div>
+
+
         <ul class="nav">
             <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
             <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
             <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-            <li><a href="#"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
-            <li><a href="#"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
+            <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
+            <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
             <li class="active"><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-            <li><a href="#"><i class="fa-solid fa-code-pull-request"></i>Reports</a></li>
+            <li><a href="#"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
             <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
             <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
         </ul>
     </div>
-=======
-        <nav class="sidebar-nav">
-           <ul class="nav">
-            <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
-            </li>
-            <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
-            <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-            <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
-            <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
-            <li class="active"><a href="#"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-             <li><a href="#"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
-            <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-            <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
-        </ul>
-        </nav>
-    </aside>
->>>>>>> 164bc9bc05c9732950c38b37fbd5b010d9b8866f
 
     <!-- MAIN CONTENT -->
     <main class="request-container">
