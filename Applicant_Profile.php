@@ -1,25 +1,54 @@
 <?php
-session_start();
+session_start();  // Ensure session is started at the top
+// Include database connection
 include 'admin/db.connect.php';
-
-if (!isset($_SESSION['applicantID'])) {
-    die("No applicant session found. Please log in again.");
+// Check if user is logged in; redirect to login if not
+if (!isset($_SESSION['applicantID']) || empty($_SESSION['applicantID'])) {
+    header("Location: Login.php");
+    exit();
 }
-
 $user_id = $_SESSION['applicantID'];
+// Handle profile update (from edit modal)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
+    $new_name = trim($_POST['fullName']);
+    $new_phone = trim($_POST['phoneNumber']);
+    $new_location = trim($_POST['homeLocation']);
+    $new_email = trim($_POST['emailAddress']);
 
-$sql = "SELECT fullName, emailAddress FROM applicant WHERE applicantID = ?";
+    // Basic validation (add more as needed)
+    if (!empty($new_name) && !empty($new_email) && filter_var($new_email, FILTER_VALIDATE_EMAIL)) {
+        $update_sql = "UPDATE applicant SET fullName = ?, phoneNumber = ?, homeLocation = ?, emailAddress = ? WHERE applicantID = ?";
+        $update_stmt = $conn->prepare($update_sql);
+        $update_stmt->bind_param("ssssi", $new_name, $new_phone, $new_location, $new_email, $user_id);
+        $update_stmt->execute();
+        $update_stmt->close();
+
+        // Refresh the page to show updated data
+        header("Location: Applicant_Profile.php");
+        exit();
+    } else {
+        // Handle validation errors (e.g., display a message)
+        $error = "Invalid input. Please check your details.";
+    }
+}
+// Fetch user data (including phone and location)
+$sql = "SELECT fullName, emailAddress, phoneNumber, homeLocation FROM applicant WHERE applicantID = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
-
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
-    $name = $row['fullName'];
-    $email = $row['emailAddress'];
+    $name = htmlspecialchars($row['fullName']);
+    $email = htmlspecialchars($row['emailAddress']);
+    $phone = htmlspecialchars($row['phoneNumber'] ?? 'Not provided');  // Default if null
+    $location = htmlspecialchars($row['homeLocation'] ?? 'Not provided');  // Default if null
 } else {
-    echo "No applicant data found.";
+    // Fallback if no data found (shouldn't happen if session is valid)
+    $name = "Unknown";
+    $email = "Not available";
+    $phone = "Not available";
+    $location = "Not available";
 }
 ?>
 

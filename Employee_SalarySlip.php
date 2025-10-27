@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,7 @@
   <link rel="stylesheet" href="sidebar.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  
+
   <style>
     body {
       margin: 0;
@@ -93,7 +94,7 @@
     .table-container {
       background: white;
       border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       padding: 20px;
     }
 
@@ -129,7 +130,7 @@
       --color-border: #ddd;
       --color-success: #00c853;
       --font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
       --radius-md: 10px;
     }
 
@@ -299,7 +300,7 @@
       align-items: center;
       margin-bottom: 25px;
       padding-bottom: 15px;
-      border-bottom: 2px solid rgba(255,255,255,0.3);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
     }
 
     .slip-header-text {
@@ -333,7 +334,7 @@
     }
 
     .salary-table {
-      background: rgba(255,255,255,0.15);
+      background: rgba(255, 255, 255, 0.15);
       border-radius: 8px;
       overflow: hidden;
     }
@@ -344,7 +345,7 @@
     }
 
     .salary-table thead {
-      background: rgba(0,0,0,0.2);
+      background: rgba(0, 0, 0, 0.2);
     }
 
     .salary-table th {
@@ -353,14 +354,14 @@
       font-weight: 600;
       font-size: 12px;
       text-transform: uppercase;
-      border-bottom: 2px solid rgba(255,255,255,0.3);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
     }
 
     .salary-table td {
       padding: 8px;
       text-align: center;
       font-size: 13px;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
     .salary-table tbody tr:last-child td {
@@ -368,18 +369,18 @@
     }
 
     .salary-table tbody tr:hover {
-      background: rgba(255,255,255,0.05);
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .total-row {
-      background: rgba(0,0,0,0.25) !important;
+      background: rgba(0, 0, 0, 0.25) !important;
       font-weight: 700 !important;
       font-size: 14px !important;
     }
 
     .total-row td {
       padding: 12px 8px !important;
-      border-top: 2px solid rgba(255,255,255,0.3) !important;
+      border-top: 2px solid rgba(255, 255, 255, 0.3) !important;
     }
 
     .btn-back {
@@ -398,10 +399,11 @@
     .btn-back:hover {
       background-color: var(--color-primary-dark);
       transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     }
 
     @media print {
+
       .sidebar,
       .export-buttons,
       .btn-back {
@@ -740,4 +742,5 @@
     }
   </script>
 </body>
+
 </html>
