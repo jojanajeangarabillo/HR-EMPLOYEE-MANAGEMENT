@@ -9,50 +9,191 @@
     <!-- Global stylesheet (for sidebar & header) -->
     <link rel="stylesheet" href="admin-sidebar.css">
 
-    <!-- Page-specific stylesheet -->
-    <link rel="stylesheet" href="employee-request.css">
-
     <!-- Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 
     <!-- jQuery for interactivity -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        /* MAIN CONTENT */
+        .request-container {
+            margin-left: 220px; /* space for sidebar */
+            padding: 40px 30px; /* top/bottom and left/right spacing */
+            background-color: #f1f5fc;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* HEADER */
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+           .sidebar-logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+
+        .sidebar-logo img {
+            height: 120px;
+            width: 120px;
+        }
+
+        .request-header h1 {
+            font-size: 2rem;
+            margin: 0;
+            color: #1E3A8A;
+        }
+
+        .show-filter-btn {
+            padding: 6px 12px; /* normal size */
+            font-size: 14px;
+            background-color: #1E3A8A;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .show-filter-btn:hover {
+            background-color: #1e40af;
+        }
+
+        /* FILTER BOX */
+        .filter-box {
+            display: none; /* initially hidden */
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: flex-start; /* ensures buttons start on new row */
+        }
+
+        .filter-box label {
+            font-weight: 500;
+        }
+
+        .filter-box select {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+
+        .filter-buttons {
+            width: 100%;           /* full width so buttons appear below selects */
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .filter-buttons button {
+            padding: 6px 12px; /* normal size */
+            font-size: 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .apply-btn {
+            background-color: #1E3A8A;
+            color: white;
+        }
+
+        .apply-btn:hover {
+            background-color: #1e40af;
+        }
+
+        .reset-btn {
+            background-color: #e5e7eb;
+            color: #111827;
+        }
+
+        .reset-btn:hover {
+            background-color: #d1d5db;
+        }
+
+        /* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            padding: 20px 24px; /* wider cells */
+            text-align: center;
+            border: 1px solid #e0e0e0;
+            min-width: 150px;
+        }
+
+        thead {
+            background-color: #1E3A8A;
+            color: white;
+            font-weight: 600;
+        }
+
+        tbody tr:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        /* STATUS COLORS */
+        .status-approved {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+
+        .status-rejected {
+            color: #ef4444;
+            font-weight: 600;
+        }
+    </style>
 </head>
 
-<body class="admin-dashboard">
+<body>
 
-    <!-- SIDEBAR -->
-    <aside class="admin-sidebar">
+    <div class="sidebar">
         <div class="sidebar-logo">
-            <img src="Images/hospitallogo.png" alt="Company Logo">
+            <img src="Images/hospitallogo.png" alt="">
         </div>
 
-        <nav class="sidebar-nav">
-            <ul class="primary-top-nav">
-                <li class="nav-item"><a href="Admin_Dashboard.php"><i class="fa-solid fa-grip"></i><span
-                            class="nav-label">Dashboard</span></a></li>
-                <li class="nav-item"><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i><span
-                            class="nav-label">Employees</span></a></li>
-                <li class="nav-item"><a href="Admin_Applicants.php"><i class="fa-solid fa-user-group"></i><span
-                            class="nav-label">Applicants</span></a></li>
-                <li class="nav-item"><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-group"></i><span
-                            class="nav-label">Pending Applicants</span></a></li>
-                <li class="nav-item active"><a href="#"><i class="fa-solid fa-code-pull-request"></i><span
-                            class="nav-label">Requests</span></a></li>
-                <li class="nav-item"><a href="Admin-JobPosting.php"><i class="fa-solid fa-folder"></i><span
-                            class="nav-label">Job Post</span></a></li>
-                <li class="nav-item"><a href="#"><i class="fa-solid fa-chart-simple"></i><span
-                            class="nav-label">Reports</span></a></li>
-            </ul>
-
-            <ul class="secondary-buttom-nav">
-                <li class="nav-item"><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i><span
-                            class="nav-label">Settings</span></a></li>
-                <li class="nav-item"><a href="#"><i class="fa-solid fa-right-from-bracket"></i><span
-                            class="nav-label">Logout</span></a></li>
-            </ul>
-        </nav>
-    </aside>
+        <ul class="nav">
+            <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+            <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
+            <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
+            <li><a href="#"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
+            <li><a href="#"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
+            <li class="active"><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+            <li><a href="#"><i class="fa-solid fa-code-pull-request"></i>Reports</a></li>
+            <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
+            <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+        </ul>
+    </div>
 
     <!-- MAIN CONTENT -->
     <main class="request-container">
@@ -93,14 +234,12 @@
                 <option>Rejected</option>
             </select>
 
+            <!-- Buttons now inside the filter box -->
             <div class="filter-buttons">
                 <button class="apply-btn"><i class="fa-solid fa-magnifying-glass"></i> Apply</button>
                 <button class="reset-btn"><i class="fas fa-rotate-right"></i> Reset</button>
             </div>
-
-
         </div>
-
 
         <!-- TABLE -->
         <table>
