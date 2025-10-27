@@ -19,6 +19,14 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <style>
+         body {
+            font-family: 'Poppins', 'Roboto', sans-serif;
+            margin: 0;
+            display: flex;
+            background-color: #f1f5fc;
+            color: #111827;
+        }
+
         .sidebar-logo {
             display: flex;
             justify-content: center;
@@ -47,8 +55,9 @@
             <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
             <li><a href="Admin-JobPosting.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
             <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
-            <li><a href="#"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
+            <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
             <li><a href="Admin-request"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+            <li><a href="#"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
             <li class="active"><a href="Admin-Settings"><i class="fa-solid fa-gear"></i>Settings</a></li>
             <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
         </ul>
