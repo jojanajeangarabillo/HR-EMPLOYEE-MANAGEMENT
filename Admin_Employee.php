@@ -546,9 +546,10 @@
             </li>
             <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
             <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-            <li><a href="#"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
+            <li><a href="Admin-Pending-Applicants"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
             <li><a href="#"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
             <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+             <li><a href="#"><i class="fa-solid fa-clipboard-list"></i>Reports</a></li>
             <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
             <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
         </ul>

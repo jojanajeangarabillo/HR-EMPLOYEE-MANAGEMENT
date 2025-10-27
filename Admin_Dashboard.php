@@ -124,15 +124,9 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
             <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
             <li><a href="#"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
-<<<<<<< HEAD
-            <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
-            <li><a href="#"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-            <li><a href="#"><i class="fa-solid fa-chart-simple"></i></i>Reports</a></li>
-=======
             <li><a href="#"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
             <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
             <li><a href="#"><i class="fa-solid fa-code-pull-request"></i>Reports</a></li>
->>>>>>> 2f89336a4661ce2538cf4f4a24593273f70e80bf
             <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
             <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
         </ul>
