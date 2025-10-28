@@ -61,13 +61,17 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
 
 
         .sidebar-name {
-            display: flex;
-            justify-content: center;
-            color: white;
-            padding: 10px;
-            margin-bottom: 30px;
-            font-size: 20px;
+        display: flex;
+        justify-content: center; 
+        align-items: center;      
+        text-align: center;       
+        color: white;
+        padding: 10px;
+        margin-bottom: 30px;
+        font-size: 18px; 
+        flex-direction: column; 
         }
+
 
         .main-content {
             padding: 40px 30px;

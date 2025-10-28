@@ -4,63 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Employee Dashboard</title>
-  <link rel="stylesheet" href="sidebar.css">
+  <link rel="stylesheet" href="employee-sidebar.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
   <style>
-    body {
-      margin: 0;
-      font-family: 'Roboto', sans-serif;
-      display: flex;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 250px;
-      height: 100vh;
-      background-color: #1f3b83;
-      color: white;
-      position: fixed;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 20px;
-    }
-
-    h1 {
-      font-family: 'Roboto', sans-serif;
-      font-size: 35px;
-    }
-
-    .sidebar-menu .profile {
-      display: flex;
-      font-size: 20px;
-      justify-content: center;
-      font-family: 'Roboto', sans-serif;
-      color: white;
-      padding: 10px 0;
-      margin: 10px 0;
-      width: 85%;
-      cursor: pointer;
-      transition: background 0.1s, border-left 0.1s, color 0.1s;
-    }
-
-    .sidebar-menu .profile:hover {
-      background-color: #142b66;
-      border-left: 5px solid #ffffff;
-      color: #ffffff;
-    }
-
-    .sidebar-menu .active,
-    .sidebar-menu a.active:hover {
-      background-color: #142b66;
-      border-left: 5px solid #ffffff;
-    }
-
-    .main-content {
-      margin-left: 270px;
-      padding: 30px;
-      font-family: 'Roboto', sans-serif;
-    }
+  
 
     /* Welcome Section */
     .welcome-card {
@@ -191,14 +138,14 @@
   <!-- Sidebar -->
   <aside class="sidebar">
     <h1>Welcome</h1>
-    <img src="images/hospital-logo.png" alt="Profile" width="80" height="80">
+    <img src="images/profile.png" alt="Profile" width="80" height="80">
 
     <ul class="sidebar-menu">
-      <li class="profile">My Profile</li>
+      <li><a href="Employee_Profile.php" style="display: block; text-align: center; padding-right: 75px;">My Profile</a></li>
       <li class="menu-title">Menu Board</li>
       <li><a href="Employee_Dashboard.php" class="active"><i class="fa-solid fa-grip"></i> Dashboard</a></li>
       <li><a href="Employee_SalarySlip.php"><i class="fa-solid fa-user-group"></i> Salary Slip</a></li>
-      <li><a href="#"><i class="fa-solid fa-code-branch"></i> Requests</a></li>
+      <li><a href="Employee_Requests.php"><i class="fa-solid fa-code-branch"></i> Requests</a></li>
       <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
     </ul>
   </aside>
