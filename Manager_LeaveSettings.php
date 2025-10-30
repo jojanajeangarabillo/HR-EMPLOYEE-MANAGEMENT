@@ -136,16 +136,16 @@
       <img src="Images/hospitallogo.png" alt="Hospital Logo">
     </div>
 
-    <ul class="nav">
-      <li><a href="#"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
-      <li><a href="#"><i class="fa-solid fa-user"></i> Applicants</a></li>
-      <li><a href="#"><i class="fa-solid fa-users"></i> Pending Applicants</a></li>
-      <li><a href="#"><i class="fa-solid fa-clipboard-list"></i> Request</a></li>
-      <li><a href="#"><i class="fa-solid fa-briefcase"></i> Job Post</a></li>
-      <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar-days"></i> Calendar</a></li>
-      <li><a href="#"><i class="fa-solid fa-check-circle"></i> Approvals</a></li>
-      <li class="active"><a href="#"><i class="fa-solid fa-gear"></i> Settings</a></li>
-      <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i> Log out</a></li>
+     <ul class="nav">
+      <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+      <li><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
+      <li><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
+      <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+      <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
+      <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
+      <li><a href="Manager_Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
+      <li class="active"><a href="Manager_LeaveSettings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
+      <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
     </ul>
   </div>
 

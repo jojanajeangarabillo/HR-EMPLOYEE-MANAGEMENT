@@ -15,7 +15,7 @@ if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Applicants</title>
-  <link rel="stylesheet" href="admin-sidebar.css">
+  <link rel="stylesheet" href="manager-sidebar.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
     integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -29,26 +29,17 @@ if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
     }
 
     .sidebar-logo {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 50px;
+     display: flex;
+     justify-content: center;
+     margin-bottom: 25px;
     }
 
     .sidebar-logo img {
-      height: 120px;
-      width: 120px;
-    }
-
-    .sidebar-name {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      color: white;
-      padding: 10px;
-      margin-bottom: 30px;
-      font-size: 18px;
-      flex-direction: column;
+     height: 110px;
+     width: 110px;
+     border-radius: 50%;
+     object-fit: cover;
+     border: 3px solid #ffffff;
     }
 
     .main-content {
@@ -276,19 +267,18 @@ if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
     </div>
 
     <div class="sidebar-name">
-      <p><?php echo "Welcome, $adminname"; ?></p>
     </div>
-    <ul class="nav">
-      <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-      <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
-      <li class="active"><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-      <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
-      <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
-      <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-      <li><a href="#"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
-      <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-      <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
-    </ul>
+      <ul class="nav">
+            <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+            <li class="active"><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
+            <li><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
+            <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+            <li><a href="Manager_JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
+            <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
+            <li><a href="Manager_Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
+            <li><a href="Manager_LeaveSettings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
+            <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+        </ul>
   </div>
 
   <!-- MAIN CONTENT -->

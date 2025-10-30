@@ -92,14 +92,14 @@
 
     <ul class="nav">
       <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-      <li><a href="Manager-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-      <li><a href="Manager-Pending-Applicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
-      <li><a href="Manager-Requests.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-      <li><a href="Manager-JobPost.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
+      <li><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
+      <li><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
+      <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+      <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
       <li class="active"><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
-      <li><a href="Manager-Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
+      <li><a href="Manager_Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
       <li><a href="Manager_LeaveSettings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-      <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+      <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
     </ul>
   </div>
 

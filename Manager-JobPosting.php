@@ -4,43 +4,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Job Posting</title>
+  <title>Manager - Job Posting</title>
 
-  <!-- Global stylesheet (for sidebar & header) -->
-  <link rel="stylesheet" href="admin-sidebar.css">
-
-  <!-- Page-specific stylesheet (left in place as requested) -->
-  <link rel="stylesheet" href="employee-request.css">
+  <!-- Manager Sidebar -->
+  <link rel="stylesheet" href="manager-sidebar.css">
 
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 
-  <!-- jQuery for interactivity -->
+  <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-  <!-- ✅ INTERNAL CSS BELOW -->
   <style>
-    body.admin-dashboard {
+    body {
       margin: 0;
       padding: 0;
-      font-family: Arial, sans-serif;
+      font-family: 'Poppins', 'Roboto', sans-serif;
+      background-color: #f1f5fc;
+      display: flex;
+      color: #111827;
+    }
+     .sidebar-logo {
+     display: flex;
+     justify-content: center;
+     margin-bottom: 25px;
+    }
+
+    .sidebar-logo img {
+     height: 110px;
+     width: 110px;
+     border-radius: 50%;
+     object-fit: cover;
+     border: 3px solid #ffffff;
     }
 
 
-    /* MAIN CONTENT: JOB POSTINGS */
+    /* MAIN CONTENT */
     .job-postings-container {
-      margin-left: 50px;
-      /* aligns with sidebar */
-      padding: 50px 30px 30px;
-      /* top padding accounts for fixed header */
-      font-family: 'Poppins', 'Roboto';
+      flex-grow: 1;
+      margin-left: 220px;
+      padding: 40px;
     }
 
     .job-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
     }
 
     .job-header h2 {
@@ -60,8 +70,14 @@
       border-radius: 5px;
       font-size: 14px;
       cursor: pointer;
+      transition: 0.3s;
     }
 
+    .add-job-btn:hover {
+      background-color: #274ca7;
+    }
+
+    /* JOB TABLE */
     .job-table {
       width: 100%;
     }
@@ -69,7 +85,7 @@
     .job-table-header,
     .job-row {
       display: grid;
-      grid-template-columns: 1.5fr 1fr 1fr 0.7fr 0.8fr 1fr;
+      grid-template-columns: 1.8fr 1.2fr 1.2fr 0.7fr 0.8fr 1fr;
       padding: 12px 15px;
       align-items: center;
     }
@@ -94,13 +110,14 @@
     }
 
     .status.active {
-      color: #d4fcd4;
+      color: #bdfbbd;
       font-weight: bold;
     }
 
     .actions {
       display: flex;
       gap: 8px;
+      justify-content: center;
     }
 
     .circle-btn {
@@ -115,10 +132,19 @@
       align-items: center;
       cursor: pointer;
       color: white;
+      transition: 0.3s;
+    }
+
+    .circle-btn:hover {
+      background: #1f8ae8;
     }
 
     .circle-btn.delete {
       background: #ff4b4b;
+    }
+
+    .circle-btn.delete:hover {
+      background: #d93a3a;
     }
 
     .circle-btn i {
@@ -128,11 +154,9 @@
     .job-icon {
       font-size: 28px;
       color: #1a3f9b;
-      /* Same blue as your header text */
-      margin-right: 8px;
-
     }
 
+    /* MODAL */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -145,7 +169,7 @@
       align-items: center;
       visibility: hidden;
       opacity: 0;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.3s ease;
     }
 
     .modal-overlay.show {
@@ -153,15 +177,12 @@
       opacity: 1;
     }
 
-
     .modal-content {
       background: #1f57ff;
-      position: center;
       padding: 30px;
       width: 70%;
-      border-radius: 25px;
+      border-radius: 20px;
       color: white;
-      font-family: 'Poppins', 'Roboto', sans-serif;
     }
 
     .form-group {
@@ -221,41 +242,27 @@
   </style>
 </head>
 
-<body class="admin-dashboard">
-
-
+<body>
   <!-- SIDEBAR -->
-  <aside class="admin-sidebar">
+  <div class="sidebar">
     <div class="sidebar-logo">
-      <img src="Images/hospitallogo.png" alt="Company Logo">
+      <img src="Images/hospitallogo.png" alt="Hospital Logo">
     </div>
 
-    <nav class="sidebar-nav">
-      <ul class="primary-top-nav">
-        <li class="nav-item"><a href="Admin-Dashboard.php"><i class="fa-solid fa-grip"></i><span
-              class="nav-label">Dashboard</span></a></li>
-        <li class="nav-item"><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i><span
-              class="nav-label">Employees</span></a></li>
-        <li class="nav-item"><a href="Admin_Applicants.php"><i class="fa-solid fa-user-group"></i><span
-              class="nav-label">Applicants</span></a></li>
-        <li class="nav-item"><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i><span
-              class="nav-label">Requests</span></a></li>
-        <li class="nav-item active"><a href="#"><i class="fa-solid fa-folder"></i><span class="nav-label">Job
-              Post</span></a></li>
-        <li class="nav-item"><a href="#"><i class="fa-solid fa-chart-simple"></i><span
-              class="nav-label">Reports</span></a></li>
-      </ul>
+    <ul class="nav">
+      <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+      <li><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
+      <li><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
+      <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+      <li class="active"><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
+      <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
+      <li><a href="Manager_Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
+      <li><a href="Manager_LeaveSettings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
+      <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+    </ul>
+  </div>
 
-      <ul class="secondary-buttom-nav">
-        <li class="nav-item"><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i><span
-              class="nav-label">Settings</span></a></li>
-        <li class="nav-item"><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i><span
-              class="nav-label">Logout</span></a></li>
-      </ul>
-    </nav>
-  </aside>
-
-  <!-- ✅ JOB POSTINGS SECTION -->
+  <!-- MAIN CONTENT -->
   <main class="job-postings-container">
     <div class="job-header">
       <h2><i class="fa-solid fa-briefcase job-icon"></i> Job Posting</h2>
@@ -313,7 +320,7 @@
     </div>
   </main>
 
-  <!-- ✅ ADD NEW JOB MODAL -->
+  <!-- ADD JOB MODAL -->
   <div id="jobModal" class="modal-overlay">
     <div class="modal-content">
       <form>
@@ -390,19 +397,15 @@
 
   <script>
     $(document).ready(function () {
-      $(".add-job-btn").on("click", function () {
+      $(".add-job-btn").click(function () {
         $("#jobModal").addClass("show");
       });
 
-      $(".cancel-btn").on("click", function () {
+      $(".cancel-btn").click(function () {
         $("#jobModal").removeClass("show");
       });
     });
-
   </script>
-
-
-
 </body>
 
 </html>
