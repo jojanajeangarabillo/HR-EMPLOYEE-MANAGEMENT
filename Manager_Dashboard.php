@@ -24,6 +24,30 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
     $applicants = $row['count'];
 }
 
+// Fetch total number of positions for Hirings (status = 'On-Going' or 'To Post')
+$hiringsQuery = $conn->query("
+    SELECT SUM(vacancy_count) AS count 
+    FROM vacancies 
+    WHERE status IN ('On-Going', 'To Post')
+");
+if ($hiringsQuery && $row = $hiringsQuery->fetch_assoc()) {
+    $hirings = $row['count'] ?? 0; // fallback to 0 if null
+}
+
+// Fetch recent vacancies for listing (only On-Going)
+$recentVacanciesQuery = $conn->query("
+    SELECT v.id, v.vacancy_count, v.status, d.deptName, p.position_title, e.typeName AS employment_type
+    FROM vacancies v
+    JOIN department d ON v.department_id = d.deptID
+    JOIN position p ON v.position_id = p.positionID
+    JOIN employment_type e ON v.employment_type_id = e.emtypeID
+    WHERE v.status = 'On-Going'
+    ORDER BY v.id DESC
+    LIMIT 5
+");
+
+
+
 ?>
 
 

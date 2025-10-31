@@ -7,6 +7,7 @@ $requests = 0;
 $hirings = 0;
 $applicants = 0;
 
+
 $adminanmeQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin'");
 if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
     $adminname = $row['fullname'];
@@ -22,6 +23,30 @@ $applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 
 if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
     $applicants = $row['count'];
 }
+
+// Fetch total number of positions for Hirings (status = 'On-Going' or 'To Post')
+$hiringsQuery = $conn->query("
+    SELECT SUM(vacancy_count) AS count 
+    FROM vacancies 
+    WHERE status IN ('On-Going', 'To Post')
+");
+if ($hiringsQuery && $row = $hiringsQuery->fetch_assoc()) {
+    $hirings = $row['count'] ?? 0; // fallback to 0 if null
+}
+
+// Fetch recent vacancies for listing (only On-Going)
+$recentVacanciesQuery = $conn->query("
+    SELECT v.id, v.vacancy_count, v.status, d.deptName, p.position_title, e.typeName AS employment_type
+    FROM vacancies v
+    JOIN department d ON v.department_id = d.deptID
+    JOIN position p ON v.position_id = p.positionID
+    JOIN employment_type e ON v.employment_type_id = e.emtypeID
+    WHERE v.status = 'On-Going'
+    ORDER BY v.id DESC
+    LIMIT 5
+");
+
+
 
 ?>
 
@@ -92,6 +117,7 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
         .job-posts h2 {
             padding: 25px 30px;
             margin: 0;
+            margin-top: 150px;
             font-size: 2rem;
             margin-bottom: 40px;
             color: #1E3A8A;
@@ -172,6 +198,13 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
                     <?php echo $applicants; ?>
                 </h3>
             </div>
+
+            <div class="section">
+                <label for="pending-applicants" class="pending">Pending Applicants</label>
+                <h3 class="pending-applicant-count" name="pending-applicants">
+                    
+                </h3>
+            </div>
             <div class="section">
                 <label for="requests" class="requests-label">Requests</label>
                 <h3 class="request-count" name="requests">
@@ -179,22 +212,18 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
                 </h3>
             </div>
             <div class="section">
-                <label for="hirings" class="hirings-label">Hirings</label>
-                <h3 class="hiring-count" name="hirings">
-                    0
-                </h3>
-            </div>
+    <label for="hirings" class="hirings-label">Hirings</label>
+    <h3 class="hiring-count" name="hirings">
+        <?php echo $hirings; ?>
+    </h3>
+</div>
 
-            <div class="section">
-                <label for="pending-applicants" class="pending">Pending Applicants</label>
-                <h3 class="pending-count" name="pendings">
-                    0
-                </h3>
-            </div>
-        </div>
-        <div class="job-posts">
-            <h2>Recent Job Posts</h2>
-        </div>
+<div class="job-posts">
+    <h2>Recent Job Posts</h2>
+
+</div>
+
+
     </main>
 
 </body>
