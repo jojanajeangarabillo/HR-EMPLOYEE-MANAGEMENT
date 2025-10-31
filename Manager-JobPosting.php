@@ -1,3 +1,67 @@
+<?php
+session_start();
+require 'admin/db.connect.php';
+
+$employees = 0;
+$requests = 0;
+$hirings = 0;
+$applicants = 0;
+$managername = 0;
+
+$managernameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Employee' AND  sub_role ='HR Manager' LIMIT 1");
+if ($managernameQuery && $row = $managernameQuery->fetch_assoc()) {
+    $managername = $row['fullname'];
+}
+
+
+$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
+if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
+    $employees = $row['count'];
+}
+
+$applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Applicant'");
+if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
+    $applicants = $row['count'];
+}
+
+// Fetch Available Vacancies
+$vacancies = [];
+
+$query = "
+SELECT v.id, d.deptName, p.position_title, v.vacancy_count, v.status
+FROM vacancies v
+JOIN department d ON v.department_id = d.deptID
+JOIN position p ON v.position_id = p.positionID
+WHERE v.status = 'To Post'
+ORDER BY v.created_at DESC
+";
+
+$result = $conn->query($query);
+
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        $vacancies[] = $row;
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST['status'])) {
+    $id = intval($_POST['vacancy_id']);
+    $status = $_POST['status'];
+
+    $stmt = $conn->prepare("UPDATE vacancies SET status = ? WHERE id = ?");
+    $stmt->bind_param("si", $status, $id);
+    $stmt->execute();
+
+    // Optional: Redirect to avoid resubmission
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit;
+}
+
+
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -239,6 +303,45 @@
       border-radius: 5px;
       cursor: pointer;
     }
+
+    .sidebar-name {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    padding: 10px;
+    margin-bottom: 30px;
+    font-size: 18px;
+    flex-direction: column;
+    }
+
+
+    .status-dropdown {
+    width: 100%;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background-color: #f1f5fc;
+    color: #1f3c88;
+    font-weight: 500;
+    font-size: 14px;
+    transition: 0.3s;
+    cursor: pointer;
+}
+
+.status-dropdown:hover {
+    border-color: #1f3c88;
+}
+
+.status-dropdown:focus {
+    outline: none;
+    border-color: #1f3c88;
+    box-shadow: 0 0 5px rgba(31, 60, 136, 0.4);
+}
+
+
+    
   </style>
 </head>
 
@@ -247,6 +350,10 @@
   <div class="sidebar">
     <div class="sidebar-logo">
       <img src="Images/hospitallogo.png" alt="Hospital Logo">
+    </div>
+
+    <div class="sidebar-name">
+      <p><?php echo "Welcome, $managername"?></p>
     </div>
 
     <ul class="nav">
@@ -269,7 +376,46 @@
       <button class="add-job-btn">+ Add New Job</button>
     </div>
 
+    <!-- Available Jobs to Upload -->
+<div class="available-jobs">
+    <h3 style="color:#1f3c88; margin-bottom:15px;">Available Jobs to Upload</h3>
+
+    <?php if (!empty($vacancies)): ?>
+        <div style="display:grid; grid-template-columns: 1.5fr 1.2fr 0.8fr 0.8fr; gap:10px; padding:10px; background:#e2e8f0; border-radius:8px; margin-bottom:20px;">
+            <div><strong>Job Title</strong></div>
+            <div><strong>Department</strong></div>
+            <div><strong>Vacancies</strong></div>
+            <div><strong>Status</strong></div>
+        </div>
+
+        <?php foreach ($vacancies as $job): ?>
+            <div style="display:grid; grid-template-columns: 1.5fr 1.2fr 0.8fr 0.8fr; gap:10px; padding:10px; background:white; border-radius:6px; margin-bottom:8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                <div><?php echo htmlspecialchars($job['position_title']); ?></div>
+                <div><?php echo htmlspecialchars($job['deptName']); ?></div>
+                <div><?php echo htmlspecialchars($job['vacancy_count']); ?></div>
+                <div>
+    <form method="POST" style="margin:0;">
+        <input type="hidden" name="vacancy_id" value="<?php echo $job['id']; ?>">
+        <select name="status" class="status-dropdown" onchange="this.form.submit()">
+            <option value="To Post" <?php echo ($job['status'] == 'To Post') ? 'selected' : ''; ?>>To Post</option>
+            <option value="On-Going" <?php echo ($job['status'] == 'On-Going') ? 'selected' : ''; ?>>On-Going</option>
+           
+        </select>
+    </form>
+</div>
+
+
+            </div>
+        <?php endforeach; ?>
+    <?php else: ?>
+        <p style="color:#555;">No available jobs found.</p>
+    <?php endif; ?>
+</div>
+
+
     <div class="job-table">
+       <h3 style="color:#1f3c88; margin-bottom:15px; margin-top: 30px;">Recently Posted</h3>
+       
       <div class="job-table-header">
         <div>Job Title</div>
         <div>Department</div>
@@ -405,6 +551,26 @@
         $("#jobModal").removeClass("show");
       });
     });
+
+    $(document).ready(function () {
+    $(".status-dropdown").change(function() {
+        var status = $(this).val();
+        var id = $(this).data("id");
+
+        $.ajax({
+            url: 'update_vacancy_status.php',
+            type: 'POST',
+            data: { id: id, status: status },
+            success: function(response) {
+                alert("Status updated successfully!");
+            },
+            error: function() {
+                alert("Error updating status.");
+            }
+        });
+    });
+});
+
   </script>
 </body>
 

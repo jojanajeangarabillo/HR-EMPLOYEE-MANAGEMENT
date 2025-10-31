@@ -19,8 +19,11 @@ if (isset($_POST['login'])) {
         if (password_verify($password, $hashedPassword)) {
             $_SESSION['email'] = $row['email'];
             $_SESSION['role'] = $row['role'];
+            $_SESSION['fullname'] = $row['fullname'];
+            $_SESSION['sub_role'] = $row['sub_role'];
 
             $role = strtolower(trim($row['role']));
+            $sub_role = strtolower(trim($row['sub_role'] ?? ''));
 
             if ($role === 'admin') {
                 header("Location: Admin-Dashboard.php");
@@ -28,10 +31,14 @@ if (isset($_POST['login'])) {
             } elseif ($role === 'applicant') {
                 header("Location: Applicant_Dashboard.php");
                 exit;
+            } elseif ($role == "employee" && $sub_role == "hr manager"){
+                header('Location: Manager_Dashboard.php');
+
             } elseif ($role === 'employee') {
                 header("Location: Employee_Dashboard.php");
                 exit;
-            } else {
+            } 
+            else {
                 echo "<script>alert('Unknown role for this account.');</script>";
             }
         } else {

@@ -1,3 +1,20 @@
+<?php
+session_start();
+require 'admin/db.connect.php';
+
+$employees = 0;
+$applicants = 0;
+
+$applicantnameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Applicant'");
+if ($applicantnameQuery && $row = $applicantnameQuery->fetch_assoc()) {
+    $applicantname = $row['fullname'];
+}
+?>
+
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -126,6 +143,18 @@
             width: 1200px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
+        .sidebar-name {
+        display: flex;
+        justify-content: center; 
+        align-items: center;      
+        text-align: center;       
+        color: white;
+        padding: 10px;
+        margin-bottom: 30px;
+        font-size: 18px; 
+        flex-direction: column; 
+        }
     </style>
 
 
@@ -138,6 +167,10 @@
         <a href="Applicant_Profile.php" class="profile">
             <i class="fa-solid fa-user"></i>
         </a>
+
+        <div class="sidebar-name">
+            <p><?php echo "Welcome, $applicantname"; ?></p>
+        </div>
 
         <ul class="nav">
             <li class="active"><a href="Applicant_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a>

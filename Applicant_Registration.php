@@ -131,6 +131,15 @@ if (isset($_POST['register'])) {
             cursor: pointer;
         }
         .error-msg { color: red; margin-top: 10px; }
+
+        input[type="text"]  {
+        width: 500px;   
+        padding: 16px 16px 16px 45px;
+        border-radius: 10px;
+        border: 1px solid #D9D9D9;
+        font-family: "Roboto", sans-serif;
+        font-size: 16px;
+    }
     </style>
 </head>
 <body class="login-body">
@@ -152,7 +161,7 @@ if (isset($_POST['register'])) {
                 <label for="fullname">Full Name</label>
                 <div class="input-container">
                     <i class="fa-solid fa-user"></i>
-                    <input type="fullname" name="fullname" id="fullname" placeholder="Enter your Full Name" required>
+                    <input type="text" name="fullname" id="fullname" placeholder="Enter your Full Name" required>
                 </div>
 
                 <label for="email">Email</label>

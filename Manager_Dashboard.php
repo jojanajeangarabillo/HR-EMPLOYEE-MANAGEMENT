@@ -1,10 +1,41 @@
+<?php
+session_start();
+require 'admin/db.connect.php';
+
+$employees = 0;
+$requests = 0;
+$hirings = 0;
+$applicants = 0;
+$managername = 0;
+
+$managernameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Employee' AND  sub_role ='HR Manager' LIMIT 1");
+if ($managernameQuery && $row = $managernameQuery->fetch_assoc()) {
+    $managername = $row['fullname'];
+}
+
+
+$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
+if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
+    $employees = $row['count'];
+}
+
+$applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Applicant'");
+if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
+    $applicants = $row['count'];
+}
+
+?>
+
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Manager Dashboard</title>
 
     <link rel="stylesheet" href="manager-sidebar.css">
 
@@ -110,12 +141,16 @@
             <img src="Images/hospitallogo.png" alt="Hospital Logo">
         </div>
 
+        <div class="sidebar-name">
+            <p><?php echo "Welcome, $managername"; ?></p>
+        </div>
+
         <ul class="nav">
             <li class="active"><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
             <li><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
             <li><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
             <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-            <li><a href="Manager_JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
+            <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
             <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
             <li><a href="Manager_Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
             <li><a href="Manager_LeaveSettings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
@@ -130,31 +165,32 @@
         </div>
 
         <div class="stats">
-            <div class="section">
-                <label>Employees</label>
-                <h3>0</h3>
-            </div>
+    <div class="section">
+        <label>Employees</label>
+        <h3><?php echo $employees; ?></h3>
+    </div>
 
-            <div class="section">
-                <label>Applicants</label>
-                <h3>0</h3>
-            </div>
+    <div class="section">
+        <label>Applicants</label>
+        <h3><?php echo $applicants; ?></h3>
+    </div>
 
-            <div class="section">
-                <label>Requests</label>
-                <h3>0</h3>
-            </div>
+    <div class="section">
+        <label>Requests</label>
+        <h3><?php echo $requests; ?></h3>
+    </div>
 
-            <div class="section">
-                <label>Hirings</label>
-                <h3>0</h3>
-            </div>
+    <div class="section">
+        <label>Hirings</label>
+        <h3><?php echo $hirings; ?></h3>
+    </div>
 
-            <div class="section">
-                <label>Pending Applicants</label>
-                <h3>0</h3>
-            </div>
-        </div>
+    <div class="section">
+        <label>Pending Applicants</label>
+        <h3><?php echo 0;  ?></h3>
+    </div>
+</div>
+
 
         <div class="job-posts">
             <h2>Recent Job Posts</h2>

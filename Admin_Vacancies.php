@@ -2,34 +2,206 @@
 session_start();
 require 'admin/db.connect.php';
 
-$adminanmeQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin'");
-if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
-    $adminname = $row['fullname'];
-}
-?>
+// Get Admin Name
+$adminQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin'");
+$adminname = ($adminQuery && $row = $adminQuery->fetch_assoc()) ? $row['fullname'] : 'Admin';
 
+$message = '';
+$messageType = '';
+
+// Handle Form Submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $departmentID = $_POST['department'] ?? '';
+    $positionID = $_POST['position'] ?? '';
+    $vacancyCount = $_POST['vacancyCount'] ?? '';
+     $employmentTypeID = $_POST['employment_type'] ?? '';
+
+    if ($departmentID && $positionID && $employmentTypeID && $vacancyCount > 0) { // include employmentTypeID
+        $stmt = $conn->prepare("INSERT INTO vacancies (department_id, position_id, employment_type_id, vacancy_count) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("iiii", $departmentID, $positionID, $employmentTypeID, $vacancyCount);
+
+        if ($stmt->execute()) {
+            header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
+            exit;
+        } else {
+            header("Location: " . $_SERVER['PHP_SELF'] . "?error=db");
+            exit;
+        }
+    } else {
+        header("Location: " . $_SERVER['PHP_SELF'] . "?error=fields");
+        exit;
+    }
+}
+
+// Handle Alerts
+if (isset($_GET['success'])) {
+    $message = "✅ Vacancy successfully added!";
+    $messageType = "success";
+} elseif (isset($_GET['error'])) {
+    if ($_GET['error'] === 'fields') {
+        $message = "⚠️ Please fill in all required fields.";
+    } elseif ($_GET['error'] === 'db') {
+        $message = "❌ Database error occurred. Please try again.";
+    }
+    $messageType = "danger";
+}
+
+// Fetch Departments
+$deptQuery = $conn->query("SELECT deptID, deptName FROM department");
+
+// Fetch Positions
+$posQuery = $conn->query("SELECT positionID, position_title, departmentID FROM position");
+$positions = [];
+while ($row = $posQuery->fetch_assoc()) {
+    $positions[] = $row;
+}
+
+// Fetch 10 Recently Uploaded Vacancies 
+$recentQuery = $conn->query("
+    SELECT v.id, v.vacancy_count, v.status, d.deptName, p.position_title, e.typeName AS employment_type
+    FROM vacancies v
+    JOIN department d ON v.department_id = d.deptID
+    JOIN position p ON v.position_id = p.positionID
+    JOIN employment_type e ON v.employment_type_id = e.emtypeID
+    ORDER BY v.id DESC
+    LIMIT 10
+");
+
+// Fetch Employment Types
+$etypeQuery = $conn->query("SELECT emtypeID, typeName FROM employment_type ORDER BY typeName ASC");
+$employmentTypes = [];
+while ($row = $etypeQuery->fetch_assoc()) {
+    $employmentTypes[] = $row;
+}
+
+
+?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Vacancies</title>
-    <link rel="stylesheet" href="admin-sidebar.css">
-    <!--For icons-->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
-        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        body {
-            font-family: 'Poppins', 'Roboto', sans-serif;
-            margin: 0;
-            display: flex;
-            background-color: #f1f5fc;
-            color: #111827;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Vacancies</title>
+<link rel="stylesheet" href="admin-sidebar.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
-        .sidebar-logo {
+<style>
+body {
+    font-family: 'Poppins', 'Roboto', sans-serif;
+    margin: 0;
+    display: flex;
+    background-color: #f1f5fc;
+    color: #111827;
+}
+.main-content {
+    padding: 40px 30px;
+    margin-left: 250px;
+    flex: 1;
+    display: flex;
+    flex-direction: column; 
+    overflow-y: auto;      
+    max-height: 100vh;    
+}
+
+.main-content-header h1 {
+    color: #1E3A8A;
+    margin-bottom: 20px;
+    margin-left: 50px;
+}
+
+.set-vacancies {
+    background-color: #1E3A8A;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    border-radius: 20px;
+    padding: 30px 50px;
+    width: fit-content;
+    margin-left: 50px;
+    margin-top: 0;
+    margin-bottom: 50px;
+}
+
+
+.recent-section {
+    margin-left: 50px;
+    margin-top: 0;
+    width: 90%;
+    max-height: 400px;  
+    overflow-y: auto;  
+}
+
+.recent-section table {
+    width: 100%;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.recent-section::-webkit-scrollbar {
+    width: 8px;
+}
+.recent-section::-webkit-scrollbar-thumb {
+    background: #1E3A8A;
+    border-radius: 10px;
+}
+
+
+.select-options { display: flex; flex-direction: column; width: 300px; }
+.select-options select, input {
+    font-size: 18px; padding: 10px; border-radius: 10px; border: none; outline: none;
+}
+button {
+    border: 2px solid white; background-color: #1E3A8A; color: white;
+    font-size: 18px; padding: 12px 30px; border-radius: 10px; cursor: pointer;
+}
+button:hover { background-color: white; color: #1E3A8A; }
+.modal {
+    display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+    width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+    justify-content: center; align-items: center;
+}
+.modal-content {
+    background-color: white; padding: 30px; border-radius: 15px;
+    width: 400px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+}
+.modal h2 { color: #1E3A8A; margin-bottom: 20px; }
+.modal input { width: 100%; padding: 10px; margin-bottom: 20px; }
+.confirm-btn { background: #1E3A8A; color: white; }
+.cancel-btn { background: red; color: white; }
+.confirm-btn:hover { background: #162c63; }
+.cancel-btn:hover { background: #8b0000; }
+
+
+/* Reuse existing modal base styles */
+#alertModal .modal-content {
+    text-align: center;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+}
+
+#alertModal h2 {
+    color: #1E3A8A;
+    margin-bottom: 10px;
+}
+
+#alertModal p {
+    color: #333;
+}
+
+#alertModal .confirm-btn {
+    background-color: #1E3A8A;
+    color: white;
+    padding: 10px 25px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.sidebar-logo {
             display: flex;
             justify-content: center;
             margin-bottom: 50px;
@@ -40,7 +212,8 @@ if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
             width: 120px;
         }
 
-       .sidebar-name {
+
+        .sidebar-name {
         display: flex;
         justify-content: center; 
         align-items: center;      
@@ -51,162 +224,51 @@ if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
         font-size: 18px; 
         flex-direction: column; 
         }
+#alertModal .confirm-btn:hover {
+    background-color: #162c63;
+}
+
+.custom-alert {
+    animation: fadeInSlide 0.5s ease;
+}
+
+@keyframes fadeInSlide {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#alertModal .confirm-btn {
+  background-color: #1E3A8A;
+  color: white;
+  font-size: 16px;
+  padding: 8px 20px;      
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+  width: auto;            
+  min-width: 100px;       
+  display: inline-block;   
+}
+
+#alertModal .confirm-btn:hover {
+  background-color: #162c63;
+}
 
 
-        .main-content {
-            padding: 40px 30px;
-            margin-left: 250px;
-            display: flex;
-            flex-direction: column;
 
-        }
-
-        .main-content-header h1 {
-            margin: 0;
-            font-size: 2rem;
-            margin-bottom: 40px;
-            margin-left: 50px;
-            color: #1E3A8A;
-        }
-
-        .set-vacancies {
-            background-color: #1E3A8A;
-            display: flex;
-            justify-content: center;
-            gap: 40px;
-            flex-wrap: wrap;
-            margin-left: 50px;
-            border-radius: 20px;
-            padding: 30px;
-            width: fit-content;
-        }
-
-        .select-options {
-            display: grid;
-            align-items: center;
-            width: 400px;
-        }
-
-        .select-options select {
-            font-size: 20px;
-            padding: 10px;
-            border-radius: 10px;
-            border: none;
-        }
-
-        .set-vacancies button {
-            border-style: solid;
-            border-color: white;
-            background-color: #1E3A8A;
-            color: white;
-            font-size: 18px;
-            padding: 10px 30px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .set-vacancies button:hover {
-            border-style: solid;
-            border-color: #1E3A8A;
-            background-color: white;
-            color: #1E3A8A;
-        }
-
-        /* ========== MODAL STYLES ========== */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 30px;
-            border-radius: 15px;
-            width: 400px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from {
-                transform: scale(0.95);
-                opacity: 0;
-            }
-
-            to {
-                transform: scale(1);
-                opacity: 1;
-            }
-        }
-
-        .modal h2 {
-            margin-bottom: 20px;
-            color: #1E3A8A;
-        }
-
-        .modal input {
-            width: 100%;
-            padding: 10px;
-            font-size: 18px;
-            border-radius: 10px;
-            border: 1px solid #ccc;
-            margin-bottom: 20px;
-        }
-
-        .modal button {
-            padding: 10px 20px;
-            font-size: 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            margin: 5px;
-        }
-
-        .confirm-btn {
-            background-color: #1E3A8A;
-            color: white;
-        }
-
-        .confirm-btn:hover {
-            background-color: #162c63;
-        }
-
-        .cancel-btn {
-            background-color: #1E3A8A;
-        }
-
-        .cancel-btn:hover {
-            background-color: #162c63;
-        }
-    </style>
+</style>
 </head>
-
 <body>
     <div class="sidebar">
-        <div class="sidebar-logo">
-            <img src="Images/hospitallogo.png" alt="">
-        </div>
-        <div class="sidebar-name">
-            <p><?php echo "Welcome, $adminname"; ?></p>
-        </div>
-
+        <div class="sidebar-logo"><img src="Images/hospitallogo.png" alt=""></div>
+        <div class="sidebar-name"><p><?php echo "Welcome, $adminname"; ?></p></div>
         <ul class="nav">
             <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
             <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
             <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
             <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
-            <li class="active"><a href="Admin_Vacancies"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
+            <li class="active"><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
             <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
             <li><a href="#"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
             <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
@@ -216,30 +278,101 @@ if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
 
     <main class="main-content">
         <div class="main-content-header">
-            <h1>Upload Vacancies</h1>
+    <h1>Upload Vacancies</h1>
+
+    <?php if ($message): ?>
+        <div class="alert alert-<?= $messageType ?> alert-dismissible fade show custom-alert" role="alert">
+            <?= htmlspecialchars($message) ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    <?php endif; ?>
+</div>
+
+
+        <!-- Set Vacancy Form -->
+        <form method="POST" id="vacancyForm">
+            <div class="set-vacancies">
+                <div class="select-options">
+                    <select name="department" id="department" required>
+                        <option value="" disabled selected>Select Department</option>
+                        <?php while ($dept = $deptQuery->fetch_assoc()): ?>
+                            <option value="<?= $dept['deptID'] ?>"><?= htmlspecialchars($dept['deptName']) ?></option>
+                        <?php endwhile; ?>
+                    </select>
+                    
+                </div>
+
+                <div class="select-options">
+                    <select name="position" id="position" required>
+                        <option value="" disabled selected>Select Position</option>
+                    </select>
+                </div>
+
+                  <div class="select-options">
+            <select name="employment_type" id="employment_type" required>
+                <option value="" disabled selected>Select Employment Type</option>
+                <?php foreach ($employmentTypes as $etype): ?>
+                    <option value="<?= $etype['emtypeID'] ?>"><?= htmlspecialchars($etype['typeName']) ?></option>
+                <?php endforeach; ?>
+            </select>
         </div>
 
+                
 
-        <div class="set-vacancies">
-            <div class="select-options">
-                <select name="department" id="department">
-                    <option value="" disabled selected hidden>Department</option>
-                    <option value="Test">Test</option>
-                    <option value="Test2">Test2</option>
-                </select>
+                <button type="button" id="openModalBtn">Set</button>
             </div>
-            <div class="select-options">
-                <select name="position" id="position">
-                    <option value="" disabled selected hidden>Position</option>
-                    <option value="Test3">Test3</option>
-                    <option value="Test4">Test4</option>
-                </select>
-            </div>
-            <button type="button" id="openModalBtn">Set</button>
+            <input type="hidden" name="vacancyCount" id="vacancyCountInput">
+
+            
+        </form>
+
+        <!-- ✅ Recently Uploaded Vacancies -->
+        <div class="recent-section">
+            <h2>Recently Uploaded</h2>
+            <table class="table table-bordered table-striped w-75">
+                <thead class="table-primary">
+<tr>
+    <th>Department</th>
+    <th>Position</th>
+    <th>Number of Vacancies</th>
+    <th>Employment Type</th>
+    <th>Status</th>
+    <th>Actions</th> <!-- New Column -->
+</tr>
+</thead>
+<tbody>
+<?php if ($recentQuery && $recentQuery->num_rows > 0): ?>
+    <?php while ($row = $recentQuery->fetch_assoc()): ?>
+        <tr>
+            <td><?= htmlspecialchars($row['deptName']) ?></td>
+            <td><?= htmlspecialchars($row['position_title']) ?></td>
+            <td><?= htmlspecialchars($row['vacancy_count']) ?></td>
+            <td><?= htmlspecialchars($row['employment_type']) ?></td>
+            <td>
+                <?php if ($row['status'] === 'On-Going'): ?>
+                    <span class="badge bg-success"><?= htmlspecialchars($row['status']) ?></span>
+                <?php elseif ($row['status'] === 'Closed'): ?>
+                    <span class="badge bg-danger"><?= htmlspecialchars($row['status']) ?></span>
+                <?php else: ?>
+                    <span class="badge bg-secondary"><?= htmlspecialchars($row['status']) ?></span>
+                <?php endif; ?>
+            </td>
+            <td>
+                
+                <a href="archive_vacancy.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-warning">Archive</a>
+            </td>
+        </tr>
+    <?php endwhile; ?>
+<?php else: ?>
+    <tr><td colspan="6" class="text-center text-muted">No vacancies uploaded yet.</td></tr>
+<?php endif; ?>
+
+                </tbody>
+            </table>
         </div>
     </main>
 
-    <!-- ========== MODAL ========== -->
+    <!-- Modal -->
     <div id="vacancyModal" class="modal">
         <div class="modal-content">
             <h2>Set Number of Vacancies</h2>
@@ -248,46 +381,88 @@ if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
                 <button class="confirm-btn" id="confirmBtn">Confirm</button>
                 <button class="cancel-btn" id="cancelBtn">Cancel</button>
             </div>
+           
         </div>
-    </div>
+        </div>
+        </div>
+        </div>
 
-    <script>
-        const modal = document.getElementById('vacancyModal');
-        const openModalBtn = document.getElementById('openModalBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const confirmBtn = document.getElementById('confirmBtn');
-        const vacancyCount = document.getElementById('vacancyCount');
+     <div id="alertModal" class="modal">
+    <div class="modal-content" style="width: 350px;">
+        <h2 id="alertTitle">Notice</h2>
+        <p id="alertMessage" style="margin: 15px 0; font-size: 16px;"></p>
+        <button class="confirm-btn" id="alertOkBtn">OK</button>
 
-        openModalBtn.onclick = function () {
-            modal.style.display = 'flex';
-        };
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const allPositions = <?= json_encode($positions); ?>;
+const deptSelect = document.getElementById('department');
+const posSelect = document.getElementById('position');
+const modal = document.getElementById('vacancyModal');
+const openModalBtn = document.getElementById('openModalBtn');
+const cancelBtn = document.getElementById('cancelBtn');
+const confirmBtn = document.getElementById('confirmBtn');
+const vacancyInput = document.getElementById('vacancyCount');
+const vacancyHidden = document.getElementById('vacancyCountInput');
+const form = document.getElementById('vacancyForm');
 
-        cancelBtn.onclick = function () {
-            modal.style.display = 'none';
-            vacancyCount.value = '';
-        };
+deptSelect.addEventListener('change', function() {
+    const deptID = this.value;
+    posSelect.innerHTML = '<option value="" disabled selected>Select Position</option>';
+    allPositions.forEach(pos => {
+        if (pos.departmentID == deptID) {
+            const opt = document.createElement('option');
+            opt.value = pos.positionID;
+            opt.textContent = pos.position_title;
+            posSelect.appendChild(opt);
+        }
+    });
+});
 
-        confirmBtn.onclick = function () {
-            const department = document.getElementById('department').value;
-            const position = document.getElementById('position').value;
-            const count = vacancyCount.value;
+openModalBtn.onclick = () => {
+    if (!deptSelect.value) {
+        showAlert("Missing Field", "Please select a department first.");
+        return;
+    }
+    if (!posSelect.value) {
+        showAlert("Missing Field", "Please select a position first.");
+        return;
+    }
+    modal.style.display = 'flex';
+};
 
-            if (!count || count <= 0) {
-                alert('Please enter a valid number of vacancies.');
-                return;
-            }
+cancelBtn.onclick = () => { modal.style.display = 'none'; vacancyInput.value = ''; };
+confirmBtn.onclick = () => {
+    const count = vacancyInput.value.trim();
+    if (!count || isNaN(count) || count <= 0) return alert("Please enter a valid number of vacancies.");
+    vacancyHidden.value = count;
+    modal.style.display = 'none';
+    form.submit();
+};
+window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
 
-            alert(`Vacancies set:\nDepartment: ${department}\nPosition: ${position}\nNumber of Vacancies: ${count}`);
-            modal.style.display = 'none';
-            vacancyCount.value = '';
-        };
 
-        window.onclick = function (event) {
-            if (event.target == modal) {
-                modal.style.display = 'none';
-            }
-        };
-    </script>
+
+const alertModal = document.getElementById('alertModal');
+const alertTitle = document.getElementById('alertTitle');
+const alertMessage = document.getElementById('alertMessage');
+const alertOkBtn = document.getElementById('alertOkBtn');
+
+function showAlert(title, message) {
+    alertTitle.textContent = title;
+    alertMessage.textContent = message;
+    alertModal.style.display = 'flex';
+}
+
+alertOkBtn.onclick = () => {
+    alertModal.style.display = 'none';
+};
+
+// Allow clicking outside to close alert
+window.addEventListener('click', (e) => {
+    if (e.target === alertModal) alertModal.style.display = 'none';
+});
+
+</script>
 </body>
-
 </html>

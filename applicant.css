@@ -76,6 +76,8 @@ img {
     color: #1E3A8A;
 }
 
+
+input[type="text"],
 input[type="email"],
 input[type="password"] {
     width: 500px;   

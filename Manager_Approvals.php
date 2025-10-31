@@ -1,3 +1,32 @@
+<?php
+session_start();
+require 'admin/db.connect.php';
+
+$employees = 0;
+$requests = 0;
+$hirings = 0;
+$applicants = 0;
+$managername = 0;
+
+$managernameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Employee' AND  sub_role ='HR Manager' LIMIT 1");
+if ($managernameQuery && $row = $managernameQuery->fetch_assoc()) {
+    $managername = $row['fullname'];
+}
+
+
+$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
+if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
+    $employees = $row['count'];
+}
+
+$applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Applicant'");
+if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
+    $applicants = $row['count'];
+}
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -173,6 +202,19 @@
     .action-icons a.reject:hover {
       color: #dc3545;
     }
+
+
+    .sidebar-name {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    padding: 10px;
+    margin-bottom: 30px;
+    font-size: 18px;
+    flex-direction: column;
+    }
   </style>
 </head>
 
@@ -181,6 +223,10 @@
   <div class="sidebar">
     <div class="sidebar-logo">
       <img src="Images/hospitallogo.png" alt="Hospital Logo">
+    </div>
+
+    <div class="sidebar-name">
+      <p><?php echo "Welcom, $managername" ?></p>
     </div>
 
     <ul class="nav">

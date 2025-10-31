@@ -23,6 +23,9 @@ body {
   left: 0;
   top: 0;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+   overflow-y: auto; /* enables vertical scrolling */
+  scrollbar-width: thin; /* optional: make scrollbar thinner */
+  scrollbar-color: #e5edfb transparent; /* optional: custom scrollbar */
 }
 
 /* NAVIGATION MENU */
