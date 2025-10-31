@@ -5,36 +5,113 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Employee Salary Slip</title>
-  <link rel="stylesheet" href="employee-sidebar.css">
+  <link rel="stylesheet" href="manager-sidebar.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
+  
   <style>
+    h1 {
+      font-family: 'Roboto', sans-serif;
+      font-size: 35px;
+      color: white;
+      text-align: center;
+    }
+    .menu-board-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 15px 0 5px 15px;
+      text-transform: uppercase;
+      color: white;
+    }
+
+.sidebar-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      margin-right: 10px;
+    }
+
+    .sidebar-logo img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid white;
+    }
+
+    .sidebar-name {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 10px;
+      margin-bottom: 30px;
+      font-size: 18px;
+      flex-direction: column;
+    }
+     body {
+      font-family: 'Poppins', 'Roboto', sans-serif;
+      margin: 0;
+      display: flex;
+      background-color: #f1f5fc;
+      color: #111827;
+    }
+     .main-content {
+      margin-left: 250px;
+      padding: 40px 30px;
+      background-color: #f1f5fc;
+      flex-grow: 1;
+      box-sizing: border-box;
+    }
+
+  .table-title i {
+      color: #1E3A8A;
+    }
     
-    .table thead th {
-      background-color: #1f3b83;
-      color: white;
-      text-align: center;
-    }
+.salary-overview-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
 
-    .table tbody td {
-      text-align: center;
-      vertical-align: middle;
-    }
+.salary-overview-table th,
+.salary-overview-table td {
+  padding: 12px 10px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
 
-    .btn-view {
-      background-color: #00c853;
-      color: white;
-      border: none;
-      padding: 5px 15px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
+.salary-overview-table thead th {
+  background-color: #2949d0;
+  color: white;
+  font-weight: bold;
+}
 
-    .btn-view:hover {
-      background-color: #009624;
-    }
+.salary-overview-table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.salary-overview-table tbody tr:hover {
+  background-color: #e0e7ff;
+}
+
+.btn-view {
+  background-color: #00c853;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-view:hover {
+  background-color: #009624;
+}
+
 
     .table-container {
       background: white;
@@ -365,109 +442,90 @@
 
 <body>
   <!-- Sidebar -->
-  <aside class="sidebar">
-    <h1>Welcome</h1>
-    <img src="images/profile.png" alt="Profile" width="80" height="80">
-
-    <ul class="sidebar-menu">
-      <li><a href="Employee_Profile.php" style="display: block; text-align: center; padding-right: 75px;">My Profile</a></li>
-      <li class="menu-title">Menu Board</li>
-      <li><a href="Employee_Dashboard.php"><i class="fa-solid fa-grip"></i> Dashboard</a></li>
-      <li><a href="Employee_SalarySlip.php" class="active"><i class="fa-solid fa-user-group"></i> Salary Slip</a></li>
-      <li><a href="Employee_Requests.php"><i class="fa-solid fa-code-branch"></i> Requests</a></li>
-      <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
-    </ul>
-  </aside>
-
-  <!-- Main Content -->
-  <main class="main-content">
-    <!-- Overview Page -->
-    <div class="overview-page" id="overviewPage">
-      <div class="table-container">
-        <div class="table-title">
-          <h2>Salary Overview <i class="fa-solid fa-folder"></i></h2>
-        </div>
-
-        <table class="table table-bordered table-hover align-middle">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Basic Pay</th>
-              <th>Overtime Pay</th>
-              <th>Deduction</th>
-              <th>Net Pay</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>October 15, 2025</td>
-              <td>₱60,000.00</td>
-              <td>₱3,500.00</td>
-              <td>₱2,200.00</td>
-              <td>₱61,300.00</td>
-              <td><button class="btn-view" onclick="showDetails()">View</button></td>
-            </tr>
-            <tr>
-              <td>October 30, 2025</td>
-              <td>₱60,000.00</td>
-              <td>₱0.00</td>
-              <td>₱2,200.00</td>
-              <td>₱57,800.00</td>
-              <td><button class="btn-view" onclick="showDetails()">View</button></td>
-            </tr>
-            <tr>
-              <td>September 15, 2025</td>
-              <td>₱58,000.00</td>
-              <td>₱2,800.00</td>
-              <td>₱1,900.00</td>
-              <td>₱58,900.00</td>
-              <td><button class="btn-view" onclick="showDetails()">View</button></td>
-            </tr>
-            <tr>
-              <td>September 30, 2025</td>
-              <td>₱58,000.00</td>
-              <td>₱1,200.00</td>
-              <td>₱1,800.00</td>
-              <td>₱57,400.00</td>
-              <td><button class="btn-view" onclick="showDetails()">View</button></td>
-            </tr>
-            <tr>
-              <td>August 15, 2025</td>
-              <td>₱56,500.00</td>
-              <td>₱2,000.00</td>
-              <td>₱2,100.00</td>
-              <td>₱56,400.00</td>
-              <td><button class="btn-view" onclick="showDetails()">View</button></td>
-            </tr>
-            <tr>
-              <td>August 30, 2025</td>
-              <td>₱56,500.00</td>
-              <td>₱0.00</td>
-              <td>₱2,000.00</td>
-              <td>₱54,500.00</td>
-              <td><button class="btn-view" onclick="showDetails()">View</button></td>
-            </tr>
-            <tr>
-              <td>July 15, 2025</td>
-              <td>₱55,000.00</td>
-              <td>₱1,500.00</td>
-              <td>₱2,200.00</td>
-              <td>₱54,300.00</td>
-              <td><button class="btn-view" onclick="showDetails()">View</button></td>
-            </tr>
-            <tr>
-              <td>July 30, 2025</td>
-              <td>₱55,000.00</td>
-              <td>₱1,800.00</td>
-              <td>₱1,900.00</td>
-              <td>₱54,900.00</td>
-              <td><button class="btn-view" onclick="showDetails()">View</button></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+   <div class="sidebar">
+     <div class="sidebar-logo">
+      <h1>Welcome</h1>
+      <img src="Images/profile.png" alt="Hospital Logo">
     </div>
+
+  <ul class="nav">
+    <li style="display: flex; justify-content: center;">
+  <a href="Employee_Profile.php" style="text-align: center; width: 100%; margin-right: 20px; display: block;">My Profile</a>
+</li>
+    <h4 class="menu-board-title">Menu Board </h4>
+    <li><a href="Employee_Dashboard.php"><i class="fa-solid fa-grip"></i> Dashboard</a></li>
+    <li class="active"><a href="Employee_SalarySlip.php"><i class="fa-solid fa-file-invoice-dollar"></i> Salary Slip</a></li>
+    <li><a href="Employee_Requests.php"><i class="fa-solid fa-code-branch"></i> Requests</a></li>
+    <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+  </ul>
+</div>
+
+<!-- Main Content -->
+<main class="main-content">
+  <!-- Overview Page -->
+  <div class="overview-page" id="overviewPage">
+     <div class="table-title">
+       <h2 style="color: black;">Salary Overview<i class="fa-solid fa-folder"></i> </h2>
+      </div>
+    <div class="table-container">
+     
+
+      <table class="salary-overview-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Basic Pay</th>
+            <th>Overtime Pay</th>
+            <th>Deduction</th>
+            <th>Net Pay</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>October 15, 2025</td>
+            <td>₱60,000.00</td>
+            <td>₱3,500.00</td>
+            <td>₱2,200.00</td>
+            <td>₱61,300.00</td>
+            <td><button class="btn-view" onclick="showDetails()">View</button></td>
+          </tr>
+          <tr>
+            <td>October 30, 2025</td>
+            <td>₱60,000.00</td>
+            <td>₱0.00</td>
+            <td>₱2,200.00</td>
+            <td>₱57,800.00</td>
+            <td><button class="btn-view" onclick="showDetails()">View</button></td>
+          </tr>
+          <tr>
+            <td>September 15, 2025</td>
+            <td>₱58,000.00</td>
+            <td>₱2,800.00</td>
+            <td>₱1,900.00</td>
+            <td>₱58,900.00</td>
+            <td><button class="btn-view" onclick="showDetails()">View</button></td>
+          </tr>
+          <tr>
+            <td>September 30, 2025</td>
+            <td>₱58,000.00</td>
+            <td>₱1,200.00</td>
+            <td>₱1,800.00</td>
+            <td>₱57,400.00</td>
+            <td><button class="btn-view" onclick="showDetails()">View</button></td>
+          </tr>
+          <tr>
+            <td>August 15, 2025</td>
+            <td>₱56,500.00</td>
+            <td>₱2,000.00</td>
+            <td>₱2,100.00</td>
+            <td>₱56,400.00</td>
+            <td><button class="btn-view" onclick="showDetails()">View</button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
     <!-- Details Page -->
     <div class="details-page" id="detailsPage">
@@ -685,6 +743,14 @@
       document.getElementById('overviewPage').classList.remove('hidden');
       document.getElementById('detailsPage').classList.remove('active');
     }
+
+    // Highlight active sidebar link
+const currentPage = window.location.pathname.split("/").pop();
+document.querySelectorAll(".sidebar .nav li a").forEach(link => {
+  if (link.getAttribute("href") === currentPage) {
+    link.parentElement.classList.add("active");
+  }
+});
   </script>
 </body>
 

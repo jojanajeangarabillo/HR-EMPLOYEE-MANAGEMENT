@@ -4,11 +4,65 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Employee Dashboard</title>
-  <link rel="stylesheet" href="employee-sidebar.css">
+  <link rel="stylesheet" href="manager-sidebar.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
   <style>
-  
 
+    h1 {
+      font-family: 'Roboto', sans-serif;
+      font-size: 35px;
+      color: white;
+      text-align: center;
+    }
+    .menu-board-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 15px 0 5px 15px;
+      text-transform: uppercase;
+      color: white;
+    }
+
+.sidebar-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      margin-right: 10px;
+    }
+
+    .sidebar-logo img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid white;
+    }
+
+    .sidebar-name {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 10px;
+      margin-bottom: 30px;
+      font-size: 18px;
+      flex-direction: column;
+    }
+     body {
+      font-family: 'Poppins', 'Roboto', sans-serif;
+      margin: 0;
+      display: flex;
+      background-color: #f1f5fc;
+      color: #111827;
+    }
+     .main-content {
+      margin-left: 250px;
+      padding: 40px 30px;
+      background-color: #f1f5fc;
+      flex-grow: 1;
+      box-sizing: border-box;
+    }
+  
     /* Welcome Section */
     .welcome-card {
       background-color: #6674cc;
@@ -136,23 +190,25 @@
 
 <body>
   <!-- Sidebar -->
-  <aside class="sidebar">
-    <h1>Welcome</h1>
-    <img src="images/profile.png" alt="Profile" width="80" height="80">
+   <div class="sidebar">
+     <div class="sidebar-logo">
+      <h1>Welcome</h1>
+      <img src="Images/profile.png" alt="Hospital Logo">
+    </div>
 
-    <ul class="sidebar-menu">
-      <li><a href="Employee_Profile.php" style="display: block; text-align: center; padding-right: 75px;">My Profile</a></li>
-      <li class="menu-title">Menu Board</li>
-      <li><a href="Employee_Dashboard.php" class="active"><i class="fa-solid fa-grip"></i> Dashboard</a></li>
-      <li><a href="Employee_SalarySlip.php"><i class="fa-solid fa-user-group"></i> Salary Slip</a></li>
-      <li><a href="Employee_Requests.php"><i class="fa-solid fa-code-branch"></i> Requests</a></li>
-      <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
-    </ul>
-  </aside>
-
+  <ul class="nav">
+    <li style="display: flex; justify-content: center;">
+  <a href="Employee_Profile.php" style="text-align: center; width: 100%; margin-right: 20px; display: block;">My Profile</a>
+</li>
+    <h4 class="menu-board-title">Menu Board </h4>
+    <li class="active"><a href="Employee_Dashboard.php"><i class="fa-solid fa-grip"></i> Dashboard</a></li>
+    <li><a href="Employee_SalarySlip.php"><i class="fa-solid fa-file-invoice-dollar"></i> Salary Slip</a></li>
+    <li><a href="Employee_Requests.php"><i class="fa-solid fa-code-branch"></i> Requests</a></li>
+    <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+  </ul>
+</div>
   <!-- Main Content -->
   <main class="main-content">
-    <h1>Employee</h1>
 
     <div class="welcome-card">
       <h3>Welcome to Employee Dashboard</h3>
@@ -195,7 +251,8 @@
 
     <!-- Announcements Section at Bottom -->
     <div class="announcement-section">
-      <h1><i class="fa-solid fa-comment"></i> Announcements</h1>
+      <h1 style="color: black;"><i class="fa-solid fa-comment"></i> Announcements</h1>
+
       <table class="announcement-table">
         <tr>
           <th>Position</th>
@@ -210,5 +267,16 @@
       </table>
     </div>
   </main>
+  <script>
+    // Highlight active sidebar link
+const currentPage = window.location.pathname.split("/").pop();
+document.querySelectorAll(".sidebar .nav li a").forEach(link => {
+  if (link.getAttribute("href") === currentPage) {
+    link.parentElement.classList.add("active");
+  }
+});
+
+    </script>
+
 </body>
 </html>
