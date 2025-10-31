@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 27, 2025 at 10:25 AM
+-- Generation Time: Oct 31, 2025 at 02:40 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -71,9 +71,7 @@ CREATE TABLE `applicant` (
 --
 
 INSERT INTO `applicant` (`applicantID`, `fullName`, `position_applied`, `department`, `date_applied`, `contact_number`, `email_address`, `home_address`, `job_title`, `company_name`, `date_started`, `in_role`, `university`, `course`, `year_graduated`, `skills`, `summary`, `profile_pic`) VALUES
-('HOS-001', 'Jojana Jean B. Garabillo', '', 0, '2025-10-25', '', 'garabillo_jojanajean@plpasig.edu.ph', '', '', '', '0000-00-00', '', '', '', '0000', '', '', NULL),
-('HOS-002', 'Shane Cacho', '', 0, '2025-10-25', '', 'cacho_shaneellamae@plpasig.edu.ph', '', '', '', '0000-00-00', '', '', '', '0000', '', '', NULL),
-('HOS-003', 'Joepat Lacerna', '', 0, '2025-10-25', '', 'opat09252005@gmail.com', '', '', '', '0000-00-00', '', '', '', '0000', '', '', NULL);
+('HOS-001', 'Jeopat Lacerna', '', 0, '2025-10-31', '', 'opat09252005@gmail.com', '', '', '', '0000-00-00', '', '', '', '0000', '', '', NULL);
 
 -- --------------------------------------------------------
 
@@ -104,6 +102,22 @@ CREATE TABLE `department` (
   `deptName` varchar(100) NOT NULL,
   `vacancies` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `department`
+--
+
+INSERT INTO `department` (`deptID`, `deptName`, `vacancies`) VALUES
+(1, 'Anesthetics Department', NULL),
+(2, 'Breast Screening Department', NULL),
+(3, 'Cardiology Department', NULL),
+(4, 'Ear, Nose and Throat (ENT) Department', NULL),
+(5, 'Elderly Services (Geriatrics)', NULL),
+(6, 'Gastroenterology Department', NULL),
+(7, 'General Surgery Department', NULL),
+(8, 'Gynecology Department', NULL),
+(9, 'Hematology Department', NULL),
+(10, 'Human Resources (HR) Department', NULL);
 
 -- --------------------------------------------------------
 
@@ -164,6 +178,17 @@ CREATE TABLE `employment_type` (
   `typeName` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `employment_type`
+--
+
+INSERT INTO `employment_type` (`emtypeID`, `typeName`) VALUES
+(1, 'Full Time'),
+(2, 'Part Time'),
+(3, 'Regular'),
+(4, 'Contractual'),
+(5, 'Internship');
+
 -- --------------------------------------------------------
 
 --
@@ -216,6 +241,105 @@ CREATE TABLE `position` (
   `vacancies` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `position`
+--
+
+INSERT INTO `position` (`positionID`, `departmentID`, `position_title`, `vacancies`) VALUES
+(1, 1, 'Anesthetic Technician', NULL),
+(2, 1, 'Nurse Anesthetist', NULL),
+(3, 1, 'Anesthesiology Resident', NULL),
+(4, 1, 'Consultant Anesthesiologist', NULL),
+(5, 1, 'Recovery Room Nurse', NULL),
+(6, 1, 'Senior PACU Nurse', NULL),
+(7, 1, 'Operating Room Nurse', NULL),
+(8, 1, 'OR Nurse Supervisor', NULL),
+(9, 2, 'Radiology Assistant', NULL),
+(10, 2, 'Mammography Technologist', NULL),
+(11, 2, 'Senior Technologist', NULL),
+(12, 2, 'Screening Coordinator', NULL),
+(13, 2, 'Breast Care Nurse', NULL),
+(14, 2, 'Senior Breast Nurse', NULL),
+(15, 2, 'Breast Clinic Manager', NULL),
+(16, 3, 'ECG Technician', NULL),
+(17, 3, 'ECHO Technician', NULL),
+(18, 3, 'Cardiac Technologist', NULL),
+(19, 3, 'Cardiac Lab Supervisor', NULL),
+(20, 3, 'Cardiac Nurse', NULL),
+(21, 3, 'Senior Cardiac Nurse', NULL),
+(22, 3, 'Cardiac Rehabilitation Specialist', NULL),
+(23, 3, 'Cardiology Unit Manager', NULL),
+(24, 3, 'Cardiology Resident', NULL),
+(25, 3, 'Fellow', NULL),
+(26, 3, 'Consultant Cardiologist', NULL),
+(27, 4, 'ENT Clinic Assistant', NULL),
+(28, 4, 'ENT Nurse', NULL),
+(29, 4, 'ENT Resident', NULL),
+(30, 4, 'ENT Consultant', NULL),
+(31, 4, 'Audiologist', NULL),
+(32, 4, 'Senior Audiologist', NULL),
+(33, 4, 'Head of Audiology Services', NULL),
+(34, 5, 'Healthcare Assistant', NULL),
+(35, 5, 'Geriatric Nurse', NULL),
+(36, 5, 'Nurse Practitioner', NULL),
+(37, 5, 'Unit Head', NULL),
+(38, 5, 'Physiotherapist', NULL),
+(39, 5, 'Occupational Therapist', NULL),
+(40, 5, 'Senior Therapist', NULL),
+(41, 5, 'Rehabilitation Coordinator', NULL),
+(42, 5, 'Geriatric Resident', NULL),
+(43, 5, 'Consultant in Elderly Medicine', NULL),
+(44, 6, 'Endoscopy Technician', NULL),
+(45, 6, 'Endoscopy Nurse', NULL),
+(46, 6, 'Senior Endoscopy Nurse', NULL),
+(47, 6, 'Unit Supervisor', NULL),
+(48, 6, 'Gastroenterology Resident', NULL),
+(49, 6, 'Fellow', NULL),
+(50, 6, 'Consultant Gastroenterologist', NULL),
+(51, 6, 'Nutritionist', NULL),
+(52, 6, 'Dietitian', NULL),
+(53, 6, 'Senior Dietitian', NULL),
+(54, 6, 'Department Head (Nutrition)', NULL),
+(55, 7, 'Surgical Technician', NULL),
+(56, 7, 'Scrub Nurse', NULL),
+(57, 7, 'Operating Room Nurse', NULL),
+(58, 7, 'Surgical Charge Nurse', NULL),
+(59, 7, 'Surgical Resident', NULL),
+(60, 7, 'Senior Resident', NULL),
+(61, 7, 'Consultant Surgeon', NULL),
+(62, 7, 'Ward Nurse', NULL),
+(63, 7, 'Senior Nurse', NULL),
+(64, 7, 'Nurse Unit Manager', NULL),
+(65, 8, 'OB-GYN Resident', NULL),
+(66, 8, 'Consultant Gynecologist', NULL),
+(67, 8, 'Midwife', NULL),
+(68, 8, 'Senior Midwife', NULL),
+(69, 8, 'Labor and Delivery Supervisor', NULL),
+(70, 8, 'Gynecology Nurse', NULL),
+(71, 8, 'Nurse Coordinator', NULL),
+(72, 8, 'Nurse Manager', NULL),
+(73, 9, 'Phlebotomist', NULL),
+(74, 9, 'Medical Laboratory Scientist (Hematology)', NULL),
+(75, 9, 'Senior Lab Scientist', NULL),
+(76, 9, 'Lab Supervisor', NULL),
+(77, 9, 'Hematology Lab Manager', NULL),
+(78, 9, 'Hematology Resident', NULL),
+(79, 9, 'Consultant Hematologist', NULL),
+(80, 9, 'Oncology Nurse (Hematology Unit)', NULL),
+(81, 9, 'Senior Hematology Nurse', NULL),
+(82, 9, 'Nurse Unit Head', NULL),
+(83, 10, 'HR Clerk', NULL),
+(84, 10, 'HR Assistant', NULL),
+(85, 10, 'HR Officer', NULL),
+(86, 10, 'HR Supervisor', NULL),
+(87, 10, 'HR Manager', NULL),
+(88, 10, 'HR Director', NULL),
+(89, 10, 'Recruitment Specialist', NULL),
+(90, 10, 'Senior Recruitment Officer', NULL),
+(91, 10, 'Recruitment Manager', NULL),
+(92, 10, 'Training and Development Coordinator', NULL),
+(93, 10, 'HR Manager (Training and Organizational Development)', NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -248,19 +372,44 @@ CREATE TABLE `user` (
   `created_at` datetime NOT NULL,
   `profile_pic` varchar(255) DEFAULT NULL,
   `reset_token` varchar(255) NOT NULL,
-  `token_expiry` varchar(255) NOT NULL
+  `token_expiry` varchar(255) NOT NULL,
+  `sub_role` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`user_id`, `applicant_employee_id`, `email`, `password`, `role`, `fullname`, `status`, `created_at`, `profile_pic`, `reset_token`, `token_expiry`) VALUES
-('', 'EMP-001', 'antonio_rhoannenicole@plpasig.edu.ph', '$2y$10$pYQTWm/o1QeNzw6xVOJpY.1k8kzsweDLjFJuZY1xC4ck6LWzU17NS', 'Employee', 'Rhoanne Nicole Antonio', 'Active', '2025-10-25 10:38:47', NULL, '', ''),
-('', 'HOS-002', 'cacho_shaneellamae@plpasig.edu.ph', '$2y$10$2p1gWPRQKuTHk6LKlOuYQOArQkrzuKX0sUKjOhmN/DaS00zugv7L2', 'Applicant', 'Shane Cacho', 'Pending', '0000-00-00 00:00:00', NULL, '2f42dd7d13366d8ab4c7c78490f08ed32e5b9f16a9284e811116acad2aaf366b', '2025-10-26 06:44:36'),
-('', 'HOS-001', 'garabillo_jojanajean@plpasig.edu.ph', '$2y$10$cRImp5xBpPyvK98UkrAMJORzby1WCcgad5ESGSGcJQDSie0/8BpR.', 'Applicant', 'Jojana Jean B. Garabillo', 'Pending', '0000-00-00 00:00:00', NULL, '', ''),
-('1', 'admin', 'jojanajeangarabillo@gmail.com', '$2y$10$b/O8vCRZmkYlAI8xinFlYu4nvQ6Xqp4sH3xyfQKR1ONIT.qV02JVS', 'Admin', 'Jojana Garabillo', 'Active', '2025-11-10 00:00:00', NULL, '', ''),
-('', 'HOS-003', 'opat09252005@gmail.com', '$2y$10$HMC/RTH50.je3pdq0B1WsusdNd.nnjx0d9TGA93rnL2JeTjix3DrS', 'Applicant', 'Joepat Lacerna', 'Pending', '0000-00-00 00:00:00', NULL, '', '');
+INSERT INTO `user` (`user_id`, `applicant_employee_id`, `email`, `password`, `role`, `fullname`, `status`, `created_at`, `profile_pic`, `reset_token`, `token_expiry`, `sub_role`) VALUES
+('', 'EMP-001', 'antonio_rhoannenicole@plpasig.edu.ph', '$2y$10$pYQTWm/o1QeNzw6xVOJpY.1k8kzsweDLjFJuZY1xC4ck6LWzU17NS', 'Employee', 'Rhoanne Nicole Antonio', 'Active', '2025-10-25 10:38:47', NULL, '', '', 'HR Manager'),
+('1', 'admin', 'jojanajeangarabillo@gmail.com', '$2y$10$b/O8vCRZmkYlAI8xinFlYu4nvQ6Xqp4sH3xyfQKR1ONIT.qV02JVS', 'Admin', 'Jojana Garabillo', 'Active', '2025-11-10 00:00:00', NULL, '', '', NULL),
+('', 'HOS-001', 'opat09252005@gmail.com', '$2y$10$yV0hT3DpZIY9WlaM2YPpS..whgUiV5Zjrhj2HF0Ekkb9wYhh9SgA2', 'Applicant', 'Jeopat Lacerna', 'Pending', '0000-00-00 00:00:00', NULL, '', '', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vacancies`
+--
+
+CREATE TABLE `vacancies` (
+  `id` int(11) NOT NULL,
+  `department_id` int(11) NOT NULL,
+  `position_id` int(11) NOT NULL,
+  `employment_type_id` int(11) NOT NULL,
+  `vacancy_count` int(11) NOT NULL,
+  `status` varchar(255) NOT NULL DEFAULT 'To Post',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `vacancies`
+--
+
+INSERT INTO `vacancies` (`id`, `department_id`, `position_id`, `employment_type_id`, `vacancy_count`, `status`, `created_at`) VALUES
+(17, 1, 1, 1, 2, 'On-Going', '2025-10-31 11:18:15'),
+(19, 1, 2, 1, 2, 'On-Going', '2025-10-31 12:02:06'),
+(20, 1, 1, 5, 1, 'On-Going', '2025-10-31 12:02:23'),
+(21, 1, 1, 2, 1, 'To Post', '2025-10-31 12:53:36');
 
 --
 -- Indexes for dumped tables
@@ -295,7 +444,8 @@ ALTER TABLE `department`
 -- Indexes for table `employee`
 --
 ALTER TABLE `employee`
-  ADD PRIMARY KEY (`empID`);
+  ADD PRIMARY KEY (`empID`),
+  ADD KEY `fk_employee_emtype` (`employment_type`);
 
 --
 -- Indexes for table `employee_request`
@@ -347,6 +497,15 @@ ALTER TABLE `user`
   ADD UNIQUE KEY `uk_applicant_employee_id` (`applicant_employee_id`);
 
 --
+-- Indexes for table `vacancies`
+--
+ALTER TABLE `vacancies`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `department_id` (`department_id`),
+  ADD KEY `position_id` (`position_id`),
+  ADD KEY `fk_vacancies_employment_type` (`employment_type_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -369,6 +528,12 @@ ALTER TABLE `employee_request`
   MODIFY `requestID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `employment_type`
+--
+ALTER TABLE `employment_type`
+  MODIFY `emtypeID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
 -- AUTO_INCREMENT for table `job_posting`
 --
 ALTER TABLE `job_posting`
@@ -384,13 +549,19 @@ ALTER TABLE `leave_settings`
 -- AUTO_INCREMENT for table `position`
 --
 ALTER TABLE `position`
-  MODIFY `positionID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `positionID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=94;
 
 --
 -- AUTO_INCREMENT for table `system_settings`
 --
 ALTER TABLE `system_settings`
   MODIFY `system_id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `vacancies`
+--
+ALTER TABLE `vacancies`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- Constraints for dumped tables
@@ -407,6 +578,12 @@ ALTER TABLE `applicant`
 --
 ALTER TABLE `calendar`
   ADD CONSTRAINT `calendar_ibfk_1` FOREIGN KEY (`empID`) REFERENCES `employee` (`empID`);
+
+--
+-- Constraints for table `employee`
+--
+ALTER TABLE `employee`
+  ADD CONSTRAINT `fk_employee_emtype` FOREIGN KEY (`employment_type`) REFERENCES `employment_type` (`emtypeID`) ON UPDATE CASCADE;
 
 --
 -- Constraints for table `employee_request`
@@ -428,6 +605,14 @@ ALTER TABLE `job_posting`
 --
 ALTER TABLE `position`
   ADD CONSTRAINT `position_ibfk_1` FOREIGN KEY (`departmentID`) REFERENCES `department` (`deptID`);
+
+--
+-- Constraints for table `vacancies`
+--
+ALTER TABLE `vacancies`
+  ADD CONSTRAINT `fk_vacancies_employment_type` FOREIGN KEY (`employment_type_id`) REFERENCES `employment_type` (`emtypeID`) ON UPDATE CASCADE,
+  ADD CONSTRAINT `vacancies_ibfk_1` FOREIGN KEY (`department_id`) REFERENCES `department` (`deptID`),
+  ADD CONSTRAINT `vacancies_ibfk_2` FOREIGN KEY (`position_id`) REFERENCES `position` (`positionID`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
