@@ -2,38 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Employee Profile</title>
-  <link rel="stylesheet" href="employee-sidebar.css">
+  <title>Employee Requests</title>
+  <link rel="stylesheet" href="manager-sidebar.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
   
 </head>
 
 <body>
-  <div class="container">
-    
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <h1>Welcome</h1>
-      <img src="images/profile.png" alt="Profile" width="80" height="80">
 
-    <ul class="sidebar-menu">
-        <li><a href="Employee_Profile.php" style="display: block; text-align: center; padding-right: 75px;">My Profile</a></li>
-        <li class="menu-title">Menu Board</li>
-        <li><a href="Employee_Dashboard.php"><i class="fa-solid fa-grip"></i> Dashboard</a></li>
-        <li><a href="Employee_SalarySlip.php"><i class="fa-solid fa-user-group"></i> Salary Slip</a></li>
-        <li><a href="Employee_Requests.php" class="active"> <i class="fa-solid fa-code-branch"></i> Requests</a></li>
-        <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
-    </ul>
-    </aside>
+  <div class="sidebar">
+     <div class="sidebar-logo">
+      <h1>Welcome</h1>
+      <img src="Images/profile.png" alt="Hospital Logo">
+    </div>
+
+  <ul class="nav">
+    <li style="display: flex; justify-content: center;">
+  <a href="Employee_Profile.php" style="text-align: center; width: 100%; margin-right: 20px; display: block;">My Profile</a>
+</li>
+    <h4 class="menu-board-title">Menu Board </h4>
+    <li><a href="Employee_Dashboard.php"><i class="fa-solid fa-grip"></i> Dashboard</a></li>
+    <li><a href="Employee_SalarySlip.php"><i class="fa-solid fa-file-invoice-dollar"></i> Salary Slip</a></li>
+    <li class="active"><a href="Employee_Requests.php"><i class="fa-solid fa-code-branch"></i> Requests</a></li>
+    <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+  </ul>
+</div>
 
 <main class="main-content">
   <div class="main-box" id="blur-content">
     <div class="main-header">
       <div class="request-title">
-        <h2>Employee Request <i class="fa-solid fa-code-branch"></i></h2>
+        <h2 style="color:black;" >Employee Request <i class="fa-solid fa-code-branch"></i></h2>
       </div>
       <button class="file-request-btn" id="open-modal"><i class="fa-solid fa-plus-circle"></i> File a Request</button>
     </div>
+    
     <div class="request-table-container">
       <table class="request-table">
         <thead>
@@ -86,6 +89,7 @@
         <div class="modal-header">
           <h2><i class="fa-solid fa-code-branch"></i> Employee Request</h2>
         </div>
+
         <div class="modal-content">
           <div class="modal-row">
             <div class="form-group">
@@ -97,6 +101,7 @@
               <input type="text" placeholder="">
             </div>
           </div>
+
           <div class="modal-row">
             <div class="form-group">
               <label>Department:</label>
@@ -126,15 +131,16 @@
               <input type="text" placeholder="">
             </div>
           </div>
+
           <div class="modal-row">
             <div class="form-group wide">
               <label>Reason:</label>
               <textarea placeholder="Enter your reason" rows="10"></textarea>
             </div>
           </div>
-         
 
         </div>
+
         <div class="modal-footer">
           <button type="button" class="cancel-btn" id="close-modal">Cancel</button>
           <button type="submit" class="send-btn">Send</button>
@@ -144,6 +150,19 @@
   </div>
 
   <style>
+ h1 {
+      font-family: 'Roboto', sans-serif;
+      font-size: 35px;
+      color: white;
+      text-align: center;
+    }
+    .menu-board-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 15px 0 5px 15px;
+      text-transform: uppercase;
+      color: white;
+    }
 
    /* --- Blur Effect --- */
     .blurred {
@@ -154,127 +173,123 @@
     }
 
     /* --- Modal Styles --- */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      z-index: 200;
-      left: 0;
-      top: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(28,36,80,0.19);
-      justify-content: center;
-      align-items: center;
-      overflow: auto;
-    }
-    .modal-overlay.active {
-      display: flex;
-    }
-    .modal-form {
-      background: #23439e;
-      color: #fff;
-      border-radius: 10px;
-      padding: 40px 50px 30px 50px;
-      box-shadow: 0 10px 40px rgba(30,40,120,0.18);
-      min-width: 420px;
-      max-width: 540px;
-      width: 100%;
-      margin: 36px auto;
-      position: relative;
-      display: flex;
-      flex-direction: column;
-    }
-    .modal-header h2 {
-      font-size: 2rem;
-      margin-bottom: 24px;
-      font-weight: bold;
-      letter-spacing: 0.02em;
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      color: #fff;
-    }
-    .modal-content {
-      width: 100%;
-      margin-bottom: 18px;
-    }
-    .modal-row {
-      display: flex;
-      gap: 25px;
-      margin-bottom: 16px;
-    }
-    .form-group {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    .form-group.wide {
-      flex: 2;
-    }
-    .form-group label {
-      font-size: 1rem;
-      margin-bottom: 7px;
-      color: #fff;
-      font-weight: 500;
-    }
-    .form-group input[type="text"],
-    .form-group input[type="email"],
-    .form-group select,
-    .form-group input[type="file"] {
-      padding: 8px 12px;
-      border: none;
-      border-radius: 7px;
-      font-size: 1rem;
-      outline: none;
-      margin-bottom: 4px;
-      background: #f3f5fb;
-      color: black;
-    }
-    .form-group input[type="file"] {
-      background: #f3f5fb;
-      color: black;
-      cursor: pointer;
-    }
-    .modal-footer {
-      display: flex;
-      justify-content: flex-end;
-      gap: 18px;
-      margin-top: 10px;
-    }
-    .cancel-btn, .send-btn {
-      padding: 8px 22px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 14px;
-      box-shadow: 0 1.5px 6px rgba(28,140,64,0.07);
-    }
-    .cancel-btn {
-      background: #e63939;
-      color: white;
-      transition: background 0.18s;
-    }
-    .cancel-btn:hover { background: #c52626;}
-    .send-btn {
-      background: #19bb4e;
-      color: white;
-      transition: background 0.19s;
-    }
-    .send-btn:hover { background: #0e9133; }
-    /* Responsive for modal */
-    @media (max-width: 700px) {
-      .modal-form {
-        max-width: 98vw;
-        min-width: unset;
-        padding: 25px 3vw;
-      }
-      .modal-row {
-        flex-direction: column;
-        gap: 10px;
-      }
-    }
+  .modal-overlay {
+  display: none;
+  position: fixed;
+  z-index: 200;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal-form {
+  background: #1E3A8A;
+  color: #fff;
+  border-radius: 12px;
+  padding: 30px 40px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  width: 650px;
+  max-width: 90%;
+  margin: auto;
+}
+
+.modal-header h2 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.modal-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 5px;
+  font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  background: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  color: #000;
+  outline: none;
+}
+
+.form-group textarea {
+  resize: none;
+  height: 100px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 25px;
+}
+
+.cancel-btn,
+.send-btn {
+  padding: 10px 25px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.cancel-btn {
+  background: #E63946;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #c9303c;
+}
+
+.send-btn {
+  background: #19BB4E;
+  color: white;
+}
+
+.send-btn:hover {
+  background: #128c3a;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .modal-row {
+    flex-direction: column;
+  }
+}
     .main-box {
       background: #fff;
       border-radius: 14px;
@@ -325,7 +340,10 @@
     .request-table-container {
       margin-top: 18px;
     }
-
+    .request-title i {
+      color: #1E3A8A;
+    }
+  
     .request-table {
       width: 100%;
       border-collapse: separate;
@@ -392,6 +410,7 @@
     .view-btn:hover {
       background: #17a13d;
     }
+
 .form-group textarea {
   padding: 8px 12px;
   border: none;
@@ -403,6 +422,48 @@
   color: black;
   resize: vertical;
 }
+
+   .sidebar-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      margin-right: 10px;
+    }
+
+    .sidebar-logo img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid white;
+    }
+
+    .sidebar-name {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 10px;
+      margin-bottom: 30px;
+      font-size: 18px;
+      flex-direction: column;
+    }
+     body {
+      font-family: 'Poppins', 'Roboto', sans-serif;
+      margin: 0;
+      display: flex;
+      background-color: #f1f5fc;
+      color: #111827;
+    }
+     .main-content {
+      margin-left: 250px;
+      padding: 40px 30px;
+      background-color: #f1f5fc;
+      flex-grow: 1;
+      box-sizing: border-box;
+    }
+
 </style>
 
 </main>
@@ -437,6 +498,15 @@
     otherTypeInput.style.display = 'none';
   }
 });
+
+// Highlight active sidebar link
+const currentPage = window.location.pathname.split("/").pop();
+document.querySelectorAll(".sidebar .nav li a").forEach(link => {
+  if (link.getAttribute("href") === currentPage) {
+    link.parentElement.classList.add("active");
+  }
+});
+
   </script>
 
 </body>

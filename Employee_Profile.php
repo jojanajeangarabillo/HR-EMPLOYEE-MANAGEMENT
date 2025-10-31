@@ -3,13 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <title>Employee Profile</title>
-  <link rel="stylesheet" href="employee-sidebar.css">
+  <link rel="stylesheet" href="manager-sidebar.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-  <style>
-
-
   
+  <style>
+ h1 {
+      font-family: 'Roboto', sans-serif;
+      font-size: 35px;
+      color: white;
+      text-align: center;
+    }
+    .menu-board-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 15px 0 5px 15px;
+      text-transform: uppercase;
+      color: white;
+    }
+
+.sidebar-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      margin-right: 10px;
+    }
+
+    .sidebar-logo img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid white;
+    }
+
+    .sidebar-name {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 10px;
+      margin-bottom: 30px;
+      font-size: 18px;
+      flex-direction: column;
+    }
+     body {
+      font-family: 'Poppins', 'Roboto', sans-serif;
+      margin: 0;
+      display: flex;
+      background-color: #f1f5fc;
+      color: #111827;
+    }
+     .main-content {
+      margin-left: 250px;
+      padding: 40px 30px;
+      background-color: #f1f5fc;
+      flex-grow: 1;
+      box-sizing: border-box;
+    }
 
 /* Heading with Icon */
 .heading-container {
@@ -145,22 +197,25 @@ section h2 {
   </style>
 </head>
 
-<body>
-  <div class="container">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <h1>Welcome</h1>
-      <img src="images/profile.png" alt="Profile" width="80" height="80">
+<body> 
 
-    <ul class="sidebar-menu">
-        <li><a href="Employee_Profile.php" class="active" style="display: block; text-align: center; padding-right: 75px;">My Profile</a></li>
-        <li class="menu-title">Menu Board</li>
-        <li><a href="Employee_Dashboard.php"><i class="fa-solid fa-grip"></i> Dashboard</a></li>
-        <li><a href="Employee_SalarySlip.php"><i class="fa-solid fa-user-group"></i> Salary Slip</a></li>
-        <li><a href="Employee_Requests.php"><i class="fa-solid fa-code-branch"></i> Requests</a></li>
-        <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
-    </ul>
-    </aside>
+  <div class="sidebar">
+     <div class="sidebar-logo">
+      <h1>Welcome</h1>
+      <img src="Images/profile.png" alt="Hospital Logo">
+    </div>
+
+  <ul class="nav">
+    <li class="active" style="display: flex; justify-content: center;">
+  <a href="Employee_Profile.php" style="text-align: center; width: 100%; margin-right: 20px; display: block;">My Profile</a>
+</li>
+    <h4 class="menu-board-title">Menu Board </h4>
+    <li><a href="Employee_Dashboard.php"><i class="fa-solid fa-grip"></i> Dashboard</a></li>
+    <li><a href="Employee_SalarySlip.php"><i class="fa-solid fa-file-invoice-dollar"></i> Salary Slip</a></li>
+    <li><a href="Employee_Requests.php"><i class="fa-solid fa-code-branch"></i> Requests</a></li>
+    <li><a href=" Login.php"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+  </ul>
+</div>
 
 <!-- Main Content -->
  <main class="main-content">
@@ -241,6 +296,13 @@ section h2 {
       reader.readAsDataURL(file);
     }
   });
+  // Highlight active sidebar link
+const currentPage = window.location.pathname.split("/").pop();
+document.querySelectorAll(".sidebar .nav li a").forEach(link => {
+  if (link.getAttribute("href") === currentPage) {
+    link.parentElement.classList.add("active");
+  }
+});
 </script>
 
 
