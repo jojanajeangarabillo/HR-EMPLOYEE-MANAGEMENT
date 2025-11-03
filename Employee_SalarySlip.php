@@ -1,3 +1,26 @@
+<?php
+session_start();
+require 'admin/db.connect.php';
+
+$employees = 0;
+$applicants = 0;
+
+
+$employeenameQuery = $conn->query("
+    SELECT fullname 
+    FROM user 
+    WHERE role = 'Employee' AND (sub_role IS NULL OR sub_role != 'HR Manager')
+");
+
+if ($employeenameQuery && $row = $employeenameQuery->fetch_assoc()) {
+    $employeename = $row['fullname'];
+    echo $employeename; 
+}
+
+?>
+
+
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -443,23 +466,24 @@
 <body>
   <!-- Sidebar -->
    <div class="sidebar">
-     <div class="sidebar-logo">
-      <h1>Welcome</h1>
-      <img src="Images/profile.png" alt="Hospital Logo">
+    <div class="sidebar-logo">
+       
+        <a href="Employee_Profile.php">
+            <img src="Images/profile.png" alt="Hospital Logo">
+        </a>
+        <div class="sidebar-name">
+            <p><?php echo "Welcome, $employeename"; ?></p>
+        </div>
     </div>
 
-  <ul class="nav">
-    <li style="display: flex; justify-content: center;">
-  <a href="Employee_Profile.php" style="text-align: center; width: 100%; margin-right: 20px; display: block;">My Profile</a>
-</li>
-    <h4 class="menu-board-title">Menu Board </h4>
-    <li><a href="Employee_Dashboard.php"><i class="fa-solid fa-grip"></i> Dashboard</a></li>
-    <li class="active"><a href="Employee_SalarySlip.php"><i class="fa-solid fa-file-invoice-dollar"></i> Salary Slip</a></li>
-    <li><a href="Employee_Requests.php"><i class="fa-solid fa-code-branch"></i> Requests</a></li>
-    <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
-  </ul>
+    <ul class="nav">
+        <h4 class="menu-board-title">Menu Board</h4>
+        <li ><a href="Employee_Dashboard.php"><i class="fa-solid fa-grip"></i> Dashboard</a></li>
+        <li class="active"><a href="Employee_SalarySlip.php"><i class="fa-solid fa-file-invoice-dollar"></i> Salary Slip</a></li>
+        <li><a href="Employee_Requests.php"><i class="fa-solid fa-code-branch"></i> Requests</a></li>
+        <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+    </ul>
 </div>
-
 <!-- Main Content -->
 <main class="main-content">
   <!-- Overview Page -->
