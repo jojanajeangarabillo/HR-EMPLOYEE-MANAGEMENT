@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 31, 2025 at 02:40 PM
+-- Generation Time: Nov 03, 2025 at 12:46 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -20,6 +20,21 @@ SET time_zone = "+00:00";
 --
 -- Database: `employee_management_db`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `admin_announcement`
+--
+
+CREATE TABLE `admin_announcement` (
+  `id` int(11) NOT NULL,
+  `admin_email` varchar(100) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `date_posted` datetime DEFAULT current_timestamp(),
+  `is_active` tinyint(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -221,12 +236,44 @@ CREATE TABLE `job_posting` (
 CREATE TABLE `leave_settings` (
   `settingID` int(11) NOT NULL,
   `leave_type` varchar(100) NOT NULL,
-  `duration` int(11) NOT NULL,
-  `time_limit` time DEFAULT NULL,
-  `allotted_time` time DEFAULT NULL,
+  `duration` varchar(50) DEFAULT NULL,
+  `employee_limit` int(11) NOT NULL DEFAULT 0,
+  `time_limit` varchar(20) DEFAULT NULL,
   `created_by` varchar(100) DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `leave_settings`
+--
+
+INSERT INTO `leave_settings` (`settingID`, `leave_type`, `duration`, `employee_limit`, `time_limit`, `created_by`, `created_at`) VALUES
+(12, 'Leave', '2025-11-05 to 2025-11-12', 1, '00:00:05', 'Rhoanne Nicole Antonio', '2025-11-03 18:52:00'),
+(13, 'Leave', '2025-11-12 to 2025-11-30', 2, '1 day', 'Rhoanne Nicole Antonio', '2025-11-03 18:58:39');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `manager_announcement`
+--
+
+CREATE TABLE `manager_announcement` (
+  `id` int(11) NOT NULL,
+  `manager_email` varchar(100) NOT NULL,
+  `posted_by` varchar(150) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `message` text NOT NULL,
+  `date_posted` datetime DEFAULT current_timestamp(),
+  `is_active` tinyint(1) DEFAULT 1,
+  `settingID` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `manager_announcement`
+--
+
+INSERT INTO `manager_announcement` (`id`, `manager_email`, `posted_by`, `title`, `message`, `date_posted`, `is_active`, `settingID`) VALUES
+(1, 'antonio_rhoannenicole@plpasig.edu.ph', 'Rhoanne Nicole Antonio', 'Updated Leave Settings', 'Grettings,\r\n\r\nHere\'s the updated leave, first come first serve will be the basos.', '2025-11-03 18:59:18', 1, 13);
 
 -- --------------------------------------------------------
 
@@ -382,6 +429,7 @@ CREATE TABLE `user` (
 
 INSERT INTO `user` (`user_id`, `applicant_employee_id`, `email`, `password`, `role`, `fullname`, `status`, `created_at`, `profile_pic`, `reset_token`, `token_expiry`, `sub_role`) VALUES
 ('', 'EMP-001', 'antonio_rhoannenicole@plpasig.edu.ph', '$2y$10$pYQTWm/o1QeNzw6xVOJpY.1k8kzsweDLjFJuZY1xC4ck6LWzU17NS', 'Employee', 'Rhoanne Nicole Antonio', 'Active', '2025-10-25 10:38:47', NULL, '', '', 'HR Manager'),
+('EMP-002', 'EMP-002', 'garabillo_jojanajean@plpasig.edu.ph', '$2y$10$FFCiNt8biEO542SyB35/T.S8Chdw7jySMzt0ZjH2TBFSHXHJEbCVC', 'Employee', 'Jackson Wang', 'Active', '2025-11-03 16:43:38', NULL, '', '', 'Staff'),
 ('1', 'admin', 'jojanajeangarabillo@gmail.com', '$2y$10$b/O8vCRZmkYlAI8xinFlYu4nvQ6Xqp4sH3xyfQKR1ONIT.qV02JVS', 'Admin', 'Jojana Garabillo', 'Active', '2025-11-10 00:00:00', NULL, '', '', NULL),
 ('', 'HOS-001', 'opat09252005@gmail.com', '$2y$10$yV0hT3DpZIY9WlaM2YPpS..whgUiV5Zjrhj2HF0Ekkb9wYhh9SgA2', 'Applicant', 'Jeopat Lacerna', 'Pending', '0000-00-00 00:00:00', NULL, '', '', NULL);
 
@@ -414,6 +462,13 @@ INSERT INTO `vacancies` (`id`, `department_id`, `position_id`, `employment_type_
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `admin_announcement`
+--
+ALTER TABLE `admin_announcement`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `admin_email` (`admin_email`);
 
 --
 -- Indexes for table `announcement`
@@ -477,6 +532,14 @@ ALTER TABLE `leave_settings`
   ADD PRIMARY KEY (`settingID`);
 
 --
+-- Indexes for table `manager_announcement`
+--
+ALTER TABLE `manager_announcement`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `manager_email` (`manager_email`),
+  ADD KEY `fk_setting` (`settingID`);
+
+--
 -- Indexes for table `position`
 --
 ALTER TABLE `position`
@@ -508,6 +571,12 @@ ALTER TABLE `vacancies`
 --
 -- AUTO_INCREMENT for dumped tables
 --
+
+--
+-- AUTO_INCREMENT for table `admin_announcement`
+--
+ALTER TABLE `admin_announcement`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `announcement`
@@ -543,7 +612,13 @@ ALTER TABLE `job_posting`
 -- AUTO_INCREMENT for table `leave_settings`
 --
 ALTER TABLE `leave_settings`
-  MODIFY `settingID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `settingID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
+-- AUTO_INCREMENT for table `manager_announcement`
+--
+ALTER TABLE `manager_announcement`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `position`
@@ -566,6 +641,12 @@ ALTER TABLE `vacancies`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `admin_announcement`
+--
+ALTER TABLE `admin_announcement`
+  ADD CONSTRAINT `admin_announcement_ibfk_1` FOREIGN KEY (`admin_email`) REFERENCES `user` (`email`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `applicant`
@@ -599,6 +680,14 @@ ALTER TABLE `employee_request`
 ALTER TABLE `job_posting`
   ADD CONSTRAINT `job_posting_ibfk_1` FOREIGN KEY (`department`) REFERENCES `department` (`deptID`),
   ADD CONSTRAINT `job_posting_ibfk_2` FOREIGN KEY (`employment_type`) REFERENCES `employment_type` (`emtypeID`);
+
+--
+-- Constraints for table `manager_announcement`
+--
+ALTER TABLE `manager_announcement`
+  ADD CONSTRAINT `fk_manager_leave` FOREIGN KEY (`settingID`) REFERENCES `leave_settings` (`settingID`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_setting` FOREIGN KEY (`settingID`) REFERENCES `leave_settings` (`settingID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `manager_announcement_ibfk_1` FOREIGN KEY (`manager_email`) REFERENCES `user` (`email`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `position`
