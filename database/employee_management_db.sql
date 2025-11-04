@@ -81,6 +81,35 @@ CREATE TABLE `applicant` (
   `profile_pic` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `applicant_roles`
+--
+
+CREATE TABLE `applicant_roles` (
+  `id` int(11) NOT NULL,
+  `applicantID` varchar(100) NOT NULL,
+  `job_title` varchar(150) NOT NULL,
+  `company_name` varchar(150) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `applicant_education`
+--
+
+CREATE TABLE `applicant_education` (
+  `id` int(11) NOT NULL,
+  `applicantID` varchar(100) NOT NULL,
+  `school` varchar(255) NOT NULL,
+  `degree` varchar(255) DEFAULT NULL,
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Dumping data for table `applicant`
 --
@@ -483,6 +512,20 @@ ALTER TABLE `applicant`
   ADD KEY `fk_applicant_user` (`applicantID`);
 
 --
+-- AUTO_INCREMENT for table `applicant_roles`
+--
+
+ALTER TABLE `applicant_roles`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `applicant_education`
+--
+
+ALTER TABLE `applicant_education`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- Indexes for table `calendar`
 --
 ALTER TABLE `calendar`
@@ -538,6 +581,22 @@ ALTER TABLE `manager_announcement`
   ADD PRIMARY KEY (`id`),
   ADD KEY `manager_email` (`manager_email`),
   ADD KEY `fk_setting` (`settingID`);
+
+--
+-- Indexes for table `applicant_roles`
+--
+
+ALTER TABLE `applicant_roles`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_applicant_roles_applicant` (`applicantID`);
+
+--
+-- Indexes for table `applicant_education`
+--
+
+ALTER TABLE `applicant_education`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_applicant_education_applicant` (`applicantID`);
 
 --
 -- Indexes for table `position`

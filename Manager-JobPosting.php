@@ -2,31 +2,112 @@
 session_start();
 require 'admin/db.connect.php';
 
-$employees = 0;
-$requests = 0;
-$hirings = 0;
-$applicants = 0;
-$managername = 0;
+$employees = $requests = $hirings = $applicants = 0;
+$managername = "";
 
-$managernameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Employee' AND  sub_role ='HR Manager' LIMIT 1");
+// Fetch HR Manager name
+$managernameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Employee' AND sub_role = 'HR Manager' LIMIT 1");
 if ($managernameQuery && $row = $managernameQuery->fetch_assoc()) {
-    $managername = $row['fullname'];
+  $managername = $row['fullname'];
 }
 
-
+// Employee & Applicant Counts
 $employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
-if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
-    $employees = $row['count'];
-}
+if ($employeeQuery && $row = $employeeQuery->fetch_assoc())
+  $employees = $row['count'];
 
 $applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Applicant'");
-if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
-    $applicants = $row['count'];
+if ($applicantQuery && $row = $applicantQuery->fetch_assoc())
+  $applicants = $row['count'];
+
+// Handle Vacancy Status Update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST['status']) && !isset($_POST['new_post'])) {
+  $id = intval($_POST['vacancy_id']);
+  $status = $_POST['status'];
+  $stmt = $conn->prepare("UPDATE vacancies SET status = ? WHERE id = ?");
+  $stmt->bind_param("si", $status, $id);
+  $stmt->execute();
+  header("Location: " . $_SERVER['PHP_SELF']);
+  exit;
 }
 
-// Fetch Available Vacancies
-$vacancies = [];
+// Handle New Job Post Creation
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['new_post'])) {
+  // Sanitize and collect posted values
+  $job_title = isset($_POST['job_title']) ? trim($_POST['job_title']) : '';
+  $qualification = isset($_POST['qualification']) ? trim($_POST['qualification']) : '';
+  $expected_salary = isset($_POST['expected_salary']) ? trim($_POST['expected_salary']) : '';
+  $experience_years = isset($_POST['experience_years']) ? intval($_POST['experience_years']) : 0;
+  $job_description = isset($_POST['job_description']) ? trim($_POST['job_description']) : '';
+  $vacancies = isset($_POST['vacancies']) ? intval($_POST['vacancies']) : 0;
+  $closing_date = isset($_POST['closing_date']) ? $_POST['closing_date'] : null;
+  $vacancy_id = isset($_POST['vacancy_id']) ? intval($_POST['vacancy_id']) : 0;
+  $date_posted = date('Y-m-d');
 
+  // Look up department_id and employment_type_id from the selected vacancy (they are integers in the DB)
+  $department_id = null;
+  $employment_type_id = null;
+  $vacancyStmt = $conn->prepare("SELECT department_id, employment_type_id FROM vacancies WHERE id = ? LIMIT 1");
+  if ($vacancyStmt) {
+    $vacancyStmt->bind_param("i", $vacancy_id);
+    $vacancyStmt->execute();
+    $vacRes = $vacancyStmt->get_result();
+    if ($vacRes && $vacRes->num_rows > 0) {
+      $vacRow = $vacRes->fetch_assoc();
+      $department_id = intval($vacRow['department_id']);
+      $employment_type_id = intval($vacRow['employment_type_id']);
+    } else {
+      echo "<script>alert('Invalid vacancy selected.'); window.location.href='Manager-JobPosting.php';</script>";
+      exit;
+    }
+  } else {
+    echo "<script>alert('Server error (vacancy lookup).'); window.location.href='Manager-JobPosting.php';</script>";
+    exit;
+  }
+
+  // Prepare INSERT: ensure bind_param order matches the INSERT column order
+  $stmt = $conn->prepare("INSERT INTO job_posting (job_title, department, qualification, expected_salary, experience_years, job_description, employment_type, vacancies, date_posted, closing_date)
+                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+  if (!$stmt) {
+    echo "Error preparing statement: " . htmlspecialchars($conn->error);
+    exit;
+  }
+
+  // Types: job_title(s), department(i), qualification(s), expected_salary(s), experience_years(i), job_description(s), employment_type(i), vacancies(i), date_posted(s), closing_date(s)
+  $types = "sissisiiss";
+  $stmt->bind_param(
+    $types,
+    $job_title,
+    $department_id,
+    $qualification,
+    $expected_salary,
+    $experience_years,
+    $job_description,
+    $employment_type_id,
+    $vacancies,
+    $date_posted,
+    $closing_date
+  );
+
+  if ($stmt->execute()) {
+    // Update Vacancy Status
+    $update = $conn->prepare("UPDATE vacancies SET status = 'On-Going' WHERE id = ?");
+    if ($update) {
+      $update->bind_param("i", $vacancy_id);
+      $update->execute();
+    }
+
+    echo "<script>alert('Job post created successfully!'); window.location.href='Manager-JobPosting.php';</script>";
+    exit;
+  } else {
+    // Log error and show friendly message
+    error_log('Job insert failed: ' . $stmt->error);
+    echo "Error: " . htmlspecialchars($stmt->error);
+  }
+}
+
+// Fetch Vacancies Available to Post
+$vacancies = [];
 $query = "
 SELECT v.id, d.deptName, p.position_title, v.vacancy_count, v.status
 FROM vacancies v
@@ -35,48 +116,26 @@ JOIN position p ON v.position_id = p.positionID
 WHERE v.status = 'To Post'
 ORDER BY v.created_at DESC
 ";
-
 $result = $conn->query($query);
-
 if ($result && $result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $vacancies[] = $row;
-    }
+  while ($row = $result->fetch_assoc()) {
+    $vacancies[] = $row;
+  }
 }
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST['status'])) {
-    $id = intval($_POST['vacancy_id']);
-    $status = $_POST['status'];
-
-    $stmt = $conn->prepare("UPDATE vacancies SET status = ? WHERE id = ?");
-    $stmt->bind_param("si", $status, $id);
-    $stmt->execute();
-
-    // Optional: Redirect to avoid resubmission
-    header("Location: " . $_SERVER['PHP_SELF']);
-    exit;
-}
-
-
-
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Manager - Job Posting</title>
 
-  <!-- Manager Sidebar -->
   <link rel="stylesheet" href="manager-sidebar.css">
 
   <!-- Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-
-  <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
   <style>
@@ -84,26 +143,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST[
       margin: 0;
       padding: 0;
       font-family: 'Poppins', 'Roboto', sans-serif;
-      background-color: #f1f5fc;
+      background: #f1f5fc;
       display: flex;
       color: #111827;
     }
-     .sidebar-logo {
-     display: flex;
-     justify-content: center;
-     margin-bottom: 25px;
+
+    .sidebar-logo {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 25px;
     }
 
     .sidebar-logo img {
-     height: 110px;
-     width: 110px;
-     border-radius: 50%;
-     object-fit: cover;
-     border: 3px solid #ffffff;
+      height: 110px;
+      width: 110px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #fff;
     }
 
-
-    /* MAIN CONTENT */
     .job-postings-container {
       flex-grow: 1;
       margin-left: 220px;
@@ -119,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST[
 
     .job-header h2 {
       font-size: 26px;
-      font-weight: bold;
+      font-weight: 700;
       color: #1f3c88;
       display: flex;
       align-items: center;
@@ -127,23 +185,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST[
     }
 
     .add-job-btn {
-      background-color: #1f3c88;
-      color: white;
+      background: #1f3c88;
+      color: #fff;
       padding: 10px 18px;
       border: none;
       border-radius: 5px;
-      font-size: 14px;
       cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .add-job-btn:hover {
-      background-color: #274ca7;
-    }
-
-    /* JOB TABLE */
-    .job-table {
-      width: 100%;
     }
 
     .job-table-header,
@@ -155,64 +202,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST[
     }
 
     .job-table-header {
-      background-color: #1f3c88;
-      color: white;
-      font-weight: bold;
+      background: #1f3c88;
+      color: #fff;
       border-radius: 6px;
       margin-bottom: 10px;
+      font-weight: 700;
     }
 
     .job-row {
-      background-color: #2f5fca;
-      color: white;
+      background: #2f5fca;
+      color: #fff;
       margin-bottom: 8px;
       border-radius: 6px;
-    }
-
-    .job-row div {
-      font-size: 14px;
-    }
-
-    .status.active {
-      color: #bdfbbd;
-      font-weight: bold;
-    }
-
-    .actions {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-    }
-
-    .circle-btn {
-      background: #40a6ff;
-      border: none;
-      padding: 6px;
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      color: white;
-      transition: 0.3s;
-    }
-
-    .circle-btn:hover {
-      background: #1f8ae8;
-    }
-
-    .circle-btn.delete {
-      background: #ff4b4b;
-    }
-
-    .circle-btn.delete:hover {
-      background: #d93a3a;
-    }
-
-    .circle-btn i {
-      font-size: 14px;
     }
 
     .job-icon {
@@ -220,7 +221,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST[
       color: #1a3f9b;
     }
 
-    /* MODAL */
+    .sidebar-name {
+      text-align: center;
+      color: #fff;
+      margin-bottom: 30px;
+      font-size: 18px;
+    }
+
+    .status-dropdown {
+      width: 100%;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #f1f5fc;
+      color: #1f3c88;
+      font-weight: 500;
+    }
+
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -233,7 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST[
       align-items: center;
       visibility: hidden;
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity .3s;
     }
 
     .modal-overlay.show {
@@ -246,7 +263,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST[
       padding: 30px;
       width: 70%;
       border-radius: 20px;
-      color: white;
+      color: #fff;
     }
 
     .form-group {
@@ -259,24 +276,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST[
     }
 
     .form-group input,
-    .form-group textarea {
+    .form-group textarea,
+    .form-group select {
       width: 100%;
       padding: 8px;
       border: none;
       border-radius: 5px;
-    }
-
-    .row {
-      display: flex;
-      gap: 20px;
-    }
-
-    .half {
-      width: 50%;
-    }
-
-    .third {
-      width: 33.33%;
     }
 
     .button-group {
@@ -288,7 +293,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST[
 
     .cancel-btn {
       background: #b30000;
-      color: white;
+      color: #fff;
       padding: 8px 20px;
       border: none;
       border-radius: 5px;
@@ -297,63 +302,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST[
 
     .post-btn {
       background: #0b8f2e;
-      color: white;
+      color: #fff;
       padding: 8px 20px;
       border: none;
       border-radius: 5px;
       cursor: pointer;
     }
-
-    .sidebar-name {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    color: white;
-    padding: 10px;
-    margin-bottom: 30px;
-    font-size: 18px;
-    flex-direction: column;
-    }
-
-
-    .status-dropdown {
-    width: 100%;
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background-color: #f1f5fc;
-    color: #1f3c88;
-    font-weight: 500;
-    font-size: 14px;
-    transition: 0.3s;
-    cursor: pointer;
-}
-
-.status-dropdown:hover {
-    border-color: #1f3c88;
-}
-
-.status-dropdown:focus {
-    outline: none;
-    border-color: #1f3c88;
-    box-shadow: 0 0 5px rgba(31, 60, 136, 0.4);
-}
-
-
-    
   </style>
 </head>
 
 <body>
-  <!-- SIDEBAR -->
   <div class="sidebar">
-    <div class="sidebar-logo">
-      <img src="Images/hospitallogo.png" alt="Hospital Logo">
-    </div>
-
+    <div class="sidebar-logo"><img src="Images/hospitallogo.png" alt="Hospital Logo"></div>
     <div class="sidebar-name">
-      <p><?php echo "Welcome, $managername"?></p>
+      <p><?php echo "Welcome, " . htmlspecialchars($managername); ?></p>
     </div>
 
     <ul class="nav">
@@ -369,173 +331,138 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST[
     </ul>
   </div>
 
-  <!-- MAIN CONTENT -->
   <main class="job-postings-container">
     <div class="job-header">
       <h2><i class="fa-solid fa-briefcase job-icon"></i> Job Posting</h2>
       <button class="add-job-btn">+ Add New Job</button>
     </div>
 
-    <!-- Available Jobs to Upload -->
-<div class="available-jobs">
-    <h3 style="color:#1f3c88; margin-bottom:15px;">Available Jobs to Upload</h3>
+    <div class="available-jobs">
+      <h3 style="color:#1f3c88;">Available Jobs to Upload</h3>
 
-    <?php if (!empty($vacancies)): ?>
-        <div style="display:grid; grid-template-columns: 1.5fr 1.2fr 0.8fr 0.8fr; gap:10px; padding:10px; background:#e2e8f0; border-radius:8px; margin-bottom:20px;">
+      <?php if (!empty($vacancies)): ?>
+          <div
+            style="display:grid;grid-template-columns:1.5fr 1.2fr 0.8fr 0.8fr;padding:10px;background:#e2e8f0;border-radius:8px;">
             <div><strong>Job Title</strong></div>
             <div><strong>Department</strong></div>
             <div><strong>Vacancies</strong></div>
             <div><strong>Status</strong></div>
-        </div>
+          </div>
 
-        <?php foreach ($vacancies as $job): ?>
-            <div style="display:grid; grid-template-columns: 1.5fr 1.2fr 0.8fr 0.8fr; gap:10px; padding:10px; background:white; border-radius:6px; margin-bottom:8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
-                <div><?php echo htmlspecialchars($job['position_title']); ?></div>
-                <div><?php echo htmlspecialchars($job['deptName']); ?></div>
-                <div><?php echo htmlspecialchars($job['vacancy_count']); ?></div>
+          <?php foreach ($vacancies as $job): ?>
+              <div
+                style="display:grid;grid-template-columns:1.5fr 1.2fr 0.8fr 0.8fr;padding:10px;background:#fff;border-radius:6px;margin-top:5px;">
+                <div><?= htmlspecialchars($job['position_title']); ?></div>
+                <div><?= htmlspecialchars($job['deptName']); ?></div>
+                <div><?= htmlspecialchars($job['vacancy_count']); ?></div>
                 <div>
-    <form method="POST" style="margin:0;">
-        <input type="hidden" name="vacancy_id" value="<?php echo $job['id']; ?>">
-        <select name="status" class="status-dropdown" onchange="this.form.submit()">
-            <option value="To Post" <?php echo ($job['status'] == 'To Post') ? 'selected' : ''; ?>>To Post</option>
-            <option value="On-Going" <?php echo ($job['status'] == 'On-Going') ? 'selected' : ''; ?>>On-Going</option>
-           
-        </select>
-    </form>
-</div>
-
-
-            </div>
-        <?php endforeach; ?>
-    <?php else: ?>
-        <p style="color:#555;">No available jobs found.</p>
-    <?php endif; ?>
-</div>
-
+                  <form method="POST" style="margin:0;">
+                    <input type="hidden" name="vacancy_id" value="<?= (int) $job['id']; ?>">
+                    <select name="status" class="status-dropdown" onchange="this.form.submit()">
+                      <option value="To Post" <?= ($job['status'] == 'To Post') ? 'selected' : ''; ?>>To Post</option>
+                      <option value="On-Going" <?= ($job['status'] == 'On-Going') ? 'selected' : ''; ?>>On-Going</option>
+                    </select>
+                  </form>
+                </div>
+              </div>
+          <?php endforeach; ?>
+      <?php else: ?>
+          <p style="color:#555;">No available jobs found.</p>
+      <?php endif; ?>
+    </div>
 
     <div class="job-table">
-       <h3 style="color:#1f3c88; margin-bottom:15px; margin-top: 30px;">Recently Posted</h3>
-       
-      <div class="job-table-header">
-        <div>Job Title</div>
-        <div>Department</div>
-        <div>Type</div>
-        <div>Vacancies</div>
-        <div>Status</div>
-        <div>Actions</div>
-      </div>
+      <h3 style="color:#1f3c88;">Recently Posted</h3>
+      <?php
+      $recentJobs = $conn->query("SELECT * FROM job_posting ORDER BY date_posted DESC");
+      if ($recentJobs && $recentJobs->num_rows > 0): ?>
+          <div class="job-table-header">
+            <div>Job Title</div>
+            <div>Department</div>
+            <div>Vacancies</div>
+            <div>Date Posted</div>
+            <div>Closing Date</div>
 
-      <div class="job-row">
-        <div>Staff Nurse</div>
-        <div>Nursing</div>
-        <div>Full-Time</div>
-        <div>3</div>
-        <div class="status active">Active</div>
-        <div class="actions">
-          <button class="circle-btn"><i class="fa-solid fa-eye"></i></button>
-          <button class="circle-btn"><i class="fa-solid fa-pen"></i></button>
-          <button class="circle-btn delete"><i class="fa-solid fa-trash"></i></button>
-        </div>
-      </div>
-
-      <div class="job-row">
-        <div>Radiologic Tech</div>
-        <div>Radiology</div>
-        <div>Full-Time</div>
-        <div>3</div>
-        <div class="status active">Active</div>
-        <div class="actions">
-          <button class="circle-btn"><i class="fa-solid fa-eye"></i></button>
-          <button class="circle-btn"><i class="fa-solid fa-pen"></i></button>
-          <button class="circle-btn delete"><i class="fa-solid fa-trash"></i></button>
-        </div>
-      </div>
-
-      <div class="job-row">
-        <div>Pharmacist</div>
-        <div>Pharmacy</div>
-        <div>Full-Time</div>
-        <div>1</div>
-        <div class="status active">Active</div>
-        <div class="actions">
-          <button class="circle-btn"><i class="fa-solid fa-eye"></i></button>
-          <button class="circle-btn"><i class="fa-solid fa-pen"></i></button>
-          <button class="circle-btn delete"><i class="fa-solid fa-trash"></i></button>
-        </div>
-      </div>
+          </div>
+          <?php while ($job = $recentJobs->fetch_assoc()): ?>
+              <div class="job-row">
+                <div><?= htmlspecialchars($job['job_title']); ?></div>
+                <div><?= htmlspecialchars($job['department']); ?></div>
+                <div><?= htmlspecialchars($job['vacancies']); ?></div>
+                <div><?= htmlspecialchars($job['date_posted']); ?></div>
+                <div><?= htmlspecialchars($job['closing_date']); ?></div>
+              </div>
+          <?php endwhile; ?>
+      <?php else: ?>
+          <p style="color:#555;">No job posts yet.</p>
+      <?php endif; ?>
     </div>
   </main>
 
   <!-- ADD JOB MODAL -->
   <div id="jobModal" class="modal-overlay">
     <div class="modal-content">
-      <form>
+      <form method="POST">
+        <input type="hidden" name="new_post" value="1">
+        <input type="hidden" name="vacancy_id" id="vacancy_id">
+
         <div class="form-group">
           <label>Job Title</label>
-          <input type="text" />
-        </div>
-
-        <div class="row">
-          <div class="form-group half">
-            <label>Department</label>
-            <input type="text" />
-          </div>
-          <div class="form-group half">
-            <label>Job Type</label>
-            <input type="text" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="form-group half">
-            <label>Qualifications</label>
-            <input type="text" />
-          </div>
-          <div class="form-group half">
-            <label>Vacancies</label>
-            <input type="text" />
-          </div>
-        </div>
-
-        <div class="row">
-          <div class="form-group half">
-            <label>Expected Salary</label>
-            <input type="text" />
-          </div>
-          <div class="form-group half">
-            <label>Experience in Years</label>
-            <input type="text" />
-          </div>
+          <select name="job_title" id="job_title" required>
+            <option value="">-- Select Job Title --</option>
+            <?php foreach ($vacancies as $vac): ?>
+                <option value="<?= htmlspecialchars($vac['position_title']); ?>"
+                  data-department="<?= htmlspecialchars($vac['deptName']); ?>"
+                  data-vacancies="<?= htmlspecialchars($vac['vacancy_count']); ?>" data-id="<?= (int) $vac['id']; ?>">
+                  <?= htmlspecialchars($vac['position_title']); ?>
+                </option>
+            <?php endforeach; ?>
+          </select>
         </div>
 
         <div class="form-group">
-          <label>Location</label>
-          <input type="text" />
-        </div>
-
-        <div class="row">
-          <div class="form-group third">
-            <label>Posting Date</label>
-            <input type="date" />
-          </div>
-          <div class="form-group third">
-            <label>Closing Date</label>
-            <input type="date" />
-          </div>
-          <div class="form-group third">
-            <label>Employee Status</label>
-            <input type="text" />
-          </div>
+          <label>Department</label>
+          <input type="text" name="department" id="department" readonly>
         </div>
 
         <div class="form-group">
-          <label>Job Description</label>
-          <textarea rows="5"></textarea>
+          <label>Employment Type</label>
+          <input type="text" name="employment_type" id="employment_type" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>Vacancies</label>
+          <input type="number" name="vacancies" id="vacancies" readonly>
+        </div>
+
+        <div class="form-group">
+          <label>Qualification</label>
+          <input type="text" name="qualification" required>
+        </div>
+
+        <div class="form-group">
+          <label>Expected Salary</label>
+          <input type="text" name="expected_salary" required>
+        </div>
+
+        <div class="form-group">
+          <label>Experience in Years</label>
+          <input type="text" name="experience_years" required>
+        </div>
+
+        <div class="form-group">
+          <label for="job_description">Job Description:</label>
+          <textarea name="job_description" id="job_description" rows="4" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Closing Date</label>
+          <input type="date" name="closing_date" required>
         </div>
 
         <div class="button-group">
           <button type="button" class="cancel-btn">Cancel</button>
-          <button type="submit" class="post-btn">Post</button>
+          <button type="submit" class="post-btn">Post Job</button>
         </div>
       </form>
     </div>
@@ -543,35 +470,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST[
 
   <script>
     $(document).ready(function () {
-      $(".add-job-btn").click(function () {
-        $("#jobModal").addClass("show");
-      });
+      $(".add-job-btn").click(() => $("#jobModal").addClass("show"));
+      $(".cancel-btn").click(() => $("#jobModal").removeClass("show"));
 
-      $(".cancel-btn").click(function () {
-        $("#jobModal").removeClass("show");
+      // Auto-fill fields when job selected; employment_type may be absent, so default to empty string
+      $('#job_title').change(function () {
+        var selected = $(this).find(':selected');
+        $('#department').val(selected.data('department') || '');
+        // jobtype might not exist in your DB; keep safe
+        $('#employment_type').val(selected.data('jobtype') || '');
+        $('#vacancies').val(selected.data('vacancies') || '');
+        $('#vacancy_id').val(selected.data('id') || '');
       });
     });
-
-    $(document).ready(function () {
-    $(".status-dropdown").change(function() {
-        var status = $(this).val();
-        var id = $(this).data("id");
-
-        $.ajax({
-            url: 'update_vacancy_status.php',
-            type: 'POST',
-            data: { id: id, status: status },
-            success: function(response) {
-                alert("Status updated successfully!");
-            },
-            error: function() {
-                alert("Error updating status.");
-            }
-        });
-    });
-});
-
   </script>
-</body>
-
-</html>
+</body></html>
