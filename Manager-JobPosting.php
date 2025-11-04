@@ -35,12 +35,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['vacancy_id'], $_POST[
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['new_post'])) {
   // Sanitize and collect posted values
   $job_title = isset($_POST['job_title']) ? trim($_POST['job_title']) : '';
-  $qualification = isset($_POST['qualification']) ? trim($_POST['qualification']) : '';
+  $educational_level = isset($_POST['educational_level']) ? trim($_POST['educational_level']) : '';
   $expected_salary = isset($_POST['expected_salary']) ? trim($_POST['expected_salary']) : '';
   $experience_years = isset($_POST['experience_years']) ? intval($_POST['experience_years']) : 0;
   $job_description = isset($_POST['job_description']) ? trim($_POST['job_description']) : '';
   $vacancies = isset($_POST['vacancies']) ? intval($_POST['vacancies']) : 0;
   $closing_date = isset($_POST['closing_date']) ? $_POST['closing_date'] : null;
+  $skills = isset($_POST['skills']) ? trim($_POST['skills']) : '';
   $vacancy_id = isset($_POST['vacancy_id']) ? intval($_POST['vacancy_id']) : 0;
   $date_posted = date('Y-m-d');
 
@@ -65,28 +66,39 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['new_post'])) {
     exit;
   }
 
-  // Prepare INSERT: ensure bind_param order matches the INSERT column order
-  $stmt = $conn->prepare("INSERT INTO job_posting (job_title, department, qualification, expected_salary, experience_years, job_description, employment_type, vacancies, date_posted, closing_date)
-                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+  // Normalize skills: split by comma, trim, lowercase, dedupe, join as Title Case
+  $skills_normalized = '';
+  if ($skills !== '') {
+    $parts = array_filter(array_map('trim', explode(',', $skills)), function ($v) {
+      return $v !== '';
+    });
+    $parts = array_map('strtolower', $parts);
+    $parts = array_unique($parts);
+    $parts = array_values($parts);
+    $skills_normalized = implode(', ', array_map('ucwords', $parts));
+  }
+
+  $stmt = $conn->prepare("INSERT INTO job_posting (job_title, department, educational_level, expected_salary, experience_years, job_description, employment_type, vacancies, date_posted, closing_date, skills)
+                          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
   if (!$stmt) {
     echo "Error preparing statement: " . htmlspecialchars($conn->error);
     exit;
   }
 
-  // Types: job_title(s), department(i), qualification(s), expected_salary(s), experience_years(i), job_description(s), employment_type(i), vacancies(i), date_posted(s), closing_date(s)
-  $types = "sissisiiss";
+  $types = "sissisiisss";
   $stmt->bind_param(
     $types,
     $job_title,
     $department_id,
-    $qualification,
+    $educational_level,
     $expected_salary,
     $experience_years,
     $job_description,
     $employment_type_id,
     $vacancies,
     $date_posted,
-    $closing_date
+    $closing_date,
+    $skills_normalized
   );
 
   if ($stmt->execute()) {
@@ -341,33 +353,33 @@ if ($result && $result->num_rows > 0) {
       <h3 style="color:#1f3c88;">Available Jobs to Upload</h3>
 
       <?php if (!empty($vacancies)): ?>
-          <div
-            style="display:grid;grid-template-columns:1.5fr 1.2fr 0.8fr 0.8fr;padding:10px;background:#e2e8f0;border-radius:8px;">
-            <div><strong>Job Title</strong></div>
-            <div><strong>Department</strong></div>
-            <div><strong>Vacancies</strong></div>
-            <div><strong>Status</strong></div>
-          </div>
+        <div
+          style="display:grid;grid-template-columns:1.5fr 1.2fr 0.8fr 0.8fr;padding:10px;background:#e2e8f0;border-radius:8px;">
+          <div><strong>Job Title</strong></div>
+          <div><strong>Department</strong></div>
+          <div><strong>Vacancies</strong></div>
+          <div><strong>Status</strong></div>
+        </div>
 
-          <?php foreach ($vacancies as $job): ?>
-              <div
-                style="display:grid;grid-template-columns:1.5fr 1.2fr 0.8fr 0.8fr;padding:10px;background:#fff;border-radius:6px;margin-top:5px;">
-                <div><?= htmlspecialchars($job['position_title']); ?></div>
-                <div><?= htmlspecialchars($job['deptName']); ?></div>
-                <div><?= htmlspecialchars($job['vacancy_count']); ?></div>
-                <div>
-                  <form method="POST" style="margin:0;">
-                    <input type="hidden" name="vacancy_id" value="<?= (int) $job['id']; ?>">
-                    <select name="status" class="status-dropdown" onchange="this.form.submit()">
-                      <option value="To Post" <?= ($job['status'] == 'To Post') ? 'selected' : ''; ?>>To Post</option>
-                      <option value="On-Going" <?= ($job['status'] == 'On-Going') ? 'selected' : ''; ?>>On-Going</option>
-                    </select>
-                  </form>
-                </div>
-              </div>
-          <?php endforeach; ?>
+        <?php foreach ($vacancies as $job): ?>
+          <div
+            style="display:grid;grid-template-columns:1.5fr 1.2fr 0.8fr 0.8fr;padding:10px;background:#fff;border-radius:6px;margin-top:5px;">
+            <div><?= htmlspecialchars($job['position_title']); ?></div>
+            <div><?= htmlspecialchars($job['deptName']); ?></div>
+            <div><?= htmlspecialchars($job['vacancy_count']); ?></div>
+            <div>
+              <form method="POST" style="margin:0;">
+                <input type="hidden" name="vacancy_id" value="<?= (int) $job['id']; ?>">
+                <select name="status" class="status-dropdown" onchange="this.form.submit()">
+                  <option value="To Post" <?= ($job['status'] == 'To Post') ? 'selected' : ''; ?>>To Post</option>
+                  <option value="On-Going" <?= ($job['status'] == 'On-Going') ? 'selected' : ''; ?>>On-Going</option>
+                </select>
+              </form>
+            </div>
+          </div>
+        <?php endforeach; ?>
       <?php else: ?>
-          <p style="color:#555;">No available jobs found.</p>
+        <p style="color:#555;">No available jobs found.</p>
       <?php endif; ?>
     </div>
 
@@ -376,25 +388,25 @@ if ($result && $result->num_rows > 0) {
       <?php
       $recentJobs = $conn->query("SELECT * FROM job_posting ORDER BY date_posted DESC");
       if ($recentJobs && $recentJobs->num_rows > 0): ?>
-          <div class="job-table-header">
-            <div>Job Title</div>
-            <div>Department</div>
-            <div>Vacancies</div>
-            <div>Date Posted</div>
-            <div>Closing Date</div>
+        <div class="job-table-header">
+          <div>Job Title</div>
+          <div>Department</div>
+          <div>Vacancies</div>
+          <div>Date Posted</div>
+          <div>Closing Date</div>
 
+        </div>
+        <?php while ($job = $recentJobs->fetch_assoc()): ?>
+          <div class="job-row">
+            <div><?= htmlspecialchars($job['job_title']); ?></div>
+            <div><?= htmlspecialchars($job['department']); ?></div>
+            <div><?= htmlspecialchars($job['vacancies']); ?></div>
+            <div><?= htmlspecialchars($job['date_posted']); ?></div>
+            <div><?= htmlspecialchars($job['closing_date']); ?></div>
           </div>
-          <?php while ($job = $recentJobs->fetch_assoc()): ?>
-              <div class="job-row">
-                <div><?= htmlspecialchars($job['job_title']); ?></div>
-                <div><?= htmlspecialchars($job['department']); ?></div>
-                <div><?= htmlspecialchars($job['vacancies']); ?></div>
-                <div><?= htmlspecialchars($job['date_posted']); ?></div>
-                <div><?= htmlspecialchars($job['closing_date']); ?></div>
-              </div>
-          <?php endwhile; ?>
+        <?php endwhile; ?>
       <?php else: ?>
-          <p style="color:#555;">No job posts yet.</p>
+        <p style="color:#555;">No job posts yet.</p>
       <?php endif; ?>
     </div>
   </main>
@@ -411,11 +423,11 @@ if ($result && $result->num_rows > 0) {
           <select name="job_title" id="job_title" required>
             <option value="">-- Select Job Title --</option>
             <?php foreach ($vacancies as $vac): ?>
-                <option value="<?= htmlspecialchars($vac['position_title']); ?>"
-                  data-department="<?= htmlspecialchars($vac['deptName']); ?>"
-                  data-vacancies="<?= htmlspecialchars($vac['vacancy_count']); ?>" data-id="<?= (int) $vac['id']; ?>">
-                  <?= htmlspecialchars($vac['position_title']); ?>
-                </option>
+              <option value="<?= htmlspecialchars($vac['position_title']); ?>"
+                data-department="<?= htmlspecialchars($vac['deptName']); ?>"
+                data-vacancies="<?= htmlspecialchars($vac['vacancy_count']); ?>" data-id="<?= (int) $vac['id']; ?>">
+                <?= htmlspecialchars($vac['position_title']); ?>
+              </option>
             <?php endforeach; ?>
           </select>
         </div>
@@ -436,8 +448,13 @@ if ($result && $result->num_rows > 0) {
         </div>
 
         <div class="form-group">
-          <label>Qualification</label>
-          <input type="text" name="qualification" required>
+          <label>Educational Level</label>
+          <input type="text" name="educational_level" required>
+        </div>
+
+        <div class="form-group">
+          <label>Skills (comma separated)</label>
+          <input type="text" name="skills" placeholder="e.g. Nursing, BLS, Phlebotomy">
         </div>
 
         <div class="form-group">
@@ -484,4 +501,6 @@ if ($result && $result->num_rows > 0) {
       });
     });
   </script>
-</body></html>
+</body>
+
+</html>

@@ -2,12 +2,50 @@
 session_start();
 require 'admin/db.connect.php';
 
+// Ensure applicant is logged in. We expect the login flow to set
+// $_SESSION['applicantID'] for applicant users. If not set, redirect.
+if (!isset($_SESSION['applicantID'])) {
+  header('Location: Login.php');
+  exit;
+}
+$applicantID = $_SESSION['applicantID'];
+
 $employees = 0;
 $applicants = 0;
 
-$applicantnameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Applicant'");
-if ($applicantnameQuery && $row = $applicantnameQuery->fetch_assoc()) {
+// Fetch applicant fullname
+$applicantname = '';
+if ($stmt = $conn->prepare("SELECT fullname FROM applicant WHERE applicantID = ? LIMIT 1")) {
+  // single placeholder => single string param
+  $stmt->bind_param('s', $applicantID);
+  $stmt->execute();
+  $res = $stmt->get_result();
+  if ($res && $row = $res->fetch_assoc()) {
     $applicantname = $row['fullname'];
+  }
+  $stmt->close();
+}
+
+// Fetch the applicant's applications from `applications` joined to `job_posting`.
+$applications = [];
+if (
+  $stmt = $conn->prepare(
+    "SELECT a.id, a.status, a.applied_at, jp.job_title
+   FROM applications a
+   JOIN job_posting jp ON a.jobID = jp.jobID
+   WHERE a.applicantID = ?
+   ORDER BY a.applied_at DESC"
+  )
+) {
+  $stmt->bind_param('s', $applicantID);
+  $stmt->execute();
+  $res = $stmt->get_result();
+  if ($res) {
+    while ($row = $res->fetch_assoc()) {
+      $applications[] = $row;
+    }
+  }
+  $stmt->close();
 }
 ?>
 
@@ -130,16 +168,16 @@ if ($applicantnameQuery && $row = $applicantnameQuery->fetch_assoc()) {
     }
 
     .sidebar-name {
-        display: flex;
-        justify-content: center; 
-        align-items: center;      
-        text-align: center;       
-        color: white;
-        padding: 10px;
-        margin-bottom: 30px;
-        font-size: 18px; 
-        flex-direction: column; 
-        }
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 10px;
+      margin-bottom: 30px;
+      font-size: 18px;
+      flex-direction: column;
+    }
   </style>
 </head>
 
@@ -151,8 +189,8 @@ if ($applicantnameQuery && $row = $applicantnameQuery->fetch_assoc()) {
     </a>
 
     <div class="sidebar-name">
-            <p><?php echo "Welcome, $applicantname"; ?></p>
-        </div>
+      <p><?php echo "Welcome, $applicantname"; ?></p>
+    </div>
 
     <ul class="nav">
       <li><a href="Applicant_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
@@ -177,18 +215,28 @@ if ($applicantnameQuery && $row = $applicantnameQuery->fetch_assoc()) {
     <hr>
 
     <div class="applications-container">
-      <div class="application-card">
-        <span class="job-title">Consultant Anesthesiologist</span>
-        <span class="status">Status</span>
-      </div>
-      <div class="application-card">
-        <span class="job-title">Consultant Anesthesiologist</span>
-        <span class="status">Status</span>
-      </div>
-      <div class="application-card">
-        <span class="job-title">Consultant Anesthesiologist</span>
-        <span class="status">Status</span>
-      </div>
+      <?php if (empty($applications)): ?>
+        <p>No applications found.</p>
+      <?php else: ?>
+        <?php foreach ($applications as $app): ?>
+          <?php
+          $title = isset($app['job_title']) ? $app['job_title'] : 'Untitled Role';
+          $status = isset($app['status']) ? $app['status'] : 'Unknown';
+          $appliedAt = (!empty($app['applied_at']) && $app['applied_at'] !== '0000-00-00 00:00:00') ? date('M d, Y', strtotime($app['applied_at'])) : '';
+          ?>
+          <div class="application-card">
+            <div>
+              <div class="job-title"><?php echo htmlspecialchars($title); ?></div>
+              <?php if ($appliedAt): ?>
+                <div class="applied-at" style="font-size:13px;opacity:0.9;">Applied:
+                  <?php echo htmlspecialchars($appliedAt); ?>
+                </div>
+              <?php endif; ?>
+            </div>
+            <div class="status"><?php echo htmlspecialchars($status); ?></div>
+          </div>
+        <?php endforeach; ?>
+      <?php endif; ?>
     </div>
   </div>
 </body>

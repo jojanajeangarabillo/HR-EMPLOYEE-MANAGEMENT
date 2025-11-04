@@ -2,26 +2,125 @@
 session_start();
 require 'admin/db.connect.php';
 
-$employees = 0;
-$requests = 0;
 $hirings = 0;
 $applicants = 0;
 $managername = 0;
 
 $managernameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Employee' AND  sub_role ='HR Manager' LIMIT 1");
 if ($managernameQuery && $row = $managernameQuery->fetch_assoc()) {
-    $managername = $row['fullname'];
-}
-
-
-$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
-if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
-    $employees = $row['count'];
+  $managername = $row['fullname'];
 }
 
 $applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Applicant'");
 if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
-    $applicants = $row['count'];
+  $applicants = $row['count'];
+}
+
+// Fetch pending applicants from the applicant table
+// Server-side filtering: read GET params
+$search = trim($_GET['q'] ?? '');
+$statusFilter = $_GET['status'] ?? 'Pending';
+
+$pendingApplicants = [];
+
+// Build SQL dynamically based on filters
+$sql = "SELECT applicantID, fullName, status FROM applicant";
+$clauses = [];
+$types = '';
+$params = [];
+
+// status filter (default to Pending to match the page intent)
+if ($statusFilter && strtolower($statusFilter) !== 'all') {
+  $clauses[] = "status = ?";
+  $types .= 's';
+  $params[] = $statusFilter;
+}
+
+// search across applicantID, fullName, email_address (if present)
+if ($search !== '') {
+  $clauses[] = "(applicantID LIKE ? OR fullName LIKE ? OR email_address LIKE ?)";
+  $like = "%" . $search . "%";
+  $types .= 'sss';
+  $params[] = $like;
+  $params[] = $like;
+  $params[] = $like;
+}
+
+if (!empty($clauses)) {
+  $sql .= ' WHERE ' . implode(' AND ', $clauses);
+}
+
+$sql .= ' ORDER BY date_applied DESC';
+
+if ($stmt = $conn->prepare($sql)) {
+  if (!empty($params)) {
+    // bind params dynamically
+    $bind_names[] = $types;
+    for ($i = 0; $i < count($params); $i++) {
+      $bind_name = 'bind' . $i;
+      $$bind_name = $params[$i];
+      $bind_names[] = &$$bind_name;
+    }
+    call_user_func_array([$stmt, 'bind_param'], $bind_names);
+  }
+  $stmt->execute();
+  $pres = $stmt->get_result();
+  if ($pres) {
+    while ($prow = $pres->fetch_assoc()) {
+      $pendingApplicants[] = $prow;
+    }
+  }
+  $stmt->close();
+}
+
+// Handle status update POST from the dropdowns
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status']) && isset($_POST['applicantID']) && isset($_POST['new_status'])) {
+  $allowed = [
+    'Initial Interview',
+    'Assessment',
+    'Final Interview',
+    'Requirements',
+    'Hired',
+    'Rejected',
+  ];
+  $aid = $_POST['applicantID'];
+  $new = $_POST['new_status'];
+  $isAjax = (isset($_POST['ajax']) && $_POST['ajax']) || (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest');
+
+  $response = ['success' => false, 'message' => 'Invalid request'];
+  if (in_array($new, $allowed, true) && !empty($aid)) {
+    if ($u = $conn->prepare("UPDATE applicant SET status = ? WHERE applicantID = ?")) {
+      $u->bind_param('ss', $new, $aid);
+      $exec = $u->execute();
+      $u->close();
+      if ($exec) {
+        $response = ['success' => true, 'message' => 'Status updated'];
+      } else {
+        $response = ['success' => false, 'message' => 'Database update failed'];
+      }
+    } else {
+      $response = ['success' => false, 'message' => 'Failed to prepare update'];
+    }
+  } else {
+    $response = ['success' => false, 'message' => 'Invalid status or applicant ID'];
+  }
+
+  if ($isAjax) {
+    header('Content-Type: application/json');
+    echo json_encode($response);
+    exit;
+  } else {
+    // Non-AJAX fallback: redirect back (preserve query string)
+    $qs = isset($_SERVER['QUERY_STRING']) && $_SERVER['QUERY_STRING'] !== '' ? ('?' . $_SERVER['QUERY_STRING']) : '';
+    // Optionally set a flash message in session
+    if ($response['success']) {
+      $_SESSION['flash_success'] = $response['message'];
+    } else {
+      $_SESSION['flash_error'] = $response['message'];
+    }
+    header('Location: Manager_PendingApplicants.php' . $qs);
+    exit;
+  }
 }
 
 ?>
@@ -38,8 +137,7 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
   <link rel="stylesheet" href="manager-sidebar.css">
 
   <!-- Font Awesome Icons -->
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
     crossorigin="anonymous" referrerpolicy="no-referrer" />
 
   <style>
@@ -196,8 +294,9 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
       width: 25%;
     }
 
-    /* View Button */
-    #view-btn {
+    /* View Button - support both id and class to preserve compatibility */
+    #view-btn,
+    .view-btn {
       background-color: #1E3A8A;
       color: white;
       border: none;
@@ -211,13 +310,15 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
       gap: 6px;
     }
 
-    #view-btn:hover {
+    #view-btn:hover,
+    .view-btn:hover {
       background-color: #1e40af;
       transform: translateY(-2px);
       box-shadow: 0 4px 8px rgba(30, 58, 138, 0.3);
     }
 
-    #view-btn i {
+    #view-btn i,
+    .view-btn i {
       font-size: 13px;
     }
 
@@ -243,16 +344,17 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
       background-color: #fee2e2;
       color: #991b1b;
     }
+
     .sidebar-name {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    color: white;
-    padding: 10px;
-    margin-bottom: 30px;
-    font-size: 18px;
-    flex-direction: column;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 10px;
+      margin-bottom: 30px;
+      font-size: 18px;
+      flex-direction: column;
     }
   </style>
 </head>
@@ -265,20 +367,21 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
     </div>
 
     <div class="sidebar-name">
-            <p><?php echo "Welcome, $managername"; ?></p>
-        </div>
+      <p><?php echo "Welcome, $managername"; ?></p>
+    </div>
 
     <ul class="nav">
-            <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-            <li><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-            <li class="active"><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
-            <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-            <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
-            <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
-            <li><a href="Manager_Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
-            <li><a href="Manager_LeaveSettings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-            <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
-        </ul>
+      <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+      <li><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
+      <li class="active"><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending
+          Applicants</a></li>
+      <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+      <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
+      <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
+      <li><a href="Manager_Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
+      <li><a href="Manager_LeaveSettings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
+      <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+    </ul>
   </div>
 
   <!-- MAIN CONTENT -->
@@ -289,17 +392,23 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
 
     <div class="header">
       <div class="search-filter">
-        <div class="search-box">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" id="searchInput" placeholder="Search applicants...">
-        </div>
+        <form method="get" id="filterForm" style="display:flex;align-items:center;gap:15px;">
+          <div class="search-box">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" name="q" placeholder="Search applicants..."
+              value="<?php echo htmlspecialchars($search ?? ''); ?>">
+          </div>
 
-        <select id="statusFilter">
-          <option value="all">All Status</option>
-          <option value="Pending">Pending</option>
-          <option value="Interviewed">Interviewed</option>
-          <option value="Rejected">Rejected</option>
-        </select>
+          <select id="statusFilter" name="status">
+            <option value="all" <?php echo (isset($statusFilter) && strtolower($statusFilter) === 'all') ? 'selected' : ''; ?>>All Status</option>
+            <option value="Pending" <?php echo (isset($statusFilter) && $statusFilter === 'Pending') ? 'selected' : ''; ?>>Pending</option>
+            <option value="Interviewed" <?php echo (isset($statusFilter) && $statusFilter === 'Interviewed') ? 'selected' : ''; ?>>Interviewed</option>
+            <option value="Rejected" <?php echo (isset($statusFilter) && $statusFilter === 'Rejected') ? 'selected' : ''; ?>>Rejected</option>
+          </select>
+
+          <button type="submit"
+            style="background:#1E3A8A;color:#fff;border:none;padding:8px 14px;border-radius:8px;">Search</button>
+        </form>
       </div>
     </div>
 
@@ -313,51 +422,95 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>25-0001</td>
-          <td>John Smith</td>
-          <td><button id="view-btn"><i class="fa-solid fa-eye"></i> View</button></td>
-          <td><span class="status pending">Pending</span></td>
-        </tr>
-        <tr>
-          <td>25-0002</td>
-          <td>Garabillo, Jojana Jean</td>
-          <td><button id="view-btn"><i class="fa-solid fa-eye"></i> View</button></td>
-          <td><span class="status interviewed">Interviewed</span></td>
-        </tr>
-        <tr>
-          <td>25-0003</td>
-          <td>Maria Santos</td>
-          <td><button id="view-btn"><i class="fa-solid fa-eye"></i> View</button></td>
-          <td><span class="status rejected">Rejected</span></td>
-        </tr>
+        <?php if (empty($pendingApplicants)): ?>
+          <tr>
+            <td colspan="4">No pending applicants found.</td>
+          </tr>
+        <?php else: ?>
+          <?php foreach ($pendingApplicants as $p): ?>
+            <tr>
+              <td><?php echo htmlspecialchars($p['applicantID'] ?? ''); ?></td>
+              <td><?php echo htmlspecialchars($p['fullName'] ?? ''); ?></td>
+              <td><button class="view-btn" data-appid="<?php echo htmlspecialchars($p['applicantID']); ?>"><i
+                    class="fa-solid fa-eye"></i> View</button></td>
+              <td>
+                <?php $current = $p['status'] ?? ''; ?>
+                <?php $opts = ['Initial Interview', 'Assessment', 'Final Interview', 'Requirements', 'Hired', 'Rejected']; ?>
+                <select data-appid="<?php echo htmlspecialchars($p['applicantID']); ?>" onchange="updateStatusAjax(this)"
+                  style="padding:6px 10px;border-radius:8px;min-width:160px;">
+                  <?php foreach ($opts as $opt): ?>
+                    <option value="<?php echo htmlspecialchars($opt); ?>" <?php echo ($current === $opt) ? 'selected' : ''; ?>>
+                      <?php echo htmlspecialchars($opt); ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        <?php endif; ?>
       </tbody>
     </table>
   </div>
 
   <script>
-    // Search & Filter Functionality
-    const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('statusFilter');
-    const tableRows = document.querySelectorAll('#applicantTable tbody tr');
+    // Auto-submit the form when status changes for convenience
+    document.addEventListener('DOMContentLoaded', function () {
+      const status = document.getElementById('statusFilter');
+      const form = document.getElementById('filterForm');
+      if (status && form) {
+        status.addEventListener('change', function () { form.submit(); });
+      }
+    });
 
-    function filterTable() {
-      const searchTerm = searchInput.value.toLowerCase();
-      const filterValue = statusFilter.value;
+    // AJAX status updater
+    function updateStatusAjax(selectEl) {
+      const appid = selectEl.dataset.appid;
+      const newStatus = selectEl.value;
+      if (!appid) return;
+      selectEl.disabled = true;
 
-      tableRows.forEach(row => {
-        const name = row.cells[1].textContent.toLowerCase();
-        const status = row.cells[3].textContent.trim();
+      const body = new URLSearchParams();
+      body.append('ajax', '1');
+      body.append('update_status', '1');
+      body.append('applicantID', appid);
+      body.append('new_status', newStatus);
 
-        const matchesSearch = name.includes(searchTerm);
-        const matchesFilter = filterValue === 'all' || status === filterValue;
-
-        row.style.display = matchesSearch && matchesFilter ? '' : 'none';
-      });
+      fetch('Manager_PendingApplicants.php', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: body
+      }).then(res => res.json()).then(json => {
+        if (json && json.success) {
+          showToast(json.message || 'Status updated');
+        } else {
+          showToast('Error: ' + (json && json.message ? json.message : 'Update failed'));
+        }
+      }).catch(err => {
+        showToast('Server error');
+      }).finally(() => { selectEl.disabled = false; });
     }
 
-    searchInput.addEventListener('keyup', filterTable);
-    statusFilter.addEventListener('change', filterTable);
+    // Simple toast
+    function showToast(msg) {
+      let t = document.getElementById('mp-toast');
+      if (!t) {
+        t = document.createElement('div');
+        t.id = 'mp-toast';
+        t.style.position = 'fixed';
+        t.style.right = '20px';
+        t.style.top = '20px';
+        t.style.padding = '10px 14px';
+        t.style.background = 'rgba(16,24,40,0.9)';
+        t.style.color = '#fff';
+        t.style.borderRadius = '8px';
+        t.style.zIndex = 2000;
+        t.style.boxShadow = '0 6px 18px rgba(2,6,23,0.2)';
+        document.body.appendChild(t);
+      }
+      t.textContent = msg;
+      t.style.opacity = '1';
+      setTimeout(() => { t.style.transition = 'opacity 0.4s'; t.style.opacity = '0'; }, 2500);
+    }
   </script>
 </body>
 
