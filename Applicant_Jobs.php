@@ -24,9 +24,20 @@ if (isset($_SESSION['apply_success']) && !empty($_SESSION['apply_success'])) {
   unset($_SESSION['apply_success']);
 }
 
-$applicantnameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Applicant'");
-if ($applicantnameQuery && $row = $applicantnameQuery->fetch_assoc()) {
-  $applicantname = $row['fullname'];
+$applicant_id = $_SESSION['applicant_employee_id'];
+$applicantname = "";
+
+// Fetch the applicant name dynamically from `applicant` table using applicantID
+$stmt = $conn->prepare("SELECT fullName FROM applicant WHERE applicantID = ?");
+$stmt->bind_param("s", $applicant_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $applicantname = $row['fullName'];
+} else {
+    $applicantname = $_SESSION['fullname']; // fallback from `user` table
 }
 
 // Search query (GET param 'q') - used to filter job postings

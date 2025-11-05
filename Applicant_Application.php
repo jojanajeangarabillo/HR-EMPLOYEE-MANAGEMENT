@@ -13,17 +13,20 @@ $applicantID = $_SESSION['applicantID'];
 $employees = 0;
 $applicants = 0;
 
-// Fetch applicant fullname
-$applicantname = '';
-if ($stmt = $conn->prepare("SELECT fullname FROM applicant WHERE applicantID = ? LIMIT 1")) {
-  // single placeholder => single string param
-  $stmt->bind_param('s', $applicantID);
-  $stmt->execute();
-  $res = $stmt->get_result();
-  if ($res && $row = $res->fetch_assoc()) {
-    $applicantname = $row['fullname'];
-  }
-  $stmt->close();
+$applicant_id = $_SESSION['applicant_employee_id'];
+$applicantname = "";
+
+// Fetch the applicant name dynamically from `applicant` table using applicantID
+$stmt = $conn->prepare("SELECT fullName FROM applicant WHERE applicantID = ?");
+$stmt->bind_param("s", $applicant_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $applicantname = $row['fullName'];
+} else {
+    $applicantname = $_SESSION['fullname']; // fallback from `user` table
 }
 
 // Fetch the applicant's applications from `applications` joined to `job_posting`.

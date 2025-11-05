@@ -2,12 +2,27 @@
 session_start();
 require 'admin/db.connect.php';
 
-$employees = 0;
-$applicants = 0;
+// Make sure user is logged in and is an applicant
+if (!isset($_SESSION['email']) || $_SESSION['role'] !== 'Applicant') {
+    header("Location: Login.php");
+    exit;
+}
 
-$applicantnameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Applicant'");
-if ($applicantnameQuery && $row = $applicantnameQuery->fetch_assoc()) {
-    $applicantname = $row['fullname'];
+$applicant_id = $_SESSION['applicant_employee_id'];
+$applicantname = "";
+
+// Fetch the applicant name dynamically from `applicant` table using applicantID
+$stmt = $conn->prepare("SELECT fullName FROM applicant WHERE applicantID = ?");
+$stmt = $conn->prepare("SELECT fullName, profile_pic FROM applicant WHERE applicantID = ?");
+$stmt->bind_param("s", $applicant_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $applicantname = $row['fullName'];
+} else {
+    $applicantname = $_SESSION['fullname']; // fallback from `user` table
 }
 ?>
 
@@ -165,7 +180,8 @@ if ($applicantnameQuery && $row = $applicantnameQuery->fetch_assoc()) {
     <!-- Sidebar -->
     <div class="sidebar">
         <a href="Applicant_Profile.php" class="profile">
-            <i class="fa-solid fa-user"></i>
+             <img src="uploads/applicants/<?php echo htmlspecialchars($profile_picture); ?>" 
+             alt="Profile" class="sidebar-profile-img">
         </a>
 
         <div class="sidebar-name">

@@ -1,7 +1,7 @@
 <?php
 ob_start();
 session_start();
-include 'admin/db.connect.php';
+require 'admin/db.connect.php';
 
 if (isset($_POST['login'])) {
     $email = trim($_POST['email']);
@@ -17,36 +17,34 @@ if (isset($_POST['login'])) {
         $hashedPassword = $row['password'];
 
         if (password_verify($password, $hashedPassword)) {
+
             // Common session values
             $_SESSION['email'] = $row['email'];
             $_SESSION['role'] = $row['role'];
             $_SESSION['fullname'] = $row['fullname'];
             $_SESSION['sub_role'] = $row['sub_role'];
-
-            // If this account belongs to an applicant, expose their applicantID in session
-            // `applicant_employee_id` in the `user` table maps to the `applicant.applicantID` value
-            if (strtolower(trim($row['role'])) === 'applicant') {
-                $_SESSION['applicantID'] = $row['applicant_employee_id'];
-            }
+            $_SESSION['applicant_employee_id'] = $row['applicant_employee_id'];
 
             $role = strtolower(trim($row['role']));
             $sub_role = strtolower(trim($row['sub_role'] ?? ''));
 
+            // Redirect based on role
             if ($role === 'admin') {
                 header("Location: Admin-Dashboard.php");
                 exit;
             } elseif ($role === 'applicant') {
                 header("Location: Applicant_Dashboard.php");
                 exit;
-            } elseif ($role == "employee" && $sub_role == "hr manager") {
-                header('Location: Manager_Dashboard.php');
-
+            } elseif ($role === 'employee' && $sub_role === 'hr manager') {
+                header("Location: Manager_Dashboard.php");
+                exit;
             } elseif ($role === 'employee') {
                 header("Location: Employee_Dashboard.php");
                 exit;
             } else {
                 echo "<script>alert('Unknown role for this account.');</script>";
             }
+
         } else {
             echo "<script>alert('Incorrect password.');</script>";
         }
@@ -55,6 +53,7 @@ if (isset($_POST['login'])) {
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
