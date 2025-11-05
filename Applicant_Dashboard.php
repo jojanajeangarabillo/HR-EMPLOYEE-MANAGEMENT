@@ -13,7 +13,6 @@ $applicantname = "";
 
 // Fetch the applicant name dynamically from `applicant` table using applicantID
 $stmt = $conn->prepare("SELECT fullName FROM applicant WHERE applicantID = ?");
-$stmt = $conn->prepare("SELECT fullName, profile_pic FROM applicant WHERE applicantID = ?");
 $stmt->bind_param("s", $applicant_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -23,6 +22,24 @@ if ($result->num_rows > 0) {
     $applicantname = $row['fullName'];
 } else {
     $applicantname = $_SESSION['fullname']; // fallback from `user` table
+}
+
+$stmt = $conn->prepare("SELECT fullName, profile_pic FROM applicant WHERE applicantID = ?");
+$stmt->bind_param("s", $applicant_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $applicantname = $row['fullName'];
+
+    // ✅ Check if a profile picture exists
+    if (!empty($row['profile_pic'])) {
+        $profile_picture = $row['profile_pic'];
+    }
+} else {
+    // fallback if not found in applicant table
+    $applicantname = $_SESSION['fullname'] ?? "Applicant";
 }
 ?>
 
@@ -67,6 +84,18 @@ if ($result->num_rows > 0) {
             gap: 40px;
         }
 
+        .sidebar-profile-img {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-profile-img:hover {
+            transform: scale(1.05);
+        }
         /* Welcome Box */
         .welcome-box {
             background-color: #1E3A8A;
