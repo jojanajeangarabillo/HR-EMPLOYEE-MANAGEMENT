@@ -31,7 +31,7 @@ $hiringsQuery = $conn->query("
     WHERE status IN ('On-Going', 'To Post')
 ");
 if ($hiringsQuery && $row = $hiringsQuery->fetch_assoc()) {
-    $hirings = $row['count'] ?? 0; // fallback to 0 if null
+    $hirings = $row['count'] ?? 0; 
 }
 
 // Fetch recent vacancies for listing (only On-Going)
