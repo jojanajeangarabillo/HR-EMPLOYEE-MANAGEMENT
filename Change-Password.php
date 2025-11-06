@@ -73,88 +73,135 @@ if (isset($_POST['change_password'])) {
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Change Password</title>
-    <link rel="stylesheet" href="applicant.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
-        integrity="sha512-papNMv5z+YdUj4m6rKcxQZZNhpCJ3+VzYDA6kYskk5wDZqB8bJz5K5C9mEeD2iHZG5tLx4yPcXy4A4p4rA7Rqw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        .error-msg {
-            color: red;
-            margin-top: 10px;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Change Password</title>
+  <link rel="stylesheet" href="applicant.css">
+  <!-- ✅ Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 
-        .success-msg {
-            color: green;
-            margin-top: 10px;
-        }
-    </style>
+  <style>
+    .error-msg {
+      color: red;
+      margin-top: 10px;
+    }
+
+    .success-msg {
+      color: green;
+      margin-top: 10px;
+    }
+
+    /* ✅ Eye icon styling */
+    .input-container {
+      position: relative;
+    }
+
+    .show-pass {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      color: #555;
+    }
+
+    /* ✅ Show slashed eye first (password hidden by default) */
+    .fa-eye {
+      display: none;
+    }
+
+    .fa-eye-slash {
+      display: inline;
+    }
+  </style>
 </head>
 
 <body class="login-body">
-    <!-- Topbar -->
-    <header class="top-bar">
-        <div class="logo-header">
-            <img src="Images/hospitallogo.png" alt="Hospital Logo">
-            <div class="top-bar-text">
-                <h1>H O S P I T A L</h1>
-            </div>
+  <!-- Topbar -->
+  <header class="top-bar">
+    <div class="logo-header">
+      <img src="Images/hospitallogo.png" alt="Hospital Logo">
+      <div class="top-bar-text">
+        <h1>H O S P I T A L</h1>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <section class="login-section">
+      <form class="login-input" method="POST">
+        <h1 style="font-size: 40px;"><b>Change Password</b></h1>
+
+        <!-- Current Password -->
+        <div class="input-group">
+          <label for="currentPass">Current Password</label>
+          <div class="input-container">
+            <input type="password" id="currentPass" name="currentPass" placeholder="Enter Current Password" required>
+            <i class="fa-regular fa-eye show-pass" onclick="togglePassword('currentPass', this)"></i>
+            <i class="fa-regular fa-eye-slash show-pass" onclick="togglePassword('currentPass', this)"></i>
+          </div>
         </div>
-    </header>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <section class="login-section">
-            <form class="login-input" method="POST">
-                <h1 style="font-size: 40px;"><b>Change Password</b></h1>
+        <!-- New Password -->
+        <div class="input-group">
+          <label for="newPass">New Password</label>
+          <div class="input-container">
+            <input type="password" id="newPass" name="newPass" placeholder="Enter New Password" required>
+            <i class="fa-regular fa-eye show-pass" onclick="togglePassword('newPass', this)"></i>
+            <i class="fa-regular fa-eye-slash show-pass" onclick="togglePassword('newPass', this)"></i>
+          </div>
+        </div>
 
-                <!-- Current Password -->
-                <div class="input-group">
-                    <label for="currentPass">Current Password</label>
-                    <div class="input-container">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="currentPass" name="currentPass" placeholder="Enter Current Password"
-                            required>
-                    </div>
-                </div>
+        <!-- Confirm Password -->
+        <div class="input-group">
+          <label for="confirmPass">Confirm Password</label>
+          <div class="input-container">
+            <input type="password" id="confirmPass" name="confirmPass" placeholder="Confirm New Password" required>
+            <i class="fa-regular fa-eye show-pass" onclick="togglePassword('confirmPass', this)"></i>
+            <i class="fa-regular fa-eye-slash show-pass" onclick="togglePassword('confirmPass', this)"></i>
+          </div>
+        </div>
 
-                <!-- New Password -->
-                <div class="input-group">
-                    <label for="newPass">New Password</label>
-                    <div class="input-container">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="newPass" name="newPass" placeholder="Enter New Password" required>
-                    </div>
-                </div>
+        <!-- Confirm Button -->
+        <div class="confirm-button">
+          <button type="submit" name="change_password">
+            <i class="fa-solid fa-right-to-bracket"></i> Confirm
+          </button>
+        </div>
 
-                <!-- Confirm Password -->
-                <div class="input-group">
-                    <label for="confirmPass">Confirm Password</label>
-                    <div class="input-container">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="password" id="confirmPass" name="confirmPass" placeholder="Confirm New Password"
-                            required>
-                    </div>
-                </div>
+        <?php if (!empty($error_msg)): ?>
+        <div class="error-msg"><?php echo $error_msg; ?></div>
+        <?php endif; ?>
+        <?php if (!empty($success_msg)): ?>
+        <div class="success-msg"><?php echo $success_msg; ?></div>
+        <?php endif; ?>
+      </form>
+    </section>
+  </main>
 
-                <!-- Confirm Button -->
-                <div class="confirm-button">
-                    <button type="submit" name="change_password">
-                        <i class="fa-solid fa-right-to-bracket"></i> Confirm
-                    </button>
-                </div>
+  <!-- ✅ JavaScript for show/hide password -->
+  <script>
+    function togglePassword(fieldId, icon) {
+      const input = document.getElementById(fieldId);
+      const container = icon.parentElement;
+      const eye = container.querySelector('.fa-eye');
+      const eyeSlash = container.querySelector('.fa-eye-slash');
 
-                <?php if (!empty($error_msg)): ?>
-                    <div class="error-msg"><?php echo $error_msg; ?></div>
-                <?php endif; ?>
-                <?php if (!empty($success_msg)): ?>
-                    <div class="success-msg"><?php echo $success_msg; ?></div>
-                <?php endif; ?>
-            </form>
-        </section>
-    </main>
+      const isPassword = input.type === "password";
+      input.type = isPassword ? "text" : "password";
+
+      // ✅ When visible: show open eye
+      // ✅ When hidden: show slashed eye
+      if (isPassword) {
+        eyeSlash.style.display = "none";
+        eye.style.display = "inline";
+      } else {
+        eye.style.display = "none";
+        eyeSlash.style.display = "inline";
+      }
+    }
+  </script>
+
 </body>
-
 </html>
