@@ -24,13 +24,15 @@ if (isset($_POST['login'])) {
             $_SESSION['fullname'] = $row['fullname'];
             $_SESSION['sub_role'] = $row['sub_role'];
             $_SESSION['applicant_employee_id'] = $row['applicant_employee_id'];
+            $_SESSION['applicantID'] = $row['applicant_employee_id'];
+
 
             $role = strtolower(trim($row['role']));
             $sub_role = strtolower(trim($row['sub_role'] ?? ''));
 
            
             if ($role === 'admin') {
-                header("Location: Admin-Dashboard.php");
+                header("Location: Admin_Dashboard.php");
                 exit;
             } elseif ($role === 'applicant') {
                 header("Location: Applicant_Dashboard.php");

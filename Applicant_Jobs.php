@@ -586,8 +586,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_job'])) {
           <h2 id="detail_title"><?php echo htmlspecialchars($first['job_title']); ?></h2>
 
           <div class="job-info" id="detail_info">
-            <div><i class="fa-solid fa-location-dot"></i><strong>Location:</strong> <span
-                id="detail_location"><?php echo htmlspecialchars($first['location']); ?></span></div>
             <div><i class="fa-solid fa-building"></i><strong>Department:</strong> <span
                 id="detail_department"><?php echo htmlspecialchars($first['department_name']); ?></span></div>
             <div><i class="fa-solid fa-money-bill-wave"></i><strong>Expected Salary:</strong> <span

@@ -2,54 +2,32 @@
 session_start();
 require 'admin/db.connect.php';
 
-// Ensure applicant is logged in. We expect the login flow to set
-// $_SESSION['applicantID'] for applicant users. If not set, redirect.
-if (!isset($_SESSION['applicantID'])) {
-  header('Location: Login.php');
-  exit;
-}
+
 $applicantID = $_SESSION['applicantID'];
 
-$employees = 0;
-$applicants = 0;
-
-$applicant_id = $_SESSION['applicant_employee_id'];
-$applicantname = "";
-
-// Fetch the applicant name dynamically from `applicant` table using applicantID
+// Fetch applicant name
 $stmt = $conn->prepare("SELECT fullName FROM applicant WHERE applicantID = ?");
-$stmt->bind_param("s", $applicant_id);
+$stmt->bind_param("s", $applicantID);
 $stmt->execute();
-$result = $stmt->get_result();
+$res = $stmt->get_result();
+$applicantname = $res->fetch_assoc()['fullName'] ?? 'Applicant';
+$stmt->close();
 
-if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
-    $applicantname = $row['fullName'];
-} else {
-    $applicantname = $_SESSION['fullname']; // fallback from `user` table
-}
-
-// Fetch the applicant's applications from `applications` joined to `job_posting`.
+// Fetch applications
 $applications = [];
-if (
-  $stmt = $conn->prepare(
-    "SELECT a.id, a.status, a.applied_at, jp.job_title
-   FROM applications a
-   JOIN job_posting jp ON a.jobID = jp.jobID
-   WHERE a.applicantID = ?
-   ORDER BY a.applied_at DESC"
-  )
-) {
-  $stmt->bind_param('s', $applicantID);
-  $stmt->execute();
-  $res = $stmt->get_result();
-  if ($res) {
-    while ($row = $res->fetch_assoc()) {
-      $applications[] = $row;
-    }
-  }
-  $stmt->close();
-}
+$stmt = $conn->prepare("
+  SELECT a.id, a.status, a.applied_at, jp.job_title
+  FROM applications a
+  JOIN job_posting jp ON a.jobID = jp.jobID
+  WHERE a.applicantID = ?
+  ORDER BY a.applied_at DESC
+");
+$stmt->bind_param("s", $applicantID);
+$stmt->execute();
+$res = $stmt->get_result();
+$applications = $res->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
+?>
 ?>
 
 
