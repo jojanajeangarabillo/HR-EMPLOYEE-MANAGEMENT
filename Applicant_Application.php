@@ -68,6 +68,7 @@ $stmt->close();
       display: flex;
       flex-direction: column;
       gap: 30px;
+       margin-top: -330px;
     }
 
     /* Header */
@@ -75,12 +76,14 @@ $stmt->close();
       display: flex;
       justify-content: space-between;
       align-items: center;
+
     }
 
     .header h2 {
       font-weight: 600;
       font-size: 22px;
       color: #1E3A8A;
+       margin-top: 20px;
     }
 
     .search-box {
