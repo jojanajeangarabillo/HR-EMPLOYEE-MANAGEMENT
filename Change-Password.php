@@ -1,13 +1,13 @@
 <?php
 require 'admin/db.connect.php';
-session_start(); // if you want to use logged-in session email later
+session_start(); 
 
 if (isset($_POST['change_password'])) {
     $newPass = $_POST['newPass'];
     $confirmPass = $_POST['confirmPass'];
     $currentPass = $_POST['currentPass'] ?? null;
 
-    // Either from email reset link or from logged-in user
+    
     $token = $_GET['token'] ?? null;
 
     if ($newPass !== $confirmPass) {
@@ -15,7 +15,7 @@ if (isset($_POST['change_password'])) {
     } elseif (strlen($newPass) < 8) {
         echo "<script>alert('Password must be at least 8 characters.');</script>";
     } else {
-        // Check token method (reset via email)
+       
         if ($token) {
             $stmt = $conn->prepare("SELECT email FROM user WHERE reset_token=? AND token_expiry>NOW()");
             $stmt->bind_param("s", $token);
@@ -36,9 +36,9 @@ if (isset($_POST['change_password'])) {
                 echo "<script>alert('Invalid or expired reset link.');</script>";
             }
         } 
-        // Logged-in user changing password normally
+        
         else {
-            // Assuming logged-in user email stored in session
+            
             $email = $_SESSION['email'] ?? null;
 
             if (!$email) {
@@ -46,7 +46,7 @@ if (isset($_POST['change_password'])) {
                 exit;
             }
 
-            // Verify current password
+            
             $check = $conn->prepare("SELECT password FROM user WHERE email=?");
             $check->bind_param("s", $email);
             $check->execute();
@@ -77,7 +77,7 @@ if (isset($_POST['change_password'])) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Change Password</title>
   <link rel="stylesheet" href="applicant.css">
-  <!-- ✅ Font Awesome -->
+  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 
   <style>
@@ -91,7 +91,7 @@ if (isset($_POST['change_password'])) {
       margin-top: 10px;
     }
 
-    /* ✅ Eye icon styling */
+    /*  Eye icon styling */
     .input-container {
       position: relative;
     }
@@ -105,7 +105,7 @@ if (isset($_POST['change_password'])) {
       color: #555;
     }
 
-    /* ✅ Show slashed eye first (password hidden by default) */
+   
     .fa-eye {
       display: none;
     }
@@ -117,7 +117,7 @@ if (isset($_POST['change_password'])) {
 </head>
 
 <body class="login-body">
-  <!-- Topbar -->
+  
   <header class="top-bar">
     <div class="logo-header">
       <img src="Images/hospitallogo.png" alt="Hospital Logo">
@@ -127,7 +127,7 @@ if (isset($_POST['change_password'])) {
     </div>
   </header>
 
-  <!-- Main Content -->
+ 
   <main class="main-content">
     <section class="login-section">
       <form class="login-input" method="POST">
@@ -180,7 +180,7 @@ if (isset($_POST['change_password'])) {
     </section>
   </main>
 
-  <!-- ✅ JavaScript for show/hide password -->
+  <!--Js for show/hide password -->
   <script>
     function togglePassword(fieldId, icon) {
       const input = document.getElementById(fieldId);
@@ -191,8 +191,8 @@ if (isset($_POST['change_password'])) {
       const isPassword = input.type === "password";
       input.type = isPassword ? "text" : "password";
 
-      // ✅ When visible: show open eye
-      // ✅ When hidden: show slashed eye
+      
+     
       if (isPassword) {
         eyeSlash.style.display = "none";
         eye.style.display = "inline";

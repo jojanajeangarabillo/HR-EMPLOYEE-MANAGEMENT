@@ -18,7 +18,7 @@ if (isset($_POST['login'])) {
 
         if (password_verify($password, $hashedPassword)) {
 
-            // Common session values
+            
             $_SESSION['email'] = $row['email'];
             $_SESSION['role'] = $row['role'];
             $_SESSION['fullname'] = $row['fullname'];
@@ -28,7 +28,7 @@ if (isset($_POST['login'])) {
             $role = strtolower(trim($row['role']));
             $sub_role = strtolower(trim($row['sub_role'] ?? ''));
 
-            // Redirect based on role
+           
             if ($role === 'admin') {
                 header("Location: Admin-Dashboard.php");
                 exit;
@@ -63,7 +63,7 @@ if (isset($_POST['login'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="stylesheet.css">
-    <!--For icons-->
+   
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -107,11 +107,13 @@ if (isset($_POST['login'])) {
             border-radius: 5px;
             cursor: pointer;
         }
+
+        
     </style>
 </head>
 
 <body class="login-body">
-    <!--Topbar-->
+   
     <nav class="top-bar">
         <div class="logo-header">
             <img src="Images/hospitallogo.png" alt="Happy Picture">
@@ -151,7 +153,7 @@ if (isset($_POST['login'])) {
         </section>
     </main>
 
-    <!-- Success Modal -->
+    
     <div id="successModal" class="modal">
         <div class="modal-content">
             <h2>Login Successful!</h2>
@@ -160,7 +162,7 @@ if (isset($_POST['login'])) {
         </div>
     </div>
 
-    <!-- Error Modal -->
+   
     <div id="errorModal" class="modal">
         <div class="modal-content">
             <h2>Login Failed</h2>
