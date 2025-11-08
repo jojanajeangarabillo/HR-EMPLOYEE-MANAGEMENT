@@ -22,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_leave'])) {
     $stmt->bind_param("ssiss", $leave_type, $duration, $employee_limit, $time_limit, $created_by);
 
     if ($stmt->execute()) {
-        // ✅ Save last inserted settingID
         $_SESSION['settingID'] = $conn->insert_id;
         $_SESSION['show_modal'] = true;
     } else {
@@ -37,8 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_announcement']))
     $message = $_POST['message'];
     $manager_email = $manageremail;
     $posted_by = $managername;
-
-    // ✅ Retrieve settingID from POST if exists
     $settingID = $_POST['settingID'] ?? null;
 
     $stmt2 = $conn->prepare("INSERT INTO manager_announcement (manager_email, title, posted_by, message, settingID) VALUES (?, ?, ?, ?, ?)");
@@ -50,10 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_announcement']))
         echo "<script>alert('Error posting announcement: " . $conn->error . "');</script>";
     }
     $stmt2->close();
-
     unset($_SESSION['settingID']);
 }
-?>
 ?>
 
 <!DOCTYPE html>
@@ -70,26 +65,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_announcement']))
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
 <style>
-/* ✅ Your CSS untouched */
 body { background-color:#f7f9fc; font-family:"Poppins","Roboto",sans-serif; display:flex; margin:0; }
 .main-content { padding:40px 30px; margin-left:300px; display:flex; flex-direction:column; }
 .main-content h2 { font-size:24px; color:#1E3A8A; font-weight:700; margin-bottom:25px; display:flex; align-items:center; gap:10px; }
-.leave-form-container { background-color:#E5E7EB; padding:40px; border-radius:10px; width:500px; max-width:90%; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
-.leave-form-container form { display:flex; flex-direction:column; gap:15px; }
-.leave-form-container label { font-weight:600; color:#333; }
-.leave-form-container input, .leave-form-container select { padding:10px; border-radius:5px; border:1px solid #ccc; outline:none; transition:0.2s; }
-.leave-form-container input:focus, .leave-form-container select:focus { border-color:#1E3A8A; }
-.form-buttons { display:flex; justify-content:flex-end; gap:10px; margin-top:10px; }
-.cancel-btn { background-color:#b91c1c; color:white; border:none; padding:8px 20px; border-radius:5px; cursor:pointer; transition:0.3s; }
-.cancel-btn:hover { background-color:#991b1b; }
-.post-btn { background-color:#15803d; color:white; border:none; padding:8px 20px; border-radius:5px; cursor:pointer; transition:0.3s; }
-.post-btn:hover { background-color:#166534; }
 .sidebar-name { display:flex; justify-content:center; align-items:center; text-align:center; color:white; padding:10px; margin-bottom:30px; font-size:18px; flex-direction:column; }
 .sidebar-logo img { height:110px; width:110px; border-radius:50%; object-fit:cover; border:3px solid #fff; }
+
+
+.btn-primary-custom { background-color: #1E3A8A; color: white; border: none; }
+.btn-primary-custom:hover { background-color: #16326a; color: white; }
+
+.btn-danger-custom { background-color: red; color: white; border: none; }
+.btn-danger-custom:hover { background-color: darkred; color: white; }
+
+.form-label i { color: #1E3A8A; margin-right: 6px; }
+
 </style>
 </head>
-
 <body>
+
 <!-- SIDEBAR -->
 <div class="sidebar">
   <div class="sidebar-logo"><img src="Images/hospitallogo.png" alt="Hospital Logo"></div>
@@ -109,49 +103,65 @@ body { background-color:#f7f9fc; font-family:"Poppins","Roboto",sans-serif; disp
 
 <!-- MAIN CONTENT -->
 <div class="main-content">
-<h2><i class="fa-solid fa-gear"></i> Leave Settings</h2>
+  <h2><i class="fa-solid fa-gear"></i> Leave Settings</h2>
 
-<div class="leave-form-container">
-<form method="POST">
-<label>Purpose:</label>
-<input type="text" name="purpose" value="Leave" readonly required>
+  <!-- Enhanced Leave Form Container -->
+  <div class="card shadow-sm p-4 mb-5" style="width: 150% ; margin:auto; border-radius:12px; background-color:#ffffff;">
+    <div class="card-body">
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-clipboard"></i>Purpose</label>
+          <input type="text" name="purpose" class="form-control" value="Leave" readonly required>
+        </div>
 
-<label>Filing Start Date:</label>
-<input type="text" id="start_date" name="start_date" required>
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold"><i class="fa-solid fa-calendar-days"></i>Filing Start Date</label>
+            <input type="text" id="start_date" name="start_date" class="form-control" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold"><i class="fa-solid fa-calendar-check"></i>Filing End Date</label>
+            <input type="text" id="end_date" name="end_date" class="form-control" required>
+          </div>
+        </div>
 
-<label>Filing End Date:</label>
-<input type="text" id="end_date" name="end_date" required>
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-users"></i>Employee Limit</label>
+          <input type="number" name="employeeLimit" class="form-control" min="1" required>
+        </div>
 
-<label>Employee Limit:</label>
-<input type="number" name="employeeLimit" min="1" required>
+        <div class="mb-3">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-clock"></i>Leave Duration</label>
+          <select name="leaveDuration" class="form-select" required>
+            <option value="" disabled selected>Select duration</option>
+            <option value="1 day">1 day</option>
+            <option value="2 days">2 days</option>
+            <option value="3 days">3 days</option>
+            <option value="5 days">5 days</option>
+            <option value="1 week">1 week</option>
+            <option value="2 weeks">2 weeks</option>
+          </select>
+        </div>
 
-<label>Leave Duration:</label>
-<select name="leaveDuration" required>
-<option value="" disabled selected>Select duration</option>
-<option value="1 day">1 day</option>
-<option value="2 days">2 days</option>
-<option value="3 days">3 days</option>
-<option value="5 days">5 days</option>
-<option value="1 week">1 week</option>
-<option value="2 weeks">2 weeks</option>
-</select>
+        <div class="mb-4">
+          <label class="form-label fw-semibold"><i class="fa-solid fa-user"></i>Created by</label>
+          <input type="text" name="createdBy" class="form-control" value="<?php echo $managername; ?>" readonly>
+        </div>
 
-<label>Created by:</label>
-<input type="text" name="createdBy" value="<?php echo $managername; ?>" readonly>
-
-<div class="form-buttons">
-<button type="button" class="cancel-btn" onclick="window.location.href='Manager_Dashboard.php'">Cancel</button>
-<button type="submit" name="save_leave" class="post-btn">Post</button>
-</div>
-</form>
-</div>
+        <div class="d-flex justify-content-end gap-2">
+          <button type="button" class="btn btn-danger-custom" onclick="window.location.href='Manager_Dashboard.php'">Cancel</button>
+          <button type="submit" name="save_leave" class="btn btn-primary-custom">Post</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <!-- SUCCESS MODAL -->
 <div class="modal fade" id="successModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0">
-      <div class="modal-header bg-success text-white">
+      <div class="modal-header bg-primary text-white">
         <h5 class="modal-title">Success!</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
@@ -160,14 +170,14 @@ body { background-color:#f7f9fc; font-family:"Poppins","Roboto",sans-serif; disp
         <p>Do you want to announce it to employees?</p>
       </div>
       <div class="modal-footer justify-content-center">
-        <button type="button" class="btn btn-primary px-4" id="openAnnounceModal">Announce</button>
-        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary-custom px-4" id="openAnnounceModal">Announce</button>
+        <button type="button" class="btn btn-danger-custom px-4" data-bs-dismiss="modal">Cancel</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ✅ ANNOUNCEMENT MODAL WITH SETTING ID -->
+<!-- ANNOUNCEMENT MODAL -->
 <div class="modal fade" id="announceModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content border-0">
@@ -175,26 +185,19 @@ body { background-color:#f7f9fc; font-family:"Poppins","Roboto",sans-serif; disp
         <h5 class="modal-title">New Announcement</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-
       <form method="POST">
         <div class="modal-body">
-
-          <!-- ✅ Hidden settingID -->
           <input type="hidden" name="settingID" value="<?php echo $_SESSION['settingID'] ?? ''; ?>">
-
-          <label class="fw-semibold mb-2">Title</label>
+          <label class="form-label fw-semibold mb-2"><i class="fa-solid fa-heading"></i>Title</label>
           <input type="text" name="title" class="form-control mb-3" required>
-
-          <label class="fw-semibold mb-2">Message</label>
+          <label class="form-label fw-semibold mb-2"><i class="fa-solid fa-message"></i>Message</label>
           <textarea name="message" class="form-control" rows="4" required></textarea>
         </div>
-
         <div class="modal-footer justify-content-center">
-          <button type="submit" name="save_announcement" class="btn btn-success px-4">Post Announcement</button>
-          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="save_announcement" class="btn btn-primary-custom px-4">Post Announcement</button>
+          <button type="button" class="btn btn-danger-custom px-4" data-bs-dismiss="modal">Cancel</button>
         </div>
       </form>
-
     </div>
   </div>
 </div>
@@ -203,21 +206,25 @@ body { background-color:#f7f9fc; font-family:"Poppins","Roboto",sans-serif; disp
 <div class="modal fade success-popup" id="announcementSuccessModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content text-center">
-      <div class="modal-header"><h5 class="modal-title w-100"><i class="fa-solid fa-circle-check me-2"></i> Announcement Posted</h5></div>
-      <div class="modal-body"><p>The announcement has been successfully shared with all employees.</p></div>
-      <div class="modal-footer justify-content-center border-0"><button type="button" class="btn btn-success px-4" data-bs-dismiss="modal">OK</button></div>
+      <div class="modal-header">
+        <h5 class="modal-title w-100"><i class="fa-solid fa-circle-check me-2"></i> Announcement Posted</h5>
+      </div>
+      <div class="modal-body">
+        <p>The announcement has been successfully shared with all employees.</p>
+      </div>
+      <div class="modal-footer justify-content-center border-0">
+        <button type="button" class="btn btn-primary-custom px-4" data-bs-dismiss="modal">OK</button>
+      </div>
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
 $(function() {
   $("#start_date, #end_date").datepicker({ dateFormat: "yy-mm-dd", minDate: 0 });
 });
 
-// Show modals
 <?php if (!empty($_SESSION['show_modal'])): ?> 
 new bootstrap.Modal(document.getElementById('successModal')).show();
 <?php unset($_SESSION['show_modal']); endif; ?>
