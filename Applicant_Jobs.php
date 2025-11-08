@@ -638,6 +638,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_job'])) {
         <div class="modal-actions">
           <div class="left">
             <button type="button" class="cancel-btn" onclick="closeApplyModal()">Cancel</button>
+            <button type="submit" class="apply-btn" id="confirmApplyBtn">Confirm</button>
           </div>
           <div class="right">
             <button type="submit" class="apply-btn" id="confirmApplyBtn">Confirm</button>

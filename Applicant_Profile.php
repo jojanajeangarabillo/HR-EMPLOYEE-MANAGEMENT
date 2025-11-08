@@ -140,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     exit();
 }
 
-/* Add role */
+/* Add role (store main role fields on applicant; append description to summary so it is preserved) */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_role'])) {
     $job_title_input = trim($_POST['job_title'] ?? '');
     $company_input = trim($_POST['company_name'] ?? '');
@@ -149,11 +149,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_role'])) {
     if ($job_title_input === '' || $company_input === '' || $role_desc === '') {
         $_SESSION['flash_error'] = 'Please fill all role fields.';
     } else {
-        $ins = $conn->prepare("INSERT INTO applicant_roles (applicantID, job_title, company_name, description, created_at) VALUES (?, ?, ?, ?, NOW())");
+        // Fetch existing summary to append description
+        $get = $conn->prepare("SELECT summary FROM applicant WHERE applicantID = ?");
+        $existing_summary = '';
+        if ($get) {
+            $get->bind_param("s", $session_emp);
+            $get->execute();
+            $row = $get->get_result()->fetch_assoc();
+            $existing_summary = $row['summary'] ?? '';
+            $get->close();
+        }
+
+        // Append role description to summary so users can still see it (single-row table limitation)
+        $append_text = "Role: " . $job_title_input . " at " . $company_input . "\n" . $role_desc;
+        $new_summary = trim(($existing_summary ? ($existing_summary . "\n\n" . $append_text) : $append_text));
+
+        $ins = $conn->prepare("UPDATE applicant SET job_title = ?, company_name = ?, summary = ? WHERE applicantID = ?");
         if ($ins) {
-            $ins->bind_param("ssss", $session_emp, $job_title_input, $company_input, $role_desc);
-            if ($ins->execute()) $_SESSION['flash_success'] = 'Role added.';
-            else $_SESSION['flash_error'] = 'Failed to add role.';
+            $ins->bind_param("ssss", $job_title_input, $company_input, $new_summary, $session_emp);
+            if ($ins->execute()) $_SESSION['flash_success'] = 'Role saved to your profile.';
+            else $_SESSION['flash_error'] = 'Failed to save role: ' . $ins->error;
             $ins->close();
         } else {
             $_SESSION['flash_error'] = 'Server error (prepare failed).';
@@ -163,21 +178,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_role'])) {
     exit();
 }
 
-/* Edit role */
+/* Edit role (update main job_title/company_name and optionally replace summary with appended edit note) */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_role'])) {
-    $role_id = intval($_POST['role_id'] ?? 0);
     $job_title_input = trim($_POST['job_title_edit'] ?? '');
     $company_input = trim($_POST['company_name_edit'] ?? '');
     $role_desc = trim($_POST['role_description_edit'] ?? '');
 
-    if ($role_id <= 0 || $job_title_input === '' || $company_input === '' || $role_desc === '') {
+    if ($job_title_input === '' || $company_input === '' || $role_desc === '') {
         $_SESSION['flash_error'] = 'Please fill all role fields.';
     } else {
-        $upd = $conn->prepare("UPDATE applicant_roles SET job_title = ?, company_name = ?, description = ? WHERE id = ? AND applicantID = ?");
+        // Fetch existing summary and append an "edited" note so the description is preserved
+        $get = $conn->prepare("SELECT summary FROM applicant WHERE applicantID = ?");
+        $existing_summary = '';
+        if ($get) {
+            $get->bind_param("s", $session_emp);
+            $get->execute();
+            $row = $get->get_result()->fetch_assoc();
+            $existing_summary = $row['summary'] ?? '';
+            $get->close();
+        }
+
+        $append_text = "Edited Role: " . $job_title_input . " at " . $company_input . "\n" . $role_desc;
+        $new_summary = trim(($existing_summary ? ($existing_summary . "\n\n" . $append_text) : $append_text));
+
+        $upd = $conn->prepare("UPDATE applicant SET job_title = ?, company_name = ?, summary = ? WHERE applicantID = ?");
         if ($upd) {
-            $upd->bind_param("sssis", $job_title_input, $company_input, $role_desc, $role_id, $session_emp);
-            if ($upd->execute()) $_SESSION['flash_success'] = 'Role updated.';
-            else $_SESSION['flash_error'] = 'Failed to update role.';
+            $upd->bind_param("ssss", $job_title_input, $company_input, $new_summary, $session_emp);
+            if ($upd->execute()) $_SESSION['flash_success'] = 'Role updated on your profile.';
+            else $_SESSION['flash_error'] = 'Failed to update role: ' . $upd->error;
             $upd->close();
         } else {
             $_SESSION['flash_error'] = 'Server error (prepare failed).';
@@ -187,27 +215,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_role'])) {
     exit();
 }
 
-/* Delete role */
+/* Delete role (clear the job fields; cannot remove description from summary reliably without parsing) */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_role'])) {
-    $role_id = intval($_POST['role_id'] ?? 0);
-    if ($role_id <= 0) {
-        $_SESSION['flash_error'] = 'Invalid role selected.';
+    // clear job-related fields on the applicant row
+    $del = $conn->prepare("UPDATE applicant SET job_title = '', company_name = '', date_started = '0000-00-00', in_role = 'no' WHERE applicantID = ?");
+    if ($del) {
+        $del->bind_param("s", $session_emp);
+        if ($del->execute()) $_SESSION['flash_success'] = 'Role cleared from your profile.';
+        else $_SESSION['flash_error'] = 'Failed to clear role.';
+        $del->close();
     } else {
-        $del = $conn->prepare("DELETE FROM applicant_roles WHERE id = ? AND applicantID = ?");
-        if ($del) {
-            $del->bind_param("is", $role_id, $session_emp);
-            if ($del->execute()) $_SESSION['flash_success'] = 'Role deleted.';
-            else $_SESSION['flash_error'] = 'Failed to delete role.';
-            $del->close();
-        } else {
-            $_SESSION['flash_error'] = 'Server error (prepare failed).';
-        }
+        $_SESSION['flash_error'] = 'Server error (prepare failed).';
     }
+
     header("Location: Applicant_Profile.php");
     exit();
 }
 
-/* Add education */
+/* Add education (single-entry fields on applicant table) */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_education'])) {
     $school = trim($_POST['school'] ?? '');
     $degree = trim($_POST['degree'] ?? '');
@@ -215,11 +240,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_education'])) {
     if ($school === '' || $degree === '') {
         $_SESSION['flash_error'] = 'Please fill all education fields.';
     } else {
-        $ins = $conn->prepare("INSERT INTO applicant_education (applicantID, school, degree, created_at) VALUES (?, ?, ?, NOW())");
+        // year_graduated not collected in modal — keep default '0000' unless provided
+        $year_graduated = $_POST['year_graduated'] ?? '0000';
+
+        $ins = $conn->prepare("UPDATE applicant SET university = ?, course = ?, year_graduated = ? WHERE applicantID = ?");
         if ($ins) {
-            $ins->bind_param("sss", $session_emp, $school, $degree);
-            if ($ins->execute()) $_SESSION['flash_success'] = 'Education added.';
-            else $_SESSION['flash_error'] = 'Failed to add education.';
+            $ins->bind_param("ssis", $school, $degree, $year_graduated, $session_emp);
+            if ($ins->execute()) $_SESSION['flash_success'] = 'Education saved.';
+            else $_SESSION['flash_error'] = 'Failed to save education: ' . $ins->error;
             $ins->close();
         } else {
             $_SESSION['flash_error'] = 'Server error (prepare failed).';
@@ -231,16 +259,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_education'])) {
 
 /* Edit education */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_education'])) {
-    $edu_id = intval($_POST['education_id'] ?? 0);
     $school_edit = trim($_POST['school_edit'] ?? '');
     $degree_edit = trim($_POST['degree_edit'] ?? '');
+    $year_graduated = trim($_POST['year_graduated_edit'] ?? '0000');
 
-    if ($edu_id <= 0 || $school_edit === '' || $degree_edit === '') {
+    if ($school_edit === '' || $degree_edit === '') {
         $_SESSION['flash_error'] = 'Please fill all education fields.';
     } else {
-        $updEdu = $conn->prepare("UPDATE applicant_education SET school = ?, degree = ? WHERE id = ? AND applicantID = ?");
+        $updEdu = $conn->prepare("UPDATE applicant SET university = ?, course = ?, year_graduated = ? WHERE applicantID = ?");
         if ($updEdu) {
-            $updEdu->bind_param("ssis", $school_edit, $degree_edit, $edu_id, $session_emp);
+            $updEdu->bind_param("ssis", $school_edit, $degree_edit, $year_graduated, $session_emp);
             if ($updEdu->execute()) $_SESSION['flash_success'] = 'Education updated.';
             else $_SESSION['flash_error'] = 'Failed to update education.';
             $updEdu->close();
@@ -252,21 +280,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_education'])) {
     exit();
 }
 
-/* Delete education */
+/* Delete education (clear single-entry education fields) */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_education'])) {
-    $edu_id = intval($_POST['education_id'] ?? 0);
-    if ($edu_id <= 0) {
-        $_SESSION['flash_error'] = 'Invalid education selected.';
+    $delEdu = $conn->prepare("UPDATE applicant SET university = '', course = '', year_graduated = '0000' WHERE applicantID = ?");
+    if ($delEdu) {
+        $delEdu->bind_param("s", $session_emp);
+        if ($delEdu->execute()) $_SESSION['flash_success'] = 'Education cleared.';
+        else $_SESSION['flash_error'] = 'Failed to clear education.';
+        $delEdu->close();
     } else {
-        $delEdu = $conn->prepare("DELETE FROM applicant_education WHERE id = ? AND applicantID = ?");
-        if ($delEdu) {
-            $delEdu->bind_param("is", $edu_id, $session_emp);
-            if ($delEdu->execute()) $_SESSION['flash_success'] = 'Education deleted.';
-            else $_SESSION['flash_error'] = 'Failed to delete education.';
-            $delEdu->close();
-        } else {
-            $_SESSION['flash_error'] = 'Server error (prepare failed).';
-        }
+        $_SESSION['flash_error'] = 'Server error (prepare failed).';
     }
     header("Location: Applicant_Profile.php");
     exit();
@@ -331,7 +354,7 @@ if (!ensure_applicant_exists($conn, $session_emp, $flash_error, $flash_success))
 }
 
 // Now load applicant data
-$stmt = $conn->prepare("SELECT fullName, email_address, contact_number, home_address, skills, summary FROM applicant WHERE applicantID = ?");
+$stmt = $conn->prepare("SELECT fullName, email_address, contact_number, home_address, skills, summary, job_title, company_name, date_started, in_role, university, course, year_graduated FROM applicant WHERE applicantID = ?");
 $stmt->bind_param("s", $session_emp);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -344,6 +367,15 @@ if ($result && $row = $result->fetch_assoc()) {
     $skills_str = $row['skills'] ?? '';
     $summary_text = $row['summary'] ?? '';
     $skills_array = array_filter(array_map('trim', preg_split('/\s*,\s*/', $skills_str)));
+    // role / career (single)
+    $role_job_title = htmlspecialchars($row['job_title'] ?? '');
+    $role_company = htmlspecialchars($row['company_name'] ?? '');
+    $role_date_started = htmlspecialchars($row['date_started'] ?? '');
+    $role_in_role = htmlspecialchars($row['in_role'] ?? 'no');
+    // education (single)
+    $edu_school = htmlspecialchars($row['university'] ?? '');
+    $edu_degree = htmlspecialchars($row['course'] ?? '');
+    $edu_year = htmlspecialchars($row['year_graduated'] ?? '');
 } else {
     $name = "Unknown Applicant";
     $email = "";
@@ -351,35 +383,33 @@ if ($result && $row = $result->fetch_assoc()) {
     $location = "";
     $skills_array = [];
     $summary_text = '';
+    $role_job_title = $role_company = $role_date_started = $role_in_role = '';
+    $edu_school = $edu_degree = $edu_year = '';
 }
 $stmt->close();
 
-/* -------------------------- Fetch roles and education -------------------------- */
+/* -------------------------- For display we will create 'roles' as a single-item array if job_title exists -------------------------- */
 $roles = [];
-$rstmt = $conn->prepare("SELECT id, job_title, company_name, description, created_at FROM applicant_roles WHERE applicantID = ? ORDER BY created_at DESC");
-if ($rstmt) {
-    $rstmt->bind_param("s", $session_emp);
-    $rstmt->execute();
-    $rres = $rstmt->get_result();
-    while ($r = $rres->fetch_assoc()) $roles[] = $r;
-    $rstmt->close();
+if (!empty($role_job_title) || !empty($role_company) || !empty($summary_text)) {
+    // We will present the role using these fields (description comes from summary)
+    $roles[] = [
+        'job_title' => $role_job_title,
+        'company_name' => $role_company,
+        'description' => '', // description shown from summary already so keep empty here
+        'created_at' => $role_date_started
+    ];
 }
 
+/* education is single entry */
 $edus = [];
-$estmt = $conn->prepare("SELECT id, school, degree, created_at FROM applicant_education WHERE applicantID = ? ORDER BY created_at DESC");
-if ($estmt) {
-    $estmt->bind_param("s", $session_emp);
-    $estmt->execute();
-    $eres = $estmt->get_result();
-    while ($e = $eres->fetch_assoc()) $edus[] = $e;
-    $estmt->close();
+if (!empty($edu_school) || !empty($edu_degree)) {
+    $edus[] = ['id' => 0, 'school' => $edu_school, 'degree' => $edu_degree, 'created_at' => $edu_year];
 }
 
 // Pass any session flashes through to local variables to show in HTML
 $flash_success = $_SESSION['flash_success'] ?? $flash_success;
 $flash_error = $_SESSION['flash_error'] ?? $flash_error;
 unset($_SESSION['flash_success'], $_SESSION['flash_error']);
-
 
 
 // Handle profile picture upload
@@ -535,12 +565,11 @@ if (isset($_POST['upload'])) {
               <div style="background:#fff;padding:10px;border-radius:6px;margin-bottom:8px;max-width:1200px;position:relative;">
                 <strong><?php echo htmlspecialchars($r['job_title']); ?></strong>
                 <?php if (!empty($r['company_name'])): ?><div style="font-size:14px;color:#555;"><?php echo htmlspecialchars($r['company_name']); ?></div><?php endif; ?>
-                <?php if (!empty($r['description'])): ?><div style="margin-top:6px;color:#333;"><?php echo nl2br(htmlspecialchars($r['description'])); ?></div><?php endif; ?>
+                <?php if (!empty($summary_text)): ?><div style="margin-top:6px;color:#333;"><?php echo nl2br(htmlspecialchars($summary_text)); ?></div><?php endif; ?>
                 <div style="position:absolute;right:10px;top:10px;display:flex;gap:6px;">
-                  <button type="button" class="save-btn" onclick="openRoleEditModal(<?php echo (int)$r['id']; ?>, <?php echo json_encode($r['job_title']); ?>, <?php echo json_encode($r['company_name']); ?>, <?php echo json_encode($r['description']); ?>)">Edit</button>
-                  <form method="POST" style="display:inline;" onsubmit="return confirm('Delete this role?');">
+                  <button type="button" class="save-btn" onclick="openRoleEditModal(<?php echo json_encode($r['job_title']); ?>, <?php echo json_encode($r['company_name']); ?>) ">Edit</button>
+                  <form method="POST" style="display:inline;" onsubmit="return confirm('Clear role from profile?');">
                     <input type="hidden" name="delete_role" value="1">
-                    <input type="hidden" name="role_id" value="<?php echo (int)$r['id']; ?>">
                     <button type="submit" class="cancel-btn">Delete</button>
                   </form>
                 </div>
@@ -565,10 +594,9 @@ if (isset($_POST['upload'])) {
                 <strong><?php echo htmlspecialchars($e['school']); ?></strong>
                 <?php if (!empty($e['degree'])): ?><div style="font-size:14px;color:#555;"><?php echo htmlspecialchars($e['degree']); ?></div><?php endif; ?>
                 <div style="position:absolute;right:10px;top:10px;display:flex;gap:6px;">
-                  <button type="button" class="save-btn" onclick="openEducationEditModal(<?php echo (int)$e['id']; ?>, <?php echo json_encode($e['school']); ?>, <?php echo json_encode($e['degree']); ?>)">Edit</button>
-                  <form method="POST" style="display:inline;" onsubmit="return confirm('Delete this education entry?');">
+                  <button type="button" class="save-btn" onclick="openEducationEditModal(<?php echo json_encode($e['school']); ?>, <?php echo json_encode($e['degree']); ?>)">Edit</button>
+                  <form method="POST" style="display:inline;" onsubmit="return confirm('Clear education entry?');">
                     <input type="hidden" name="delete_education" value="1">
-                    <input type="hidden" name="education_id" value="<?php echo (int)$e['id']; ?>">
                     <button type="submit" class="cancel-btn">Delete</button>
                   </form>
                 </div>
@@ -665,7 +693,6 @@ if (isset($_POST['upload'])) {
       <h3>Edit Role</h3>
       <form method="POST">
         <input type="hidden" name="edit_role" value="1">
-        <input type="hidden" name="role_id" id="role_id_edit" value="0">
         <input type="text" name="job_title_edit" id="job_title_edit" placeholder="Job Title" required>
         <input type="text" name="company_name_edit" id="company_name_edit" placeholder="Company Name" required>
         <textarea name="role_description_edit" id="role_description_edit" rows="3" placeholder="Description" required></textarea>
@@ -685,6 +712,7 @@ if (isset($_POST['upload'])) {
         <input type="hidden" name="add_education" value="1">
         <input type="text" name="school" placeholder="School / University" required>
         <input type="text" name="degree" placeholder="Degree / Course" required>
+        <input type="text" name="year_graduated" placeholder="Year graduated (YYYY)" >
         <div style="display:flex;justify-content:center;gap:8px;">
           <button type="submit" class="save-btn">Save</button>
           <button type="button" class="cancel-btn" onclick="closeModal('educationModal')">Cancel</button>
@@ -699,9 +727,9 @@ if (isset($_POST['upload'])) {
       <h3>Edit Education</h3>
       <form method="POST">
         <input type="hidden" name="edit_education" value="1">
-        <input type="hidden" name="education_id" id="education_id_edit" value="0">
         <input type="text" name="school_edit" id="school_edit" placeholder="School / University" required>
         <input type="text" name="degree_edit" id="degree_edit" placeholder="Degree / Course" required>
+        <input type="text" name="year_graduated_edit" id="year_graduated_edit" placeholder="Year graduated (YYYY)">
         <div style="display:flex;justify-content:center;gap:8px;">
           <button type="submit" class="save-btn">Save</button>
           <button type="button" class="cancel-btn" onclick="closeModal('editEducationModal')">Cancel</button>
@@ -749,18 +777,17 @@ if (isset($_POST['upload'])) {
   function closeModal(id){ document.getElementById(id).style.display = 'none'; }
   window.onclick = function(e){ document.querySelectorAll('.modal').forEach(m=>{ if(e.target==m) m.style.display='none'; }); }
 
-  function openRoleEditModal(id, title, company, desc){
-    document.getElementById('role_id_edit').value = id;
+  function openRoleEditModal(title, company){
     document.getElementById('job_title_edit').value = title || '';
     document.getElementById('company_name_edit').value = company || '';
-    document.getElementById('role_description_edit').value = desc || '';
+    document.getElementById('role_description_edit').value = ''; // no per-role description stored separately; user can add a new description and it will be appended to summary
     openModal('editRoleModal');
   }
 
-  function openEducationEditModal(id, school, degree){
-    document.getElementById('education_id_edit').value = id;
+  function openEducationEditModal(school, degree){
     document.getElementById('school_edit').value = school || '';
     document.getElementById('degree_edit').value = degree || '';
+    document.getElementById('year_graduated_edit').value = '<?php echo addslashes($edu_year); ?>' || '';
     openModal('editEducationModal');
   }
 

@@ -68,7 +68,8 @@ $stmt->close();
       display: flex;
       flex-direction: column;
       gap: 30px;
-       margin-top: -330px;
+      margin-top: -700px;
+     
     }
 
     /* Header */
