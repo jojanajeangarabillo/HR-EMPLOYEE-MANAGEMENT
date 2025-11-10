@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 08, 2025 at 02:11 PM
+-- Generation Time: Nov 10, 2025 at 11:57 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -72,6 +72,7 @@ CREATE TABLE `applicant` (
   `job_title` varchar(100) NOT NULL,
   `company_name` varchar(150) NOT NULL,
   `date_started` date NOT NULL,
+  `years_experience` int(11) DEFAULT NULL,
   `in_role` varchar(5) NOT NULL,
   `university` varchar(150) NOT NULL,
   `course` varchar(100) NOT NULL,
@@ -86,11 +87,11 @@ CREATE TABLE `applicant` (
 -- Dumping data for table `applicant`
 --
 
-INSERT INTO `applicant` (`applicantID`, `fullName`, `position_applied`, `department`, `date_applied`, `contact_number`, `email_address`, `home_address`, `job_title`, `company_name`, `date_started`, `in_role`, `university`, `course`, `year_graduated`, `skills`, `summary`, `status`, `profile_pic`) VALUES
-('HOS-002', 'Kristina Magnaye', '', 0, '2025-11-04', '09126872701', 'n0305933@gmail.com', 'Pasig City', '', '', '0000-00-00', '', '', '', '0000', 'Hardworking, Adaptable, Sincere, Caring, Dependable', 'I am a hard working person', 'Hired', NULL),
-('HOS-002', 'Kristina Magnaye', '', 0, '2025-11-04', '09126872701', 'n0305933@gmail.com', 'Pasig City', '', '', '0000-00-00', '', '', '', '0000', 'Hardworking, Adaptable, Sincere, Caring, Dependable', 'I am a hard working person', 'Hired', NULL),
-('HOS-003', 'Joepat Lacerna', '', 0, '2025-11-07', '0909', 'opat09252005@gmail.com', 'Taguig', 'Insurance Specialist', 'BDO', '0000-00-00', '', 'PLP', 'BSA', '2015', 'Hard working, multitasking, communication, computer, secret', 'I am a Insurance Specialist at BDO\r\nbefore and Iam good', 'Pending', 'applicant_HOS-003.jpg'),
-('HOS-004', 'Maria Ibarra', '', 0, '2025-11-08', '0303', 'garabillo_jojanajean@plpasig.edu.ph', 'Pasig', 'samplemple', 'sa', '0000-00-00', '', 'PLP', 'BSIT', '2025', 'HS, SAKJ, JKAS, KAHUS, KASH', 'SHUDIADA', 'Assessment', 'applicant_HOS-004.jpg');
+INSERT INTO `applicant` (`applicantID`, `fullName`, `position_applied`, `department`, `date_applied`, `contact_number`, `email_address`, `home_address`, `job_title`, `company_name`, `date_started`, `years_experience`, `in_role`, `university`, `course`, `year_graduated`, `skills`, `summary`, `status`, `profile_pic`) VALUES
+('HOS-002', 'Kristina Magnaye', '', 0, '2025-11-04', '09126872701', 'n0305933@gmail.com', 'Pasig City', '', '', '0000-00-00', 0, '', '', '', '0000', 'Hardworking, Adaptable, Sincere, Caring, Dependable', 'I am a hard working person', 'Rejected', NULL),
+('HOS-002', 'Kristina Magnaye', '', 0, '2025-11-04', '09126872701', 'n0305933@gmail.com', 'Pasig City', '', '', '0000-00-00', 0, '', '', '', '0000', 'Hardworking, Adaptable, Sincere, Caring, Dependable', 'I am a hard working person', 'Rejected', NULL),
+('HOS-003', 'Joepat Lacerna', '', 0, '2025-11-07', '0909', 'opat09252005@gmail.com', 'Taguig', 'Insurance Specialist', 'BDO', '0000-00-00', 0, '', 'PLP', 'BSA', '2015', 'Hard working, multitasking, communication, computer, secret', 'I am a Insurance Specialist at BDO\r\nbefore and Iam good', 'Pending', 'applicant_HOS-003.jpg'),
+('HOS-004', 'Maria Ibarra', '', 0, '2025-11-08', '0303', 'garabillo_jojanajean@plpasig.edu.ph', 'Pasig', 'samplemple', 'sa', '0000-00-00', 0, '', 'PLP', 'BSIT', '2025', 'HS, SAKJ, JKAS, KAHUS, KASH', 'SHUDIADA', 'Assessment', 'applicant_HOS-004.jpg');
 
 -- --------------------------------------------------------
 
@@ -115,7 +116,9 @@ INSERT INTO `applications` (`id`, `applicantID`, `jobID`, `status`, `applied_at`
 (0, 'HOS-003', 19, 'Assessment', '2025-11-07 12:38:03'),
 (0, 'HOS-003', 21, 'Assessment', '2025-11-07 23:57:22'),
 (0, 'HOS-003', 22, 'Assessment', '2025-11-08 09:02:04'),
-(0, 'HOS-004', 22, 'Assessment', '2025-11-08 10:00:09');
+(0, 'HOS-004', 22, 'Assessment', '2025-11-08 10:00:09'),
+(0, 'HOS-002', 22, 'Rejected', '2025-11-10 18:45:20'),
+(0, 'HOS-002', 23, 'Rejected', '2025-11-10 18:53:56');
 
 --
 -- Triggers `applications`
@@ -492,7 +495,7 @@ INSERT INTO `user` (`user_id`, `applicant_employee_id`, `email`, `password`, `ro
 ('', 'EMP-001', 'antonio_rhoannenicole@plpasig.edu.ph', '$2y$10$Fu21lyB/PdQ6MNwAm4ECf.SxSzs94rzOVI4zsv0dyN5ewmC4N05Ua', 'Employee', 'Rhoanne Nicole Antonio', 'Active', '2025-10-25 10:38:47', NULL, '', '', 'HR Manager'),
 ('EMP-002', 'EMP-002', 'employee@gmail.com', '$2y$10$Fu21lyB/PdQ6MNwAm4ECf.SxSzs94rzOVI4zsv0dyN5ewmC4N05Ua', 'Employee', 'Jackson Wang', 'Active', '2025-11-03 16:43:38', NULL, '', '', 'Staff'),
 ('', 'HOS-004', 'garabillo_jojanajean@plpasig.edu.ph', '$2y$10$9nHvo1NPJ43xh/EMKdiT/eLyuuaY0ADKMsjpvumV7sTeorjrysLLy', 'Applicant', 'Maria Ibarra', 'Pending', '0000-00-00 00:00:00', NULL, '', '', NULL),
-('', 'HOS-002', 'n0305933@gmail.com', '$2y$10$Fu21lyB/PdQ6MNwAm4ECf.SxSzs94rzOVI4zsv0dyN5ewmC4N05Ua', 'Applicant', 'Kristina Magnaye', 'Pending', '0000-00-00 00:00:00', NULL, '', '', NULL),
+('', 'HOS-002', 'n0305933@gmail.com', '$2y$10$1OaurCZJ5sgLXZeGybDIferDMX1kAfKehkyPwSIX7K1pZfs/BFSjy', 'Applicant', 'Kristina Magnaye', 'Pending', '0000-00-00 00:00:00', NULL, '', '', NULL),
 ('', 'HOS-003', 'opat09252005@gmail.com', '$2y$10$No9DNV/BmXEBKkw.yAXaXOsNyDzg9nCwZa3C6CbCA5k63z0l..It6', 'Applicant', 'Joepat Lacerna', 'Pending', '0000-00-00 00:00:00', NULL, '', '', NULL);
 
 -- --------------------------------------------------------
