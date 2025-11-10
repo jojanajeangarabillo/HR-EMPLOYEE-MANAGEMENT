@@ -254,67 +254,56 @@ button:hover {
 /* ===========================================
    SIDEBAR
 =========================================== */
+/* --- FIXED SIDEBAR POSITION --- */
 .sidebar {
-    width: 230px;
-    background-color: #1E3A8A;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 30px;
-    position: fixed;
-    left: 0;
-    top: 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 230px;
+  height: 100vh;
+  background-color: #1E3A8A;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 15px;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
 }
 
-/* Profile Icon */
-.profile i {
-    font-size: 60px;
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.15);
-    border-radius: 50%;
-    padding: 15px;
-    margin-bottom: 40px;
-}
-
-/* Navigation */
-.nav {
-    list-style: none;
-    width: 100%;
-}
-
-.nav li {
-    color: #ffffff;
-    padding: 15px 25px;
-    width: 100%;
+/* Make the sidebar links full width and occupy full row height */
+.sidebar .nav-link {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.nav li:hover,
-.nav li.active {
-    background-color: #e5edfb;
-    color: #1E3A8A;
-}
-
-.nav i {
-    width: 20px;
-    text-align: center;
-}
-
-.nav a {
+    padding: 12px 20px; /* inner spacing */
+    width: 100%;        /* full sidebar width */
+    color: #ffffff;
     text-decoration: none;
-    color: inherit;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
+    box-sizing: border-box;
 }
 
-.nav li.active a {
-    color: #1E3A8A;
+/* Active / Hover state stretches fully */
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background-color: #ffffff;  
+    color: #1E3A8A !important;
+    border-radius: 0;          /* no rounding */
+    margin: 0;                 /* remove any margin */
+    width: 100%;               /* full width */
+    padding-left: 20px;        /* optional spacing for icon/text */
+    padding-right: 20px;
+    box-sizing: border-box;
 }
+
+/* Optional: remove any extra gap caused by flex */
+.sidebar .nav-link > i {
+    min-width: 20px; /* ensures icons align nicely */
+}
+
+.sidebar-logo img {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 15px;
+  border-radius: 50%;
+}
+    
