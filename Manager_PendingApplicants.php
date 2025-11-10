@@ -13,7 +13,21 @@ use PHPMailer\PHPMailer\Exception;
 // load mailer config
 $config = require 'mailer-config.php';
 
-// Flash messages
+// Helper to send JSON for AJAX requests
+function send_json($data) {
+    header('Content-Type: application/json');
+    echo json_encode($data);
+    exit;
+}
+
+// Determine if request is AJAX (fetch will set this header)
+$isAjax = !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+if (!$isAjax) {
+    // Also allow explicit form param 'ajax' for older clients
+    if (isset($_REQUEST['ajax']) && $_REQUEST['ajax'] === '1') $isAjax = true;
+}
+
+// Flash messages for non-AJAX page loads
 $flash_success = $_SESSION['flash_success'] ?? '';
 $flash_error = $_SESSION['flash_error'] ?? '';
 unset($_SESSION['flash_success'], $_SESSION['flash_error']);
@@ -23,7 +37,7 @@ $managername = '';
 $managernameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Employee' AND sub_role = 'HR Manager' LIMIT 1");
 if ($managernameQuery && $r = $managernameQuery->fetch_assoc()) $managername = $r['fullname'];
 
-// handle POST: update status and optionally send mail
+// ---------- Handle POST: update status and optionally send mail ----------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   // Common sanitized inputs
   $applicantID = trim($_POST['applicantID'] ?? '');
@@ -37,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   // Input validation
   if (empty($applicantID) || empty($new_status)) {
+    if ($isAjax) send_json(['success' => false, 'message' => 'Missing required fields.']);
     $_SESSION['flash_error'] = 'Missing required fields.';
     header("Location: Manager_PendingApplicants.php");
     exit;
@@ -49,9 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $updApp = $conn->prepare("UPDATE applications SET status = ? WHERE applicantID = ?");
   if ($updApp) {
     $updApp->bind_param('ss', $new_status, $applicantID);
-    if ($updApp->execute()) {
-      // $updApp->affected_rows could be 0 if no row existed — that's fine, still attempt applicant update
-    }
+    $updApp->execute(); // ignore affected_rows here
     $updApp->close();
   }
 
@@ -64,12 +77,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 
   if (!$updateOk) {
+    if ($isAjax) send_json(['success' => false, 'message' => 'Failed to update applicant status.']);
     $_SESSION['flash_error'] = 'Failed to update applicant status.';
     header("Location: Manager_PendingApplicants.php");
     exit;
   }
 
-  // If email is requested (either immediate or from modal), prepare and send
+  // If email is requested, prepare and send
   if ($send_email_flag) {
     // fetch applicant email & name
     $q = $conn->prepare("SELECT fullName, email_address FROM applicant WHERE applicantID = ? LIMIT 1");
@@ -87,6 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($email_address)) {
+      if ($isAjax) send_json(['success' => true, 'message' => 'Applicant email not found; status updated but email not sent.']);
       $_SESSION['flash_error'] = 'Applicant email not found; status updated but email not sent.';
       header("Location: Manager_PendingApplicants.php");
       exit;
@@ -191,18 +206,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       $mail->AltBody = $bodyPlain;
 
       $mail->send();
+      if ($isAjax) send_json(['success' => true, 'message' => "Status updated and email sent to {$fullname}."]);
       $_SESSION['flash_success'] = "Status updated and email sent to {$fullname}.";
     } catch (Exception $e) {
-      $_SESSION['flash_error'] = "Status updated but email failed to send: " . $mail->ErrorInfo;
+      $err = $mail->ErrorInfo ?? $e->getMessage();
+      if ($isAjax) send_json(['success' => false, 'message' => "Status updated but email failed to send: " . $err]);
+      $_SESSION['flash_error'] = "Status updated but email failed to send: " . $err;
     }
   } else {
     // email not requested (just update)
+    if ($isAjax) send_json(['success' => true, 'message' => "Status updated to {$new_status}."]);
     $_SESSION['flash_success'] = "Status updated to {$new_status}.";
   }
 
-  // After updating DB (and sending email if requested) reload the page so dropdown reflects current DB values.
-  header("Location: Manager_PendingApplicants.php");
-  exit;
+  // After updating DB (and sending email if requested) non-AJAX will redirect
+  if (!$isAjax) {
+    header("Location: Manager_PendingApplicants.php");
+    exit;
+  }
 }
 
 // ---------- fetch applicants for display ----------
@@ -267,6 +288,9 @@ if ($stmt = $conn->prepare($sql)) {
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Manager - Pending Applicants</title>
 
+  <!-- Bootstrap CSS (keep your theme colors intact) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="" crossorigin="anonymous">
+
   <link rel="stylesheet" href="manager-sidebar.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
     crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -277,36 +301,50 @@ if ($stmt = $conn->prepare($sql)) {
     .sidebar-logo{ display:flex; justify-content:center; margin-bottom:25px; }
     .sidebar-logo img{ height:110px; width:110px; border-radius:50%; object-fit:cover; border:3px solid #fff; }
     .main-content{ padding:40px 30px; margin-left:220px; display:flex; flex-direction:column; }
-    .main-content-header h1{ margin:0 0 25px 0; font-size:2rem; color:#1E3A8A;}
+    .main-content-header h1{ margin: 0; font-size: 26px; font-weight: 700; margin-bottom: 40px; color:#1E3A8A; margin-left: 40px;}
     .header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-    .search-filter{ display:flex; align-items:center; gap:15px; }
+    .search-filter{ display:flex; align-items:center; gap:15px; margin-left: 40px;  width: 100%;}
     .search-box{ position:relative; flex:1; max-width:350px; }
     .search-box input{ width:100%; padding:10px 40px; border:1px solid #d1d5db; border-radius:25px; font-size:14px; background:white; outline:none; transition:all .3s; }
     .search-box input:focus { border-color:#1e3a8a; box-shadow:0 0 0 3px rgba(30,58,138,0.15); }
-    .search-box i{ position:absolute; left:15px; top:50%; transform:translateY(-50%); color:#6b7280; font-size:14px; }
+    .search-box i{ position:absolute; left:15px; top:50%; transform:translateY(-50%); color:#6b7280; font-size:14px;  }
     select{ border-radius:25px; padding:10px 18px; border:1px solid #d1d5db; background:#fff; font-size:14px; color:#333; outline:none; cursor:pointer; transition:all .3s;}
-    table{ width:90%; border-collapse:collapse; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 3px 6px rgba(0,0,0,0.08); margin-left:200px; }
-    th,td{ padding:18px 30px; text-align:center; border-bottom:1px solid #e0e0e0; font-size:14px; }
-    thead{ background:#1E3A8A; color:#fff; }
+    .table-custom { width:100%; border-collapse:collapse; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 3px 6px rgba(0,0,0,0.08); margin-left:100px; margin-left: 40px; }
+    .table-custom th, .table-custom td { text-align:center; vertical-align:middle; padding:18px 30px; border-bottom:1px solid #e0e0e0; font-size:14px; }
+    .table-custom thead{ background:#1E3A8A; color:#fff; }
     tbody tr:hover{ background:#f8f9fa; }
-    th:nth-child(1), td:nth-child(1){ width:25%; }
-    th:nth-child(2), td:nth-child(2){ width:30%; }
-    th:nth-child(3), td:nth-child(3){ width:20%; }
-    th:nth-child(4), td:nth-child(4){ width:25%; }
+    .table-custom {
+    width:150%;
+    border-collapse:collapse;
+    background:#fff;
+    border-radius:10px;
+    overflow:hidden;
+    box-shadow:0 3px 6px rgba(0,0,0,0.08);
+    table-layout: auto; 
+}
+
+.table-custom th, .table-custom td {
+    text-align:center;
+    vertical-align:middle;
+    padding:18px 30px;
+    border-bottom:1px solid #e0e0e0;
+    font-size:14px;
+    word-break: break-word; /* wrap long text */
+    overflow-wrap: break-word;
+}
+
     .view-btn{ background:#1E3A8A;color:#fff;border:none;border-radius:25px;padding:8px 16px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
     .view-btn:hover{ background:#1e40af; transform:translateY(-2px); }
-    .flash-success{ background:#d1fae5; color:#065f46; padding:12px; border-radius:8px; margin-bottom:12px; margin-left:200px; max-width:1200px; box-shadow:0 2px 6px rgba(16,24,40,0.06); }
-    .flash-error{ background:#fee2e2; color:#991b1b; padding:12px; border-radius:8px; margin-bottom:12px; margin-left:200px; max-width:1200px; box-shadow:0 2px 6px rgba(16,24,40,0.06); }
-
+    .flash-wrap{ margin-left:200px; max-width:1200px; width:100%; }
     /* Modal */
-    .modal { display:none; position:fixed; z-index:1200; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.45); justify-content:center; align-items:center; }
-    .modal.active { display:flex; }
-    .modal-content { background:#fff; padding:18px 20px; border-radius:10px; width:480px; max-width:94%; box-shadow:0 8px 30px rgba(2,6,23,0.16); }
-    .modal-content h3{ margin:0 0 8px 0; font-size:18px; color:#0f172a; }
+    .modal-custom { display:none; position:fixed; z-index:1200; left:0; top:0; width:100%; height:100%; background: rgba(0,0,0,0.45); justify-content:center; align-items:center; }
+    .modal-custom.active { display:flex; }
+    .modal-content-custom { background:#fff; padding:18px 20px; border-radius:10px; width:480px; max-width:94%; box-shadow:0 8px 30px rgba(2,6,23,0.16); }
+    .modal-content-custom h3{ margin:0 0 8px 0; font-size:18px; color: #1E3A8A;}
     .modal-row{ display:flex; gap:10px; margin-bottom:10px; }
     .modal-row .col{ flex:1; }
-    .modal-content label{ display:block; font-size:13px; margin-bottom:6px; color:#374151; }
-    .modal-content input[type="date"], .modal-content input[type="time"], .modal-content input[type="text"], .modal-content textarea { width:100%; padding:8px; border:1px solid #d1d5db; border-radius:6px; box-sizing:border-box; font-size:14px; }
+    .modal-content-custom label{ display:block; font-size:13px; margin-bottom:6px; color:#374151; }
+    .modal-content-custom input[type="date"], .modal-content-custom input[type="time"], .modal-content-custom input[type="text"], .modal-content-custom textarea { width:100%; padding:8px; border:1px solid #d1d5db; border-radius:6px; box-sizing:border-box; font-size:14px; }
     .modal-actions{ display:flex; justify-content:flex-end; gap:8px; margin-top:12px; }
     .cancel-btn{ background:#efefef; color:#111827; padding:8px 14px; border-radius:6px; border:none; cursor:pointer; }
     .send-btn{ background:#1E3A8A; color:#fff; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; }
@@ -335,19 +373,27 @@ if ($stmt = $conn->prepare($sql)) {
   <div class="main-content">
     <div class="main-content-header"><h1>Pending Applicants</h1></div>
 
-    <?php if (!empty($flash_success)): ?>
-      <div class="flash-success"><?php echo htmlspecialchars($flash_success); ?></div>
-    <?php endif; ?>
-    <?php if (!empty($flash_error)): ?>
-      <div class="flash-error"><?php echo htmlspecialchars($flash_error); ?></div>
-    <?php endif; ?>
+    <div class="flash-wrap" id="flashWrap">
+      <?php if (!empty($flash_success)): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <?php echo htmlspecialchars($flash_success); ?>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <?php endif; ?>
+      <?php if (!empty($flash_error)): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <?php echo htmlspecialchars($flash_error); ?>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <?php endif; ?>
+    </div>
 
     <div class="header">
       <div class="search-filter">
         <form method="get" id="filterForm" style="display:flex;align-items:center;gap:15px;">
           <div class="search-box">
             <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" id="searchInput" name="q" placeholder="Search applicants..." value="<?php echo htmlspecialchars($search ?? ''); ?>">
+            <input autocomplete="off" type="text" id="searchInput" name="q" placeholder="Search applicants..." value="<?php echo htmlspecialchars($search ?? ''); ?>">
           </div>
 
           <select id="statusFilter" name="status">
@@ -361,12 +407,12 @@ if ($stmt = $conn->prepare($sql)) {
             <option value="Rejected" <?php echo (isset($statusFilter) && $statusFilter === 'Rejected') ? 'selected':''; ?>>Rejected</option>
           </select>
 
-          <button type="submit" style="background:#1E3A8A;color:#fff;border:none;padding:8px 14px;border-radius:8px;">Search</button>
+          <button type="submit" class="btn" style="background:#1E3A8A;color:#fff;border:none;padding:8px 14px;border-radius:8px;">Search</button>
         </form>
       </div>
     </div>
 
-    <table id="applicantTable">
+    <table class="table table-custom" id="applicantTable">
       <thead>
         <tr>
           <th>Applicant ID</th>
@@ -379,7 +425,7 @@ if ($stmt = $conn->prepare($sql)) {
         <?php if (empty($pendingApplicants)): ?>
           <tr><td colspan="4">No applicants found.</td></tr>
         <?php else: foreach ($pendingApplicants as $p): ?>
-          <tr>
+          <tr id="row-<?php echo htmlspecialchars($p['applicantID']); ?>">
             <td><?php echo htmlspecialchars($p['applicantID']); ?></td>
             <td><?php echo htmlspecialchars($p['fullName']); ?></td>
             <td>
@@ -392,10 +438,11 @@ if ($stmt = $conn->prepare($sql)) {
               $opts = ['Pending','Initial Interview','Assessment','Final Interview','Requirements','Hired','Rejected'];
              ?>
 
-              <select class="status-select"
+              <select class="status-select form-select form-select-sm"
                       data-appid="<?php echo htmlspecialchars($p['applicantID']); ?>"
                       data-email="<?php echo htmlspecialchars($p['email_address']); ?>"
-                      data-fullname="<?php echo htmlspecialchars($p['fullName']); ?>">
+                      data-fullname="<?php echo htmlspecialchars($p['fullName']); ?>"
+                      style="max-width:220px; display:inline-block;">
                 <?php foreach ($opts as $opt): ?>
                   <option value="<?php echo htmlspecialchars($opt); ?>" <?php echo ($current === $opt) ? 'selected':''; ?>><?php echo htmlspecialchars($opt); ?></option>
                 <?php endforeach; ?>
@@ -407,16 +454,17 @@ if ($stmt = $conn->prepare($sql)) {
     </table>
   </div>
 
-  <!-- Hidden form for immediate submits (Hired/Rejected/Pending without modal) -->
+  <!-- Hidden quick form is no longer submitted directly; kept for fallback -->
   <form id="quickForm" method="post" style="display:none;">
     <input type="hidden" name="applicantID" id="q_applicantID" value="">
     <input type="hidden" name="new_status" id="q_new_status" value="">
     <input type="hidden" name="send_email" id="q_send_email" value="0">
+    <input type="hidden" name="ajax" value="1">
   </form>
 
-  <!-- Modal (reused for Interview, Assessment, Final Interview, Requirements) -->
-  <div id="scheduleModal" class="modal" role="dialog" aria-hidden="true">
-    <div class="modal-content" role="document">
+  <!-- Modal (custom but used with AJAX) -->
+  <div id="scheduleModal" class="modal-custom" role="dialog" aria-hidden="true">
+    <div class="modal-content-custom" role="document">
       <h3 id="modalTitle">Schedule / Details</h3>
       <p id="modalSub">Fill in the details below and click <strong>Send Email</strong>.</p>
 
@@ -451,19 +499,44 @@ if ($stmt = $conn->prepare($sql)) {
         </div>
 
         <div class="modal-actions">
-          <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
+          <button type="button" class="cancel-btn" id="modalCancelBtn">Cancel</button>
           <button type="submit" class="send-btn">Send Email & Update</button>
         </div>
       </form>
     </div>
   </div>
 
+  <!-- Bootstrap JS (bundle incl. Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="" crossorigin="anonymous"></script>
+
   <script>
-    // All client-side behavior in vanilla JS
+    // Utility: show bootstrap alert dynamically in flashWrap
+    function showAlert(message, type = 'success', autoClose = true) {
+      const wrap = document.getElementById('flashWrap');
+      if (!wrap) return;
+      const alertId = 'alert-' + Date.now();
+      const div = document.createElement('div');
+      div.className = `alert alert-${type} alert-dismissible fade show`;
+      div.role = 'alert';
+      div.id = alertId;
+      div.innerHTML = `${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
+      // Insert at top
+      wrap.prepend(div);
+      if (autoClose) {
+        setTimeout(() => {
+          const bsAlert = bootstrap.Alert.getOrCreateInstance(div);
+          bsAlert.close();
+        }, 6000);
+      }
+    }
+
+    // All client-side behavior - use fetch for AJAX
     document.addEventListener('DOMContentLoaded', function () {
       const selects = document.querySelectorAll('.status-select');
+
       selects.forEach(sel => {
-        sel.addEventListener('change', function (e) {
+        sel.addEventListener('change', async function (e) {
           const newStatus = this.value;
           const appid = this.dataset.appid;
           const email = this.dataset.email;
@@ -475,23 +548,76 @@ if ($stmt = $conn->prepare($sql)) {
           if (needsModal.includes(newStatus)) {
             openModalFor(appid, newStatus, fullname, email);
           } else {
-            // Hired / Rejected / Pending -> immediate action
-            // For Hired/Rejected we want to send email automatically
+            // Hired / Rejected / Pending -> immediate action via AJAX
             const sendEmail = (newStatus === 'Hired' || newStatus === 'Rejected') ? '1' : '0';
-            document.getElementById('q_applicantID').value = appid;
-            document.getElementById('q_new_status').value = newStatus;
-            document.getElementById('q_send_email').value = sendEmail;
+            // prepare payload
+            const payload = new URLSearchParams();
+            payload.append('applicantID', appid);
+            payload.append('new_status', newStatus);
+            payload.append('send_email', sendEmail);
+            payload.append('ajax', '1');
 
-            // Submit the quick form (non-AJAX) - page will reload and reflect database status
-            document.getElementById('quickForm').submit();
+            try {
+              const resp = await fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                  'X-Requested-With': 'XMLHttpRequest',
+                  'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: payload.toString()
+              });
+              const data = await resp.json();
+              if (data.success) {
+                showAlert(data.message || 'Updated successfully', 'success');
+                // update the select visually (already set). Optionally you can update row highlight.
+              } else {
+                showAlert(data.message || 'Update failed', 'danger');
+              }
+            } catch (err) {
+              showAlert('Network error. Try again.', 'danger');
+            }
           }
         });
       });
 
-      // modal form submission: normal POST back to this file (so DB updates and page reload will reflect new status)
+      // modal cancel
+      document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+
+      // modal form submission: AJAX post
       const modalForm = document.getElementById('modalForm');
-      modalForm.addEventListener('submit', function (evt) {
-        // allow normal submission
+      modalForm.addEventListener('submit', async function (evt) {
+        evt.preventDefault();
+        const formData = new FormData(modalForm);
+        formData.append('ajax', '1');
+
+        // Convert FormData to x-www-form-urlencoded
+        const params = new URLSearchParams();
+        for (const pair of formData.entries()) params.append(pair[0], pair[1]);
+
+        try {
+          const resp = await fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: params.toString()
+          });
+          const data = await resp.json();
+          if (data.success) {
+            showAlert(data.message || 'Email sent and status updated', 'success');
+            // Update the select DOM to the new value for that applicant
+            const appid = document.getElementById('m_applicantID').value;
+            const newStatus = document.getElementById('m_new_status').value;
+            const sel = document.querySelector('.status-select[data-appid="'+appid+'"]');
+            if (sel) sel.value = newStatus;
+            closeModal();
+          } else {
+            showAlert(data.message || 'Failed to send email / update', 'danger');
+          }
+        } catch (err) {
+          showAlert('Network error. Try again.', 'danger');
+        }
       });
 
       // keep search filter auto-submit

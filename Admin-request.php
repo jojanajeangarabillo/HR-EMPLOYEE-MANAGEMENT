@@ -1,4 +1,3 @@
-
 <?php
 session_start();
 require 'admin/db.connect.php';
@@ -13,7 +12,6 @@ if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
     $adminname = $row['fullname'];
 }
 
-
 $employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
 if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
     $employees = $row['count'];
@@ -23,10 +21,7 @@ $applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 
 if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
     $applicants = $row['count'];
 }
-
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -44,6 +39,7 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
 
     <!-- jQuery for interactivity -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
     <style>
         body {
@@ -53,9 +49,10 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             background-color: #f1f5fc;
             color: #111827;
         }
+
         .request-container {
             margin-left: 220px; /* space for sidebar */
-            padding: 40px 30px; /* top/bottom and left/right spacing */
+            padding: 40px 30px;
             background-color: #f1f5fc;
             min-height: 100vh;
             box-sizing: border-box;
@@ -68,16 +65,6 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             align-items: center;
             margin-bottom: 20px;
         }
-           .sidebar-logo {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 50px;
-        }
-
-        .sidebar-logo img {
-            height: 120px;
-            width: 120px;
-        }
 
         .request-header h1 {
             font-size: 2rem;
@@ -86,7 +73,7 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
         }
 
         .show-filter-btn {
-            padding: 6px 12px; /* normal size */
+            padding: 6px 12px;
             font-size: 14px;
             background-color: #1E3A8A;
             color: white;
@@ -104,7 +91,7 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
 
         /* FILTER BOX */
         .filter-box {
-            display: none; /* initially hidden */
+            display: none;
             margin-bottom: 20px;
             padding: 15px;
             background-color: #ffffff;
@@ -113,7 +100,7 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
-            align-items: flex-start; /* ensures buttons start on new row */
+            align-items: flex-start;
         }
 
         .filter-box label {
@@ -128,14 +115,14 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
         }
 
         .filter-buttons {
-            width: 100%;           /* full width so buttons appear below selects */
+            width: 100%;
             display: flex;
             gap: 10px;
             margin-top: 10px;
         }
 
         .filter-buttons button {
-            padding: 6px 12px; /* normal size */
+            padding: 6px 12px;
             font-size: 14px;
             border-radius: 6px;
             border: none;
@@ -160,94 +147,73 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             background-color: #d1d5db;
         }
 
-        /* TABLE */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        /* STATUS BADGES */
+        .badge-status-approved {
+            background-color: #10b981;
         }
 
-        th,
-        td {
-            padding: 20px 24px; /* wider cells */
-            text-align: center;
-            border: 1px solid #e0e0e0;
-            min-width: 150px;
+        .badge-status-pending {
+            background-color: #f59e0b;
+            color: #000;
         }
 
-        thead {
-            background-color: #1E3A8A;
-            color: white;
-            font-weight: 600;
+        .badge-status-rejected {
+            background-color: #ef4444;
         }
 
-        tbody tr:nth-child(even) {
-            background-color: #fafafa;
+        /* TABLE CUSTOMIZATION */
+        .table-hover tbody tr:hover {
+            background-color: #f8fafc;
+            transition: background-color 0.2s ease;
         }
 
-        tbody tr:hover {
-            background-color: #f8f9fa;
+        .badge {
+            font-size: 0.9rem;
+            padding: 0.5em 0.8em;
         }
-
-        /* STATUS COLORS */
-        .status-approved {
-            color: #10b981;
-            font-weight: 600;
-        }
-
-        .status-pending {
-            color: #f59e0b;
-            font-weight: 600;
-        }
-
-        .status-rejected {
-            color: #ef4444;
-            font-weight: 600;
-        }
-
-        .sidebar-name {
-        display: flex;
-        justify-content: center; 
-        align-items: center;      
-        text-align: center;       
-        color: white;
-        padding: 10px;
-        margin-bottom: 30px;
-        font-size: 18px; 
-        flex-direction: column; 
-        }
-
     </style>
 </head>
 
 <body>
-
-     <div class="sidebar">
-
-        <div class="sidebar-logo">
-            <img src="Images/hospitallogo.png" alt="">
+    <!-- SIDEBAR -->
+    <div class="sidebar d-flex flex-column align-items-center position-fixed top-0 start-0 h-100 p-3">
+        <div class="text-center mb-4">
+            <img src="Images/hospitallogo.png" alt="Hospital Logo" class="img-fluid rounded-circle mb-3"
+                style="width:75px; height:75px;">
+            <p class="text-white fw-semibold mb-0">
+                <?php echo "Welcome, $adminname"; ?>
+            </p>
         </div>
 
-        <div class="sidebar-name">
-            <p><?php echo "Welcome, $adminname"; ?></p>
-        </div>
-
-
-        <ul class="nav">
-            <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-            <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
-            <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-            <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
-            <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
-            <li class="active"><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-            <li><a href="#"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
-            <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-            <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
-        </ul>
+        <nav class="nav flex-column w-100">
+            <a href="Admin_Dashboard.php" class="nav-link  d-flex align-items-center text-white py-2 px-3">
+                <i class="fa-solid fa-table-columns me-2"></i>Dashboard
+            </a>
+            <a href="Admin_Employee.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
+                <i class="fa-solid fa-user-group me-2"></i>Employees
+            </a>
+            <a href="Admin-Applicants.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
+                <i class="fa-solid fa-user-group me-2"></i>Applicants
+            </a>
+            <a href="Admin-Pending-Applicants.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
+                <i class="fa-solid fa-user-clock me-2"></i>Pending Applicants
+            </a>
+            <a href="Admin_Vacancies.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
+                <i class="fa-solid fa-briefcase me-2"></i>Vacancies
+            </a>
+            <a href="Admin-request.php" class="nav-link d-flex active align-items-center text-white py-2 px-3">
+                <i class="fa-solid fa-code-pull-request me-2"></i>Requests
+            </a>
+            <a href="#" class="nav-link d-flex align-items-center text-white py-2 px-3">
+                <i class="fa-solid fa-chart-simple me-2"></i>Reports
+            </a>
+            <a href="Admin-Settings.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
+                <i class="fa-solid fa-gear me-2"></i>Settings
+            </a>
+            <a href="Login.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
+                <i class="fa-solid fa-right-from-bracket me-2"></i>Logout
+            </a>
+        </nav>
     </div>
 
     <!-- MAIN CONTENT -->
@@ -289,7 +255,6 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
                 <option>Rejected</option>
             </select>
 
-            <!-- Buttons now inside the filter box -->
             <div class="filter-buttons">
                 <button class="apply-btn"><i class="fa-solid fa-magnifying-glass"></i> Apply</button>
                 <button class="reset-btn"><i class="fas fa-rotate-right"></i> Reset</button>
@@ -297,48 +262,50 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
         </div>
 
         <!-- TABLE -->
-        <table>
-            <thead>
-                <tr>
-                    <th>Employee ID</th>
-                    <th>Employee Name</th>
-                    <th>Department</th>
-                    <th>Request Type</th>
-                    <th>Reason</th>
-                    <th>Date</th>
-                    <th>Remarks</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>001</td>
-                    <td>Jojana Garabillo</td>
-                    <td>Gynecology</td>
-                    <td>Leave</td>
-                    <td>Vacation</td>
-                    <td>10/18/2025 - 10/25/2025</td>
-                    <td class="status-approved">Approved</td>
-                </tr>
-                <tr>
-                    <td>002</td>
-                    <td>Jhanna Jaroda</td>
-                    <td>Nursing</td>
-                    <td>Leave</td>
-                    <td>Sick</td>
-                    <td>11/18/2025 - 11/25/2025</td>
-                    <td class="status-pending">Pending</td>
-                </tr>
-                <tr>
-                    <td>003</td>
-                    <td>Jodie Gutierrez</td>
-                    <td>HR</td>
-                    <td>Leave</td>
-                    <td>Vacation</td>
-                    <td>10/18/2025 - 10/25/2025</td>
-                    <td class="status-approved">Approved</td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="table-responsive mt-4">
+            <table class="table table-hover align-middle shadow-sm">
+                <thead class="table-primary text-white" style="background-color: #1E3A8A;">
+                    <tr>
+                        <th scope="col">Employee ID</th>
+                        <th scope="col">Employee Name</th>
+                        <th scope="col">Department</th>
+                        <th scope="col">Request Type</th>
+                        <th scope="col">Reason</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>001</td>
+                        <td>Jojana Garabillo</td>
+                        <td>Gynecology</td>
+                        <td>Leave</td>
+                        <td>Vacation</td>
+                        <td>10/18/2025 - 10/25/2025</td>
+                        <td><span class="badge badge-status-approved">Approved</span></td>
+                    </tr>
+                    <tr>
+                        <td>002</td>
+                        <td>Jhanna Jaroda</td>
+                        <td>Nursing</td>
+                        <td>Leave</td>
+                        <td>Sick</td>
+                        <td>11/18/2025 - 11/25/2025</td>
+                        <td><span class="badge badge-status-pending">Pending</span></td>
+                    </tr>
+                    <tr>
+                        <td>003</td>
+                        <td>Jodie Gutierrez</td>
+                        <td>HR</td>
+                        <td>Leave</td>
+                        <td>Vacation</td>
+                        <td>10/18/2025 - 10/25/2025</td>
+                        <td><span class="badge badge-status-approved">Approved</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </main>
 
     <!-- FILTER TOGGLE SCRIPT -->
