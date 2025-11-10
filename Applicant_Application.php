@@ -28,7 +28,6 @@ $res = $stmt->get_result();
 $applications = $res->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 ?>
-?>
 
 
 
@@ -64,12 +63,14 @@ $stmt->close();
     .main-content {
       flex: 1;
       margin-left: 230px;
+
       padding: 50px 70px;
       display: flex;
       flex-direction: column;
       gap: 30px;
-      margin-top: -700px;
-     
+      min-height: 100vh;
+      overflow-y: auto;
+      /* Allows scrolling if content exceeds viewport height */
     }
 
     /* Header */
@@ -77,14 +78,13 @@ $stmt->close();
       display: flex;
       justify-content: space-between;
       align-items: center;
-
     }
 
     .header h2 {
       font-weight: 600;
       font-size: 22px;
       color: #1E3A8A;
-       margin-top: 20px;
+      margin-top: 20px;
     }
 
     .search-box {
@@ -148,7 +148,7 @@ $stmt->close();
     hr {
       border: none;
       border-top: 1px solid #ccc;
-      margin-top: -10px;
+      margin-top: 10px;
       margin-bottom: 10px;
     }
 
