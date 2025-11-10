@@ -2,355 +2,373 @@
 session_start();
 require 'admin/db.connect.php';
 
-// Flash messages
-$flash_success = $_SESSION['flash_success'] ?? '';
-$flash_error = $_SESSION['flash_error'] ?? '';
-unset($_SESSION['flash_success'], $_SESSION['flash_error']);
-
-// Modal triggers
-$apply_success_job = $_SESSION['apply_success'] ?? '';
-$apply_rejected_job = $_SESSION['apply_rejected'] ?? '';
-unset($_SESSION['apply_success'], $_SESSION['apply_rejected']);
-
 // Applicant data
 $applicant_id = $_SESSION['applicant_employee_id'] ?? $_SESSION['applicantID'] ?? '';
 $applicantname = 'Applicant';
 
 if (!empty($applicant_id)) {
-  $stmt = $conn->prepare("SELECT fullName FROM applicant WHERE applicantID = ?");
-  $stmt->bind_param("s", $applicant_id);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  if ($row = $result->fetch_assoc()) {
-    $applicantname = $row['fullName'];
-  }
-  $stmt->close();
+    $stmt = $conn->prepare("SELECT fullName FROM applicant WHERE applicantID = ?");
+    $stmt->bind_param("s", $applicant_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    if ($row = $result->fetch_assoc()) {
+        $applicantname = $row['fullName'];
+    }
+    $stmt->close();
 }
 
-// Search feature
+// Handle AJAX apply request
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_apply_job'])) {
+    header('Content-Type: application/json');
+
+    if (empty($applicant_id)) {
+        echo json_encode(['status' => 'error', 'message' => 'Please login first.']);
+        exit();
+    }
+
+    $job_id = (int) ($_POST['job_id'] ?? 0);
+    if ($job_id <= 0) {
+        echo json_encode(['status' => 'error', 'message' => 'Invalid job selected.']);
+        exit();
+    }
+
+    // Check profile completion
+    $stmt = $conn->prepare("SELECT course FROM applicant WHERE applicantID=? LIMIT 1");
+    $stmt->bind_param('s', $applicant_id);
+    $stmt->execute();
+    $res = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if (!$res || empty($res['course'])) {
+        echo json_encode(['status' => 'error', 'message' => 'Complete your profile first.']);
+        exit();
+    }
+
+    $applicant_course = $res['course'];
+
+    // Check active applications
+    $active_statuses = ['Pending', 'Initial Interview', 'Assessment', 'Final Interview', 'Requirements'];
+    $placeholders = implode(',', array_fill(0, count($active_statuses), '?'));
+    $types = str_repeat('s', count($active_statuses) + 1);
+    $sql_active = "SELECT id FROM applications WHERE applicantID = ? AND status IN ($placeholders)";
+    $stmt_active = $conn->prepare($sql_active);
+    $params = array_merge([$applicant_id], $active_statuses);
+    $refs = [];
+    foreach ($params as $key => $value) $refs[$key] = &$params[$key];
+    call_user_func_array([$stmt_active, 'bind_param'], array_merge([$types], $refs));
+    $stmt_active->execute();
+    $res_active = $stmt_active->get_result();
+    if ($res_active->num_rows > 0) {
+        echo json_encode(['status' => 'pending_modal']);
+        $stmt_active->close();
+        exit();
+    }
+    $stmt_active->close();
+
+    // Get job info
+    $stmt = $conn->prepare("SELECT job_title, educational_level FROM job_posting WHERE jobID=? LIMIT 1");
+    $stmt->bind_param('i', $job_id);
+    $stmt->execute();
+    $job_info = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    $job_title = $job_info['job_title'] ?? 'this job';
+    $required_level = $job_info['educational_level'] ?? '';
+
+    // ✅ Immediate course match check and insert
+    if (strcasecmp(trim($applicant_course), trim($required_level)) === 0) {
+        $app_status = 'Pending';
+
+        try {
+            $conn->begin_transaction();
+
+            $stmt = $conn->prepare("INSERT INTO applications(applicantID, jobID, status) VALUES(?,?,?)");
+            $stmt->bind_param('sis', $applicant_id, $job_id, $app_status);
+            $stmt->execute();
+            $stmt->close();
+
+            $stmt = $conn->prepare("UPDATE applicant SET status=? WHERE applicantID=?");
+            $stmt->bind_param('ss', $app_status, $applicant_id);
+            $stmt->execute();
+            $stmt->close();
+
+            $conn->commit();
+
+            // ✅ Respond immediately for button update
+            echo json_encode(['status' => 'success', 'job' => $job_title]);
+        } catch (Exception $e) {
+            $conn->rollback();
+            echo json_encode(['status' => 'error', 'message' => 'Failed to apply. Please try again.']);
+        }
+    } else {
+        // Course mismatch
+        $reason = 'Course mismatch';
+        $stmt = $conn->prepare("INSERT INTO rejected_applications(applicantID, jobID, reason, rejected_at) VALUES(?,?,?,NOW())");
+        $stmt->bind_param('sis', $applicant_id, $job_id, $reason);
+        $stmt->execute();
+        $stmt->close();
+
+        echo json_encode(['status' => 'rejected', 'job' => $job_title]);
+    }
+    exit();
+}
+
+// Fetch jobs
 $search = trim($_GET['q'] ?? '');
 $job_sql_base = "
   SELECT jp.jobID, jp.job_title, jp.job_description,
          COALESCE(d.deptName,'') AS department_name,
-         jp.qualification, jp.educational_level,
-         jp.expected_salary, jp.experience_years,
-         COALESCE(et.typeName,'') AS employment_type,
-        jp.vacancies, jp.date_posted, jp.closing_date
+         jp.educational_level, jp.experience_years,
+         COALESCE(et.typeName,'') AS employment_type
   FROM job_posting jp
   LEFT JOIN department d ON jp.department = d.deptID
   LEFT JOIN employment_type et ON jp.employment_type = et.emtypeID
 ";
-
 $jobs = [];
 if ($search !== '') {
-  $job_sql = $job_sql_base . "
-    WHERE (jp.job_title LIKE ? OR jp.job_description LIKE ? OR d.deptName LIKE ?)
-    ORDER BY jp.date_posted DESC";
-  $job_stmt = $conn->prepare($job_sql);
-  $like = "%{$search}%";
-  $job_stmt->bind_param('sss', $like, $like, $like);
+    $job_sql = $job_sql_base . " WHERE (jp.job_title LIKE ? OR jp.job_description LIKE ? OR d.deptName LIKE ?) ORDER BY jp.date_posted DESC";
+    $job_stmt = $conn->prepare($job_sql);
+    $like = "%{$search}%";
+    $job_stmt->bind_param('sss', $like, $like, $like);
 } else {
-  $job_sql = $job_sql_base . " ORDER BY jp.date_posted DESC";
-  $job_stmt = $conn->prepare($job_sql);
+    $job_sql = $job_sql_base . " ORDER BY jp.date_posted DESC";
+    $job_stmt = $conn->prepare($job_sql);
 }
-
 if ($job_stmt) {
-  $job_stmt->execute();
-  $jobs = $job_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-  $job_stmt->close();
+    $job_stmt->execute();
+    $jobs = $job_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $job_stmt->close();
 }
 
-// Fetch applications with status
+// Fetch applications + rejected
 $applications = [];
+$rejected_jobs = [];
 if (!empty($applicant_id)) {
-  $app_q = $conn->prepare("SELECT jobID, status FROM applications WHERE applicantID = ?");
-  $app_q->bind_param('s', $applicant_id);
-  $app_q->execute();
-  $ares = $app_q->get_result();
-  while ($ar = $ares->fetch_assoc()) {
-    $applications[$ar['jobID']] = $ar['status'];
-  }
-  $app_q->close();
+    $app_q = $conn->prepare("SELECT jobID, status FROM applications WHERE applicantID = ?");
+    $app_q->bind_param('s', $applicant_id);
+    $app_q->execute();
+    $res_app = $app_q->get_result();
+    while ($row = $res_app->fetch_assoc()) $applications[$row['jobID']] = $row['status'];
+    $app_q->close();
+
+    $rej_q = $conn->prepare("SELECT jobID FROM rejected_applications WHERE applicantID = ?");
+    $rej_q->bind_param('s', $applicant_id);
+    $rej_q->execute();
+    $res_rej = $rej_q->get_result();
+    while ($row = $res_rej->fetch_assoc()) $rejected_jobs[$row['jobID']] = 'Rejected';
+    $rej_q->close();
 }
-
-// Apply logic
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_job'])) {
-  if (empty($applicant_id)) {
-    header('Location: Login.php');
-    exit();
-  }
-
-  $job_id = (int) $_POST['job_id'];
-  if ($job_id <= 0) {
-    $_SESSION['flash_error'] = 'Invalid job selected.';
-    header('Location: Applicant_Jobs.php');
-    exit();
-  }
-
-  // Prevent duplicate
-  $check = $conn->prepare("SELECT id FROM applications WHERE applicantID = ? AND jobID = ? LIMIT 1");
-  $check->bind_param('si', $applicant_id, $job_id);
-  $check->execute();
-  if ($check->get_result()->num_rows > 0) {
-    $_SESSION['flash_error'] = 'You have already applied for this job.';
-    $check->close();
-    header('Location: Applicant_Jobs.php');
-    exit();
-  }
-  $check->close();
-
-  // Applicant experience
-  $app_data = $conn->prepare("SELECT years_experience FROM applicant WHERE applicantID = ? LIMIT 1");
-  $app_data->bind_param('s', $applicant_id);
-  $app_data->execute();
-  $applicant_exp = (int) ($app_data->get_result()->fetch_assoc()['years_experience'] ?? 0);
-  $app_data->close();
-
-  // Job data
-  $job_data = $conn->prepare("SELECT job_title, experience_years FROM job_posting WHERE jobID = ? LIMIT 1");
-  $job_data->bind_param('i', $job_id);
-  $job_data->execute();
-  $job_info = $job_data->get_result()->fetch_assoc();
-  $job_data->close();
-
-  $required_exp = (int) ($job_info['experience_years'] ?? 0);
-  $job_title = $job_info['job_title'] ?? 'this job';
-
-  $matches = $applicant_exp >= $required_exp;
-  $app_status = $matches ? 'Pending' : 'Rejected';
-
-  // Insert application
-  $insert = $conn->prepare("INSERT INTO applications (applicantID, jobID, status) VALUES (?, ?, ?)");
-  $insert->bind_param('sis', $applicant_id, $job_id, $app_status);
-  if ($insert->execute()) {
-    if ($app_status === 'Rejected') {
-      $_SESSION['apply_rejected'] = $job_title;
-    } else {
-      $_SESSION['apply_success'] = $job_title;
-    }
-  } else {
-    $_SESSION['flash_error'] = 'Failed to submit application.';
-  }
-  $insert->close();
-
-  header('Location: Applicant_Jobs.php');
-  exit();
-}
+$all_statuses = $applications + $rejected_jobs;
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Job Listing</title>
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<title>Job Listing</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="applicant.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+        body {
+            font-family: 'Poppins', 'Roboto', sans-serif;
+            margin: 0;
+            display: flex;
+            background-color: #f1f5fc;
+            color: #111827;
+        }
+        .main-content {
+            flex: 1;
+            padding: 30px 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            margin-left: 230px;
+        }
 
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="applicant.css">
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f9fafc;
-      display: flex;
-    }
+        
 
-    .main-content {
-      margin-left: 150px;
-      padding: 24px 32px;
-      width: calc(100% - 240px);
-    }
+         .main-content h1 {
+          color: #1E3A8A;
+          font-weight: 700;
+          font-size: 2.2rem;
+          margin-bottom: 20px;
+        }
 
-    h1 {
-      font-size: 40px;
-      font-weight: 600;
-      color: #1E3A8A;
-      margin-bottom: 10px;
-
-    }
-
-    .job-table {
-      margin-top: 3%;
-
-    }
-
-    .search-bar {
-      position: absolute;
-      top: 25px;
-      right: 40px;
-      background: #f3f0fa;
-      border-radius: 20px;
-      padding: 8px 15px;
-      display: flex;
-      align-items: center;
-    }
-
-    .search-bar input {
-      border: none;
-      background: transparent;
-      outline: none;
-    }
-
-    .flash-success,
-    .flash-error {
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      margin-left: 200px;
-      max-width: 1200px;
-      box-shadow: 0 2px 6px rgba(16, 24, 40, 0.06);
-    }
-
-    .flash-success {
-      background: #d1fae5;
-      color: #065f46;
-    }
-
-    .flash-error {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .sidebar-name {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      color: white;
-      padding: 10px;
-      margin-bottom: 30px;
-      font-size: 18px;
-      flex-direction: column;
-    }
-  </style>
+        .sidebar-profile-img {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+         .sidebar-profile-img:hover {
+            transform: scale(1.05);
+        }
+         .sidebar-name {
+        display: flex;
+        justify-content: center; 
+        align-items: center;      
+        text-align: center;       
+        color: white;
+        padding: 10px;
+        margin-bottom: 30px;
+        font-size: 18px; 
+        flex-direction: column; 
+        }
+ </style>
 </head>
-
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <a href="Applicant_Profile.php" class="profile"><i class="fa-solid fa-user"></i></a>
-    <div class="sidebar-name">
-      <p><?php echo "Welcome, $applicantname"; ?></p>
-    </div>
-    <ul class="nav">
-      <li><a href="Applicant_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-      <li><a href="Applicant_Application.php"><i class="fa-solid fa-file-lines"></i>Applications</a></li>
-      <li class="active"><a href="Applicant_Jobs.php"><i class="fa-solid fa-briefcase"></i>Jobs</a></li>
-      <li><a href="Applicant_Login.php"><i class="fa-solid fa-right-from-bracket"></i>Log Out</a></li>
-    </ul>
-  </div>
+<div class="sidebar">
+<a href="Applicant_Profile.php" class="profile"><i class="fa-solid fa-user"></i></a>
+<div class="sidebar-name">
+<p><?= "Welcome, $applicantname" ?></p>
+</div>
+<ul class="nav">
+<li><a href="Applicant_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+<li><a href="Applicant_Application.php"><i class="fa-solid fa-file-lines"></i>Applications</a></li>
+<li class="active"><a href="Applicant_Jobs.php"><i class="fa-solid fa-briefcase"></i>Jobs</a></li>
+<li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Log Out</a></li>
+</ul>
+</div>
 
-  <!-- Main Content -->
-  <div class="main-content">
-    <h1>Job Listing</h1>
-    <hr>
+<div class="main-content">
+<h1>Job Listing</h1><hr>
+<div class="table-responsive mt-5">
+<table class="table table-bordered table-hover align-middle text-center">
+<thead class="table-primary">
+<tr>
+<th>Job Title</th>
+<th>Department</th>
+<th>Type</th>
+<th>Experience</th>
+<th>Description</th>
+<th>Action / Status</th>
+</tr>
+</thead>
+<tbody>
+<?php foreach ($jobs as $job): 
+$jid = (int) $job['jobID'];
+$status = $all_statuses[$jid] ?? null; ?>
+<tr>
+<td><?= htmlspecialchars($job['job_title']) ?></td>
+<td><?= htmlspecialchars($job['department_name']) ?></td>
+<td><?= htmlspecialchars($job['employment_type']) ?></td>
+<td><?= (int)$job['experience_years'] ?> years</td>
+<td><?= htmlspecialchars(substr($job['job_description'],0,80)) ?>...</td>
+<td>
+<?php if($status): ?>
+<?php if($status==='Rejected'): ?>
+<button class="btn btn-danger btn-sm" disabled>Rejected</button>
+<?php elseif($status==='Pending'): ?>
+<button class="btn btn-warning btn-sm" disabled>Pending</button>
+<?php else: ?>
+<button class="btn btn-info btn-sm" disabled><?= htmlspecialchars($status) ?></button>
+<?php endif; ?>
+<?php else: ?>
+<button class="btn btn-success btn-sm apply-btn" data-jobid="<?= $jid ?>">Apply</button>
+<?php endif; ?>
+</td>
+</tr>
+<?php endforeach; ?>
+</tbody>
+</table>
+</div>
+</div>
 
-    <?php if (!empty($flash_success)): ?>
-      <div class="flash-success"><?php echo htmlspecialchars($flash_success); ?></div>
-    <?php endif; ?>
-    <?php if (!empty($flash_error)): ?>
-      <div class="flash-error"><?php echo htmlspecialchars($flash_error); ?></div>
-    <?php endif; ?>
+<!-- 🟡 Pending Modal -->
+<div class="modal fade" id="pendingModal" tabindex="-1">
+<div class="modal-dialog modal-dialog-centered">
+<div class="modal-content border-warning">
+<div class="modal-header bg-warning text-dark">
+<h5 class="modal-title">Pending Application</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body text-center">
+<i class="fa-solid fa-triangle-exclamation fa-2x text-warning mb-3"></i>
+<p>You still have a pending application. Applicants can only have one application at a time.</p>
+</div>
+</div>
+</div>
+</div>
 
-    <!-- Search 
-    <form class="search-bar" method="get">
-      <input type="text" name="q" placeholder="Search Jobs" value="<?= htmlspecialchars($search) ?>">
-      <button type="submit" class="btn btn-link p-0 text-dark"><i class="fa-solid fa-magnifying-glass"></i></button>
-    </form> -->
+<!-- 🟢 Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+<div class="modal-dialog modal-dialog-centered">
+<div class="modal-content border-success">
+<div class="modal-header bg-success text-white">
+<h5 class="modal-title">Application Submitted</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body text-center">
+<i class="fa-solid fa-check-circle fa-2x text-success mb-3"></i>
+<p id="successMessage"></p>
+</div>
+</div>
+</div>
+</div>
 
-    <!-- Job Table -->
-    <div class="job-table">
-      <div class="table-responsive mt-5">
-        <table class="table table-bordered table-hover align-middle">
-          <thead class="table-primary text-center">
-            <tr>
-              <th>Job Title</th>
-              <th>Department</th>
-              <th>Type</th>
-              <th>Experience</th>
-              <th>Description</th>
-              <th>Action / Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php foreach ($jobs as $job):
-              $jid = (int) $job['jobID'];
-              $status = $applications[$jid] ?? null;
-              ?>
-              <tr>
-                <td><?= htmlspecialchars($job['job_title']) ?></td>
-                <td><?= htmlspecialchars($job['department_name']) ?></td>
-                <td><?= htmlspecialchars($job['employment_type']) ?></td>
-                <td><?= (int) $job['experience_years'] ?> years</td>
-                <td><?= htmlspecialchars(substr($job['job_description'], 0, 80)) ?>...</td>
-                <td class="text-center">
-                  <?php if ($status): ?>
-                    <span
-                      class="badge <?= $status === 'Rejected' ? 'bg-danger' : ($status === 'Pending' ? 'bg-warning text-dark' : 'bg-success') ?>">
-                      <?= htmlspecialchars($status) ?>
-                    </span>
-                  <?php else: ?>
-                    <form method="POST">
-                      <input type="hidden" name="job_id" value="<?= $jid ?>">
-                      <button type="submit" name="apply_job" class="btn btn-success btn-sm">Apply</button>
-                    </form>
-                  <?php endif; ?>
-                </td>
-              </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-      </div>
-    </div>
+<!-- 🔴 Rejected Modal -->
+<div class="modal fade" id="rejectedModal" tabindex="-1">
+<div class="modal-dialog modal-dialog-centered">
+<div class="modal-content border-danger">
+<div class="modal-header bg-danger text-white">
+<h5 class="modal-title">Application Rejected</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body text-center">
+<i class="fa-solid fa-xmark fa-2x text-danger mb-3"></i>
+<p id="rejectedMessage"></p>
+</div>
+</div>
+</div>
+</div>
 
-  </div>
+<!-- ⚠️ Error Modal -->
+<div class="modal fade" id="errorModal" tabindex="-1">
+<div class="modal-dialog modal-dialog-centered">
+<div class="modal-content border-secondary">
+<div class="modal-header bg-secondary text-white">
+<h5 class="modal-title">Notice</h5>
+<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body text-center">
+<p id="errorMessage"></p>
+</div>
+</div>
+</div>
+</div>
 
-  <!-- Success Modal -->
-  <div class="modal fade" id="applySuccessModal" tabindex="-1" data-bs-backdrop="true" data-bs-keyboard="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-success text-white">
-          <h5 class="modal-title">Application Submitted!</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <p>You successfully applied for <strong><?= htmlspecialchars($apply_success_job) ?></strong>.</p>
-          <p>We will review your application soon.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Rejection Modal -->
-  <div class="modal fade" id="applyRejectedModal" tabindex="-1" data-bs-backdrop="true" data-bs-keyboard="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title">Application Rejected</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <p>Unfortunately, you didn’t meet the required experience for
-            <strong><?= htmlspecialchars($apply_rejected_job) ?></strong>.
-          </p>
-          <p>Consider improving your qualifications and try again later.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
-  <?php if ($apply_success_job): ?>
-    <script>new bootstrap.Modal(document.getElementById('applySuccessModal')).show();</script>
-  <?php elseif ($apply_rejected_job): ?>
-    <script>new bootstrap.Modal(document.getElementById('applyRejectedModal')).show();</script>
-  <?php endif; ?>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+$(function(){
+    $('.apply-btn').click(function(){
+        var btn = $(this);
+        var jobID = btn.data('jobid');
+        $.post('', {ajax_apply_job:1, job_id: jobID}, function(res){
+            if(res.status==='success'){
+                $('#successMessage').text("You have successfully applied for " + res.job + ".");
+                new bootstrap.Modal($('#successModal')).show();
+                btn.removeClass('btn-success').addClass('btn-warning').text('Pending').prop('disabled', true);
+            } 
+            else if(res.status==='rejected'){
+                $('#rejectedMessage').text("Your application for " + res.job + " was rejected due to a course mismatch.");
+                new bootstrap.Modal($('#rejectedModal')).show();
+                btn.removeClass('btn-success').addClass('btn-danger').text('Rejected').prop('disabled', true);
+            }
+            else if(res.status==='pending_modal'){
+                new bootstrap.Modal($('#pendingModal')).show();
+            }
+            else {
+                $('#errorMessage').text(res.message);
+                new bootstrap.Modal($('#errorModal')).show();
+            }
+        }, 'json');
+    });
+});
+</script>
 </body>
-
 </html>
