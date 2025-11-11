@@ -123,10 +123,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_job'])) {
   $insert = $conn->prepare("INSERT INTO applications (applicantID, jobID, status) VALUES (?, ?, ?)");
   $insert->bind_param('sis', $applicant_id, $job_id, $app_status);
   if ($insert->execute()) {
-    if ($app_status === 'Rejected') {
-      $_SESSION['apply_rejected'] = $job_title;
-    } else {
+    if ($app_status === 'Pending') {
       $_SESSION['apply_success'] = $job_title;
+    } else {
+      $_SESSION['apply_rejected'] = $job_title;
     }
   } else {
     $_SESSION['flash_error'] = 'Failed to submit application.';
