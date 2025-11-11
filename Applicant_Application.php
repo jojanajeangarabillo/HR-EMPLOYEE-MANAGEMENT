@@ -5,13 +5,27 @@ require 'admin/db.connect.php';
 
 $applicantID = $_SESSION['applicantID'];
 
-// Fetch applicant name
-$stmt = $conn->prepare("SELECT fullName FROM applicant WHERE applicantID = ?");
+
+// Fetch applicant name and profile picture
+$stmt = $conn->prepare("SELECT fullName, profile_pic FROM applicant WHERE applicantID = ?");
 $stmt->bind_param("s", $applicantID);
 $stmt->execute();
-$res = $stmt->get_result();
-$applicantname = $res->fetch_assoc()['fullName'] ?? 'Applicant';
-$stmt->close();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+  $row = $result->fetch_assoc();
+  $applicantname = $row['fullName'];
+
+  // ✅ Check if a profile picture exists
+  if (!empty($row['profile_pic'])) {
+    $profile_picture = $row['profile_pic'];
+  }
+} else {
+  // fallback if not found in applicant table
+  $applicantname = $_SESSION['fullname'] ?? "Applicant";
+  $stmt->close();
+}
+
 
 // Fetch applications
 $applications = [];
@@ -170,7 +184,8 @@ $stmt->close();
   <!-- Sidebar -->
   <div class="sidebar">
     <a href="Applicant_Profile.php" class="profile">
-      <i class="fa-solid fa-user"></i>
+      <img src="uploads/applicants/<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile"
+        class="sidebar-profile-img">
     </a>
 
     <div class="sidebar-name">

@@ -6,14 +6,24 @@ require 'admin/db.connect.php';
 $applicant_id = $_SESSION['applicant_employee_id'] ?? $_SESSION['applicantID'] ?? '';
 $applicantname = 'Applicant';
 
-if (!empty($applicant_id)) {
-  $stmt = $conn->prepare("SELECT fullName FROM applicant WHERE applicantID = ?");
-  $stmt->bind_param("s", $applicant_id);
-  $stmt->execute();
-  $result = $stmt->get_result();
-  if ($row = $result->fetch_assoc()) {
-    $applicantname = $row['fullName'];
+
+// Fetch applicant name and profile picture
+$stmt = $conn->prepare("SELECT fullName, profile_pic FROM applicant WHERE applicantID = ?");
+$stmt->bind_param("s", $applicant_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+  $row = $result->fetch_assoc();
+  $applicantname = $row['fullName'];
+
+  // ✅ Check if a profile picture exists
+  if (!empty($row['profile_pic'])) {
+    $profile_picture = $row['profile_pic'];
   }
+} else {
+  // fallback if not found in applicant table
+  $applicantname = $_SESSION['fullname'] ?? "Applicant";
   $stmt->close();
 }
 
@@ -287,7 +297,10 @@ $all_statuses = $applications + $rejected_jobs;
 
 <body>
   <div class="sidebar">
-    <a href="Applicant_Profile.php" class="profile"><i class="fa-solid fa-user"></i></a>
+    <a href="Applicant_Profile.php" class="profile">
+      <img src="uploads/applicants/<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile"
+        class="sidebar-profile-img">
+    </a>
     <div class="sidebar-name">
       <p><?= "Welcome, $applicantname" ?></p>
     </div>
