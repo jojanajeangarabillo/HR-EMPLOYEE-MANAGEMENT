@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_announcement']))
 <style>
 body { background-color:#f7f9fc; font-family:"Poppins","Roboto",sans-serif; display:flex; margin:0; }
 .main-content { padding:40px 30px; margin-left:300px; display:flex; flex-direction:column; }
-.main-content h2 { font-size:24px; color:#1E3A8A; font-weight:700; margin-bottom:25px; display:flex; align-items:center; gap:10px; }
+.main-content h2 { font-size:26px; color:#1E3A8A; font-weight:700; margin-bottom:25px; display:flex; align-items:center; gap:10px; }
 .sidebar-name { display:flex; justify-content:center; align-items:center; text-align:center; color:white; padding:10px; margin-bottom:30px; font-size:18px; flex-direction:column; }
 .sidebar-logo img { height:110px; width:110px; border-radius:50%; object-fit:cover; border:3px solid #fff; }
 
