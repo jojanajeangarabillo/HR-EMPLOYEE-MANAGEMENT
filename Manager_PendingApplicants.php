@@ -123,6 +123,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($reminder_info) $detailsBlock .= "<p><strong>Reminder:</strong> {$reminder_info}</p>";
     if ($extra_notes) $detailsBlock .= "<p><strong>Notes:</strong> {$extra_notes}</p>";
 
+
+    if (isset($new_status) && $new_status === 'Rejected') {
+    $reason = trim($_POST['reason'] ?? '');
+
+    // 1) Get jobID from applications table (if exists)
+    $jobID = null;
+    $q = $conn->prepare("SELECT jobID FROM applications WHERE applicantID = ? LIMIT 1");
+    if ($q) {
+        $q->bind_param('s', $applicantID);
+        $q->execute();
+        $res = $q->get_result();
+        if ($res && $row = $res->fetch_assoc()) {
+            $jobID = $row['jobID'];
+        }
+        $q->close();
+    }
+
+    // 2) Insert into rejected_applications
+    if ($jobID) {
+        $ins = $conn->prepare("INSERT INTO rejected_applications (applicantID, jobID, reason) VALUES (?, ?, ?)");
+        if ($ins) {
+            $ins->bind_param('sis', $applicantID, $jobID, $reason);
+            $ins->execute();
+            $ins->close();
+        }
+    }
+
+    // 3) Delete from applications table
+    $del = $conn->prepare("DELETE FROM applications WHERE applicantID = ?");
+    if ($del) {
+        $del->bind_param('s', $applicantID);
+        $del->execute();
+        $del->close();
+    }
+
+    // 4) Update applicant status to NULL
+    $upd = $conn->prepare("UPDATE applicant SET status = 'Pending' WHERE applicantID = ?");
+    if ($upd) {
+        $upd->bind_param('s', $applicantID);
+        $upd->execute();
+        $upd->close();
+    }
+}
+
+
     switch ($new_status) {
       case 'Initial Interview':
         $subject = "HOSPITAL HUMAN RESOURCE Initial Interview Invitation";
@@ -237,11 +282,11 @@ SELECT
     a.applicantID,
     a.fullName,
     a.email_address,
-    COALESCE(app.status, a.status) AS application_status,
+    app.status AS application_status,
     app.applied_at,
     a.date_applied
 FROM applicant a
-LEFT JOIN applications app 
+INNER JOIN applications app 
     ON a.applicantID = app.applicantID
 ";
 
@@ -280,6 +325,40 @@ if ($stmt = $conn->prepare($sql)) {
   while ($r = $res->fetch_assoc()) $pendingApplicants[] = $r;
   $stmt->close();
 }
+// AJAX endpoint to fetch full applicant + application info
+if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetails') {
+    $appid = trim($_GET['applicantID'] ?? '');
+    if (empty($appid)) send_json(['success' => false, 'message' => 'Missing applicant ID']);
+
+    // Fetch all applicant fields + job info from applications
+    $stmt = $conn->prepare("
+        SELECT 
+            a.*, 
+            app.jobID, 
+            app.job_title AS applied_job_title, 
+            app.department_name
+        FROM applicant a
+        LEFT JOIN applications app ON a.applicantID = app.applicantID
+        WHERE a.applicantID = ? 
+        LIMIT 1
+    ");
+    $stmt->bind_param('s', $appid);
+    $stmt->execute();
+    $res = $stmt->get_result();
+
+    if ($row = $res->fetch_assoc()) {
+        // Convert local path to web URL for profile picture
+        $row['profile_pic'] = !empty($row['profile_pic']) 
+            ? 'uploads/applicants/' . $row['profile_pic'] 
+            : ''; // fallback to empty or default
+
+        send_json(['success' => true, 'data' => $row]);
+    } else {
+        send_json(['success' => false, 'message' => 'Applicant not found']);
+    }
+}
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -403,8 +482,7 @@ if ($stmt = $conn->prepare($sql)) {
             <option value="Assessment" <?php echo (isset($statusFilter) && $statusFilter === 'Assessment') ? 'selected':''; ?>>Assessment</option>
             <option value="Final Interview" <?php echo (isset($statusFilter) && $statusFilter === 'Final Interview') ? 'selected':''; ?>>Final Interview</option>
             <option value="Requirements" <?php echo (isset($statusFilter) && $statusFilter === 'Requirements') ? 'selected':''; ?>>Requirements</option>
-            <option value="Hired" <?php echo (isset($statusFilter) && $statusFilter === 'Hired') ? 'selected':''; ?>>Hired</option>
-            <option value="Rejected" <?php echo (isset($statusFilter) && $statusFilter === 'Rejected') ? 'selected':''; ?>>Rejected</option>
+           
           </select>
 
           <button type="submit" class="btn" style="background:#1E3A8A;color:#fff;border:none;padding:8px 14px;border-radius:8px;">Search</button>
@@ -453,6 +531,52 @@ if ($stmt = $conn->prepare($sql)) {
       </tbody>
     </table>
   </div>
+
+<!-- Applicant Details Modal -->
+<div id="applicantModal" class="modal fade" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="applicantModalTitle">Applicant Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-3">
+          <div class="col-md-4 text-center">
+            <img id="applicantPic" src="Images/default-profile.png" alt="Profile Picture" 
+                 class="img-fluid border" style="max-height:200px; width:auto; object-fit:cover;">
+          </div>
+          <div class="col-md-8">
+            <p><strong>Name:</strong> <span id="applicantName"></span></p>
+            <p><strong>Email:</strong> <span id="applicantEmail"></span></p>
+            <p><strong>Contact:</strong> <span id="applicantContact"></span></p>
+            <p><strong>Position Applied:</strong> <span id="applicantPosition"></span></p>
+            <p><strong>Department:</strong> <span id="applicantDepartment"></span></p>
+            <p><strong>Date Applied:</strong> <span id="applicantDateApplied"></span></p>
+          </div>
+        </div>
+
+        <hr>
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <p><strong>Education:</strong> <span id="applicantEducation"></span></p>
+            <p><strong>Experience:</strong> <span id="applicantExperience"></span></p>
+          </div>
+          <div class="col-md-6">
+            <p><strong>Skills:</strong> <span id="applicantSkills"></span></p>
+            <p><strong>Summary:</strong> <span id="applicantSummary"></span></p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 
   <!-- Hidden quick form is no longer submitted directly; kept for fallback -->
   <form id="quickForm" method="post" style="display:none;">
@@ -536,50 +660,64 @@ if ($stmt = $conn->prepare($sql)) {
       const selects = document.querySelectorAll('.status-select');
 
       selects.forEach(sel => {
-        sel.addEventListener('change', async function (e) {
-          const newStatus = this.value;
-          const appid = this.dataset.appid;
-          const email = this.dataset.email;
-          const fullname = this.dataset.fullname;
+    sel.addEventListener('change', async function (e) {
+      const newStatus = this.value;
+      const appid = this.dataset.appid;
+      const fullname = this.dataset.fullname;
 
-          // statuses that need modal details
-          const needsModal = ['Initial Interview','Assessment','Final Interview','Requirements'];
+      if (newStatus === 'Hired') {
+        if (!confirm(`Are you sure you want to hire ${fullname}?`)) {
+          this.value = 'Pending';
+          return;
+        }
+        await updateStatus(appid, newStatus, true, sel);
+      } else if (newStatus === 'Rejected') {
+        if (!confirm(`Are you sure you want to reject ${fullname}?`)) {
+          this.value = 'Pending';
+          return;
+        }
+        const reason = prompt("Enter reason for rejection (optional):", "");
+        await updateStatus(appid, newStatus, true, sel, reason);
+      } else {
+        const needsModal = ['Initial Interview','Assessment','Final Interview','Requirements'];
+        if (needsModal.includes(newStatus)) {
+          openModalFor(appid, newStatus, fullname);
+        } else {
+          await updateStatus(appid, newStatus, false, sel);
+        }
+      }
+    });
+  });
 
-          if (needsModal.includes(newStatus)) {
-            openModalFor(appid, newStatus, fullname, email);
-          } else {
-            // Hired / Rejected / Pending -> immediate action via AJAX
-            const sendEmail = (newStatus === 'Hired' || newStatus === 'Rejected') ? '1' : '0';
-            // prepare payload
-            const payload = new URLSearchParams();
-            payload.append('applicantID', appid);
-            payload.append('new_status', newStatus);
-            payload.append('send_email', sendEmail);
-            payload.append('ajax', '1');
+  // <-- Add the helper function below -->
+  async function updateStatus(appid, status, sendEmail, selectEl, reason = '') {
+    const payload = new URLSearchParams();
+    payload.append('applicantID', appid);
+    payload.append('new_status', status);
+    payload.append('send_email', sendEmail ? '1' : '0');
+    payload.append('ajax', '1');
+    if (reason) payload.append('reason', reason);
 
-            try {
-              const resp = await fetch(window.location.href, {
-                method: 'POST',
-                headers: {
-                  'X-Requested-With': 'XMLHttpRequest',
-                  'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: payload.toString()
-              });
-              const data = await resp.json();
-              if (data.success) {
-                showAlert(data.message || 'Updated successfully', 'success');
-                // update the select visually (already set). Optionally you can update row highlight.
-              } else {
-                showAlert(data.message || 'Update failed', 'danger');
-              }
-            } catch (err) {
-              showAlert('Network error. Try again.', 'danger');
-            }
-          }
-        });
+    try {
+      const resp = await fetch(window.location.href, {
+        method: 'POST',
+        headers: { 'X-Requested-With':'XMLHttpRequest', 'Content-Type':'application/x-www-form-urlencoded' },
+        body: payload.toString()
       });
-
+      const data = await resp.json();
+      if (data.success) {
+        showAlert(data.message, 'success');
+        if (status === 'Hired' || status === 'Rejected') {
+        selectEl.disabled = true;
+        selectEl.value = status;
+    }
+      } else {
+        showAlert(data.message, 'danger');
+      }
+    } catch (err) {
+      showAlert('Network error. Try again.', 'danger');
+    }
+  }
       // modal cancel
       document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
 
@@ -649,6 +787,48 @@ if ($stmt = $conn->prepare($sql)) {
       modal.classList.remove('active');
       modal.setAttribute('aria-hidden', 'true');
     }
+
+    // Show applicant modal with Bootstrap
+  async function showApplicantDetails(applicantID) {
+    try {
+      const resp = await fetch(`?action=getApplicantDetails&applicantID=${encodeURIComponent(applicantID)}`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      const data = await resp.json();
+      if (!data.success) return alert(data.message || 'Applicant not found');
+
+      const d = data.data;
+      document.getElementById('applicantModalTitle').textContent = d.fullName;
+      document.getElementById('applicantPic').src = d.profile_pic || 'Images/default-profile.png';
+      document.getElementById('applicantName').textContent = d.fullName;
+      document.getElementById('applicantEmail').textContent = d.email_address;
+      document.getElementById('applicantContact').textContent = d.contact_number || '-';
+      document.getElementById('applicantPosition').textContent = d.job_title || d.position_applied || '-';
+      document.getElementById('applicantDepartment').textContent = d.department_name || '-';
+      document.getElementById('applicantDateApplied').textContent = d.date_applied || '-';
+      document.getElementById('applicantEducation').textContent = `${d.university || '-'} (${d.course || '-'}, Graduated: ${d.year_graduated || '-'})`;
+      document.getElementById('applicantExperience').textContent = `${d.years_experience || 0} years, Role: ${d.in_role || '-'}, Company: ${d.company_name || '-'}, Started: ${d.date_started || '-'}`;
+      document.getElementById('applicantSkills').textContent = d.skills || '-';
+      document.getElementById('applicantSummary').textContent = d.summary || '-';
+
+      const modal = new bootstrap.Modal(document.getElementById('applicantModal'));
+      modal.show();
+    } catch (err) {
+      alert('Network error. Try again.');
+    }
+  }
+
+  // Attach click handler for all view buttons
+  document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', () => showApplicantDetails(btn.dataset.appid));
+  });
+
+function closeApplicantModal() {
+  const modal = document.getElementById('applicantModal');
+  modal.classList.remove('active');
+  modal.setAttribute('aria-hidden', 'true');
+}
+
   </script>
 </body>
 </html>

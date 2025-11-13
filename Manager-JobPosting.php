@@ -102,6 +102,26 @@ $res = $conn->query($recentQuery);
 if ($res && $res->num_rows > 0) {
     while ($row = $res->fetch_assoc()) $recentJobs[] = $row;
 }
+
+$today = date('Y-m-d'); // current date
+
+$recentQuery = "
+SELECT j.*, d.deptName, et.typeName AS employment_type
+FROM job_posting j
+JOIN department d ON j.department=d.deptID
+JOIN employment_type et ON j.employment_type=et.emtypeID
+WHERE j.closing_date IS NULL OR j.closing_date >= ?
+ORDER BY j.date_posted DESC
+";
+
+$stmt = $conn->prepare($recentQuery);
+$stmt->bind_param('s', $today);
+$stmt->execute();
+$res = $stmt->get_result();
+$recentJobs = [];
+while ($row = $res->fetch_assoc()) $recentJobs[] = $row;
+$stmt->close();
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -129,6 +149,7 @@ body { margin:0; padding:0; font-family:'Poppins','Roboto',sans-serif; backgroun
       <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
       <li><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
       <li><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
+      <li ><a href="Manager_Employees.php"><i class="fa-solid fa-user-group me-2"></i>Employees</a></li>
       <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
       <li class="active"><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
       <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
