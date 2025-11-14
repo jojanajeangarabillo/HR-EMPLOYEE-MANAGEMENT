@@ -24,6 +24,11 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
     $applicants = $row['count'];
 }
 
+$pending_applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM applications WHERE id = '0'");
+if ($pending_applicantQuery && $row = $pending_applicantQuery->fetch_assoc()) {
+    $pending_applicantQuery = $row['count'];
+}
+
 // Fetch total number of positions for Hirings (status = 'On-Going' or 'To Post')
 $hiringsQuery = $conn->query("
     SELECT SUM(vacancy_count) AS count 
@@ -212,7 +217,7 @@ $recentVacanciesQuery = $conn->query("
 
     <div class="section">
         <label>Pending Applicants</label>
-        <h3><?php echo 0;  ?></h3>
+        <h3><?php echo $pending_applicantQuery;  ?></h3>
     </div>
 </div>
 

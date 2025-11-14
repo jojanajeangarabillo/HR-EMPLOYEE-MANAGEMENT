@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_apply_job'])) {
   $stmt_active->close();
 
   // Get job info
-  $stmt = $conn->prepare("SELECT job_title, educational_level FROM job_posting WHERE jobID=? LIMIT 1");
+  $stmt = $conn->prepare("SELECT job_title, educational_level, department  FROM job_posting WHERE jobID=? LIMIT 1");
   $stmt->bind_param('i', $job_id);
   $stmt->execute();
   $job_info = $stmt->get_result()->fetch_assoc();
@@ -85,6 +85,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_apply_job'])) {
 
   $job_title = $job_info['job_title'] ?? 'this job';
   $required_level = $job_info['educational_level'] ?? '';
+  $dept_id = $job_info['department'] ?? null;
+
+
+  // Fetch department name
+$department_name = '';
+if ($dept_id) {
+    $stmt = $conn->prepare("SELECT deptName FROM department WHERE deptID=? LIMIT 1");
+    $stmt->bind_param('i', $dept_id);
+    $stmt->execute();
+    $department_name = $stmt->get_result()->fetch_assoc()['deptName'] ?? '';
+    $stmt->close();
+}
 
   // ✅ Immediate course match check and insert
   if (strcasecmp(trim($applicant_course), trim($required_level)) === 0) {
@@ -93,8 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_apply_job'])) {
     try {
       $conn->begin_transaction();
 
-      $stmt = $conn->prepare("INSERT INTO applications(applicantID, jobID, status) VALUES(?,?,?)");
-      $stmt->bind_param('sis', $applicant_id, $job_id, $app_status);
+      $stmt = $conn->prepare("INSERT INTO applications(applicantID, jobID, job_title, department_name, status) VALUES(?,?,?,?,?)");
+      $stmt->bind_param('sissi', $applicant_id, $job_id, $job_title, $department_name, $app_status);
       $stmt->execute();
       $stmt->close();
 

@@ -83,6 +83,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
+  // If manager selects HIRED, copy job info into applicant table
+if ($new_status === 'Hired') {
+
+    // Fetch job_title and department from applications table
+    $stmtJob = $conn->prepare("
+        SELECT job_title, department_name 
+        FROM applications 
+        WHERE applicantID = ? 
+        LIMIT 1
+    ");
+    $stmtJob->bind_param("s", $applicantID);
+    $stmtJob->execute();
+    $jobRes = $stmtJob->get_result();
+
+    if ($jobRes && $jobRow = $jobRes->fetch_assoc()) {
+        $jobTitle = $jobRow['job_title'] ?? '';
+        $deptName = $jobRow['department_name'] ?? '';
+
+        // Update applicant table
+        $stmtUpdateApplicant = $conn->prepare("
+            UPDATE applicant 
+            SET position_applied = ?, department = ?,
+            hired_at = NOW()
+            WHERE applicantID = ?
+        ");
+        $stmtUpdateApplicant->bind_param("sss", $jobTitle, $deptName, $applicantID);
+        $stmtUpdateApplicant->execute();
+        $stmtUpdateApplicant->close();
+    }
+
+    $stmtJob->close();
+}
+
+
   // If email is requested, prepare and send
   if ($send_email_flag) {
     // fetch applicant email & name
@@ -440,6 +474,7 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
       <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
       <li><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
       <li class="active"><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
+        <li ><a href="Manager_Employees.php"><i class="fa-solid fa-user-group me-2"></i>Employees</a></li>
       <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
       <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
       <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
@@ -670,6 +705,8 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
           this.value = 'Pending';
           return;
         }
+
+        
         await updateStatus(appid, newStatus, true, sel);
       } else if (newStatus === 'Rejected') {
         if (!confirm(`Are you sure you want to reject ${fullname}?`)) {
