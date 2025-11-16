@@ -265,8 +265,8 @@ if ($applicant_query) {
 
 <body>
   <!-- SIDEBAR -->
-<<<<<<< HEAD
-  <div class="sidebar">
+     
+    <div class="sidebar">
         <div class="sidebar-logo">
             <img src="Images/hospitallogo.png" alt="Hospital Logo">
         </div>
@@ -287,47 +287,6 @@ if ($applicant_query) {
     <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
   </ul>
 </div>
-=======
-  <div class="sidebar d-flex flex-column align-items-center position-fixed top-0 start-0 h-100 p-3">
-    <div class="text-center mb-4">
-      <img src="Images/hospitallogo.png" alt="Hospital Logo" class="img-fluid rounded-circle mb-3"
-        style="width:75px; height:75px;">
-      <p class="text-white fw-semibold mb-0">
-        <?php echo "Welcome, $adminname"; ?>
-      </p>
-    </div>
-
-    <nav class="nav flex-column w-100">
-      <a href="Admin_Dashboard.php" class="nav-link  d-flex align-items-center text-white py-2 px-3">
-        <i class="fa-solid fa-table-columns me-2"></i>Dashboard
-      </a>
-      <a href="Admin_Employee.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
-        <i class="fa-solid fa-user-group me-2"></i>Employees
-      </a>
-      <a href="Admin-Applicants.php" class="nav-link active d-flex align-items-center text-white py-2 px-3">
-        <i class="fa-solid fa-user-group me-2"></i>Applicants
-      </a>
-      <a href="Admin-Pending-Applicants.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
-        <i class="fa-solid fa-user-clock me-2"></i>Pending Applicants
-      </a>
-      <a href="Admin_Vacancies.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
-        <i class="fa-solid fa-briefcase me-2"></i>Vacancies
-      </a>
-      <a href="Admin-request.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
-        <i class="fa-solid fa-code-pull-request me-2"></i>Requests
-      </a>
-      <a href="#" class="nav-link d-flex align-items-center text-white py-2 px-3">
-        <i class="fa-solid fa-chart-simple me-2"></i>Reports
-      </a>
-      <a href="Admin-Settings.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
-        <i class="fa-solid fa-gear me-2"></i>Settings
-      </a>
-      <a href="Login.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
-        <i class="fa-solid fa-right-from-bracket me-2"></i>Logout
-      </a>
-    </nav>
-  </div>
->>>>>>> 6d6d85e7ca04c628e274c960c41fd8ea2c3d3e00
 
 
   <!-- MAIN CONTENT -->
