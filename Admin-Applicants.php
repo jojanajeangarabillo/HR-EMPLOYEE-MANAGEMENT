@@ -30,29 +30,6 @@ if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
       color: #111827;
     }
 
-    .sidebar-logo {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 50px;
-    }
-
-    .sidebar-logo img {
-      height: 120px;
-      width: 120px;
-    }
-
-    .sidebar-name {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      color: white;
-      padding: 10px;
-      margin-bottom: 30px;
-      font-size: 18px;
-      flex-direction: column;
-    }
-
     .main-content {
       padding: 40px 30px;
       margin-left: 250px;
@@ -272,43 +249,26 @@ if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
 
 <body>
   <!-- SIDEBAR -->
-  <div class="sidebar d-flex flex-column align-items-center position-fixed top-0 start-0 h-100 p-3">
-  <div class="text-center mb-4">
-    <img src="Images/hospitallogo.png" alt="Hospital Logo" class="img-fluid rounded-circle mb-3" style="width:75px; height:75px;">
-    <p class="text-white fw-semibold mb-0">
-      <?php echo "Welcome, $adminname"; ?>
-    </p>
+  <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="Images/hospitallogo.png" alt="Hospital Logo">
+        </div>
+
+        <div class="sidebar-name">
+            <p><?php echo "Welcome, $adminname"; ?></p>
   </div>
 
-  <nav class="nav flex-column w-100">
-    <a href="Admin_Dashboard.php" class="nav-link  d-flex align-items-center text-white py-2 px-3">
-      <i class="fa-solid fa-table-columns me-2"></i>Dashboard
-    </a>
-    <a href="Admin_Employee.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
-      <i class="fa-solid fa-user-group me-2"></i>Employees
-    </a>
-    <a href="Admin-Applicants.php" class="nav-link active d-flex align-items-center text-white py-2 px-3">
-      <i class="fa-solid fa-user-group me-2"></i>Applicants
-    </a>
-    <a href="Admin-Pending-Applicants.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
-      <i class="fa-solid fa-user-clock me-2"></i>Pending Applicants
-    </a>
-    <a href="Admin_Vacancies.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
-      <i class="fa-solid fa-briefcase me-2"></i>Vacancies
-    </a>
-    <a href="Admin-request.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
-      <i class="fa-solid fa-code-pull-request me-2"></i>Requests
-    </a>
-    <a href="#" class="nav-link d-flex align-items-center text-white py-2 px-3">
-      <i class="fa-solid fa-chart-simple me-2"></i>Reports
-    </a>
-    <a href="Admin-Settings.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
-      <i class="fa-solid fa-gear me-2"></i>Settings
-    </a>
-    <a href="Login.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
-      <i class="fa-solid fa-right-from-bracket me-2"></i>Logout
-    </a>
-  </nav>
+  <ul class="nav flex-column">
+    <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+    <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
+    <li class="active"><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
+    <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-clock"></i>Pending Applicants</a></li>
+    <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
+    <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+    <li><a href="Admin_Reports.php"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
+    <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
+    <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+  </ul>
 </div>
 
 

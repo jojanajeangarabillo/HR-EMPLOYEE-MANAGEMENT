@@ -77,32 +77,6 @@ $recentVacanciesQuery = $conn->query("
             color: #111827;
         }
 
-        .sidebar-logo {
-     display: flex;
-     justify-content: center;
-     margin-bottom: 25px;
-    }
-
-    .sidebar-logo img {
-     height: 110px;
-     width: 110px;
-     border-radius: 50%;
-     object-fit: cover;
-     border: 3px solid #ffffff;
-    }
-
-
-        .sidebar-name {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            color: white;
-            padding: 10px;
-            margin-bottom: 30px;
-            font-size: 18px;
-            flex-direction: column;
-        }
 
         .main-content {
             padding: 40px 30px;

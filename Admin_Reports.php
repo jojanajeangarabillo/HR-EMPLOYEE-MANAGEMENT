@@ -6,10 +6,12 @@
   <title>Admin Reports</title>
 
   <!-- Bootstrap & FontAwesome -->
-  <link rel="stylesheet" href="admin-sidebar.css">  
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-
+ <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="admin-sidebar.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://kit.fontawesome.com/a2e0e9d66b.js" crossorigin="anonymous"></script>
   <style>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
@@ -21,16 +23,7 @@
     color: #1E3A8A;
   }
 
-  .sidebar-logo {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 50px;
-  }
 
-  .sidebar-logo img {
-    height: 120px;
-    width: 120px;
-  }
 
 
   /* HEADER */
@@ -193,43 +186,32 @@
     margin-top: 10px;
   }
 
-  /* RESPONSIVE */
-  @media (max-width: 992px) {
-    .sidebar {
-      position: relative;
-      width: 100%;
-      flex-direction: row;
-      justify-content: space-around;
-      padding: 10px;
-    }
-
-    .admin-header,
-    .admin-main {
-      margin-left: 0;
-      padding: 20px;
-    }
-  }
   </style>
 </head>
 
 <body>
-  <!-- SIDEBAR -->
-  <div class="sidebar">
-    <div class="sidebar-logo">
-      <img src="Images/hospitallogo.png" alt="Hospital Logo">
-    </div>
-    <ul class="nav">
-      <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-      <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
-      <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-      <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-group"></i>Pending Applicants</a></li>
-      <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
-      <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-      <li class="active"><a href="Admin_Reports.php"><i class="fa-solid fa-clipboard-list"></i>Reports</a></li>
-      <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-      <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
-    </ul>
+    
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="Images/hospitallogo.png" alt="Hospital Logo">
+        </div>
+
+        <div class="sidebar-name">
+            <p><?php echo "Welcome, $adminname"; ?></p>
   </div>
+
+  <ul class="nav flex-column">
+    <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+    <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
+    <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
+    <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-clock"></i>Pending Applicants</a></li>
+    <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
+    <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+    <li class="active"><a href="Admin_Reports.php"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
+    <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
+    <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+  </ul>
+</div>
 
   <!-- HEADER -->
   <header class="admin-header">
