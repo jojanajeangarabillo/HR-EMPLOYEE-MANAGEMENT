@@ -83,12 +83,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 
-  // If manager selects HIRED, copy job info into applicant table
+// If manager selects HIRED, copy job info into applicant table
 if ($new_status === 'Hired') {
 
-    // Fetch job_title and department from applications table
+    // Fetch job_title, department, and type_name from applications table
     $stmtJob = $conn->prepare("
-        SELECT job_title, department_name 
+        SELECT job_title, department_name, type_name
         FROM applications 
         WHERE applicantID = ? 
         LIMIT 1
@@ -100,20 +100,23 @@ if ($new_status === 'Hired') {
     if ($jobRes && $jobRow = $jobRes->fetch_assoc()) {
         $jobTitle = $jobRow['job_title'] ?? '';
         $deptName = $jobRow['department_name'] ?? '';
+        $typeName = $jobRow['type_name'] ?? '';
 
         // Update applicant table
         $stmtUpdateApplicant = $conn->prepare("
             UPDATE applicant 
-            SET position_applied = ?, department = ?,
-            hired_at = NOW()
+            SET position_applied = ?, department = ?, type_name = ?, hired_at = NOW()
             WHERE applicantID = ?
         ");
-        $stmtUpdateApplicant->bind_param("sss", $jobTitle, $deptName, $applicantID);
+
+
+        $stmtUpdateApplicant->bind_param("ssss", $jobTitle, $deptName, $typeName, $applicantID);
         $stmtUpdateApplicant->execute();
         $stmtUpdateApplicant->close();
     }
 
     $stmtJob->close();
+
 }
 
 
@@ -246,6 +249,7 @@ if ($new_status === 'Hired') {
                      <p>Further onboarding details will be sent to you shortly.</p>
                      <p>Regards,<br><strong>{$managername}</strong><br>HR Department</p>";
         break;
+        
 
       case 'Rejected':
         $subject = "HOSPITAL HUMAN RESOURCE  Application Update";
@@ -474,6 +478,7 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
       <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
       <li><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
       <li class="active"><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
+         <li><a href="Newly-Hired.php"><i class="fa-solid fa-user-plus"></i>Newly Hired</a></li>
         <li ><a href="Manager_Employees.php"><i class="fa-solid fa-user-group me-2"></i>Employees</a></li>
       <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
       <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>

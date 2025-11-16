@@ -13,7 +13,6 @@ if ($managernameQuery && $row = $managernameQuery->fetch_assoc()) {
     $managername = $row['fullname'];
 }
 
-
 $employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
 if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
     $employees = $row['count'];
@@ -23,6 +22,14 @@ $applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 
 if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
     $applicants = $row['count'];
 }
+
+// Fetch newly hired applicants
+$newlyHiredQuery = $conn->query("
+    SELECT applicantID, fullName, position_applied, department, type_name, hired_at 
+    FROM applicant 
+    WHERE status='Hired'
+");
+$newlyHired = $newlyHiredQuery ? $newlyHiredQuery->fetch_all(MYSQLI_ASSOC) : [];
 ?>
 
 
@@ -306,6 +313,7 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
             <li><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
             <li><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
+            <li><a href="Newly-Hired.php"><i class="fa-solid fa-user-plus"></i>Newly Hired</a></li>
             <li class="active"><a href="Manager_Employees.php"><i class="fa-solid fa-user-group me-2"></i>Employees</a></li>
             <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
             <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>

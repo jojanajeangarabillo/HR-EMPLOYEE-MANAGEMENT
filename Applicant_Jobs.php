@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_apply_job'])) {
   $applicant_course = $res['course'];
 
   // Check active applications
-  $active_statuses = ['Pending', 'Initial Interview', 'Assessment', 'Final Interview', 'Requirements'];
+  $active_statuses = ['Pending', 'Initial Interview', 'Assessment', 'Final Interview', 'Requirements', 'Hired'];
   $placeholders = implode(',', array_fill(0, count($active_statuses), '?'));
   $types = str_repeat('s', count($active_statuses) + 1);
   $sql_active = "SELECT id FROM applications WHERE applicantID = ? AND status IN ($placeholders)";
@@ -98,6 +98,22 @@ if ($dept_id) {
     $stmt->close();
 }
 
+// Fetch employment type name from job_posting + employment_type
+$stmt = $conn->prepare("
+    SELECT et.typeName 
+    FROM job_posting jp
+    LEFT JOIN employment_type et ON jp.employment_type = et.emtypeID
+    WHERE jp.jobID = ? 
+    LIMIT 1
+");
+$stmt->bind_param('i', $job_id);
+$stmt->execute();
+$applicant_type = $stmt->get_result()->fetch_assoc()['typeName'] ?? '';
+$stmt->close();
+
+
+
+
   // ✅ Immediate course match check and insert
   if (strcasecmp(trim($applicant_course), trim($required_level)) === 0) {
     $app_status = 'Pending';
@@ -105,8 +121,8 @@ if ($dept_id) {
     try {
       $conn->begin_transaction();
 
-      $stmt = $conn->prepare("INSERT INTO applications(applicantID, jobID, job_title, department_name, status) VALUES(?,?,?,?,?)");
-      $stmt->bind_param('sissi', $applicant_id, $job_id, $job_title, $department_name, $app_status);
+      $stmt = $conn->prepare("INSERT INTO applications(applicantID, jobID, job_title, department_name, type_name, status) VALUES(?,?,?,?,?,?)");
+      $stmt->bind_param('sissss', $applicant_id, $job_id, $job_title, $department_name, $applicant_type, $app_status);
       $stmt->execute();
       $stmt->close();
 
@@ -243,10 +259,10 @@ if ($dept_id) {
 
 // Insert into applications
 $insert = $conn->prepare("
-    INSERT INTO applications (applicantID, jobID, job_title, department_name, status) 
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO applications (applicantID, jobID, job_title, department_name, employment_type, status) 
+    VALUES (?, ?, ?, ?, ?,?)
 ");
-$insert->bind_param('sisss', $applicant_id, $job_id, $job_title, $department_name, $app_status);
+$insert->bind_param('sissss', $applicant_id, $job_id, $job_title, $department_name, $employment_type, $app_status);
 $success = $insert->execute();
 $insert->close();
 

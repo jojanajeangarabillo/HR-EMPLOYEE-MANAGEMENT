@@ -61,7 +61,7 @@ function ensure_applicant_exists($conn, $applicantID, &$flash_error, &$flash_suc
   $contact_number = '';
   $email_address = $email;
   $home_address = '';
-  $job_title = '';
+  $previous_job = '';
   $company_name = '';
   $date_started = date('Y-m-d');
   $in_role = 'no';
@@ -73,7 +73,7 @@ function ensure_applicant_exists($conn, $applicantID, &$flash_error, &$flash_suc
   $status = 'Active';
   $profile_pic = null;
 
-  $ins = $conn->prepare("INSERT INTO applicant (applicantID, fullName, position_applied, department, date_applied, contact_number, email_address, home_address, job_title, company_name, date_started, in_role, university, course, year_graduated, skills, summary, status, profile_pic)
+  $ins = $conn->prepare("INSERT INTO applicant (applicantID, fullName, position_applied, department, date_applied, contact_number, email_address, home_address, previous_job, company_name, date_started, in_role, university, course, year_graduated, skills, summary, status, profile_pic)
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
   if (!$ins) {
     $flash_error = "Server error (prepare failed inserting).";
@@ -89,7 +89,7 @@ function ensure_applicant_exists($conn, $applicantID, &$flash_error, &$flash_suc
     $contact_number,
     $email_address,
     $home_address,
-    $job_title,
+    $previous_job,
     $company_name,
     $date_started,
     $in_role,
@@ -143,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 
 /* Add role (store main role fields on applicant; append description to summary so it is preserved) */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_role'])) {
-  $job_title_input = trim($_POST['job_title'] ?? '');
+  $job_title_input = trim($_POST['previous_job'] ?? '');
   $company_input = trim($_POST['company_name'] ?? '');
   $role_desc = trim($_POST['role_description'] ?? '');
 
@@ -165,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_role'])) {
     $append_text = "Role: " . $job_title_input . " at " . $company_input . "\n" . $role_desc;
     $new_summary = trim(($existing_summary ? ($existing_summary . "\n\n" . $append_text) : $append_text));
 
-    $ins = $conn->prepare("UPDATE applicant SET job_title = ?, company_name = ?, summary = ? WHERE applicantID = ?");
+    $ins = $conn->prepare("UPDATE applicant SET previous_job = ?, company_name = ?, summary = ? WHERE applicantID = ?");
     if ($ins) {
       $ins->bind_param("ssss", $job_title_input, $company_input, $new_summary, $session_emp);
       if ($ins->execute())
@@ -204,7 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_role'])) {
     $append_text = "Edited Role: " . $job_title_input . " at " . $company_input . "\n" . $role_desc;
     $new_summary = trim(($existing_summary ? ($existing_summary . "\n\n" . $append_text) : $append_text));
 
-    $upd = $conn->prepare("UPDATE applicant SET job_title = ?, company_name = ?, summary = ? WHERE applicantID = ?");
+    $upd = $conn->prepare("UPDATE applicant SET previous_job = ?, company_name = ?, summary = ? WHERE applicantID = ?");
     if ($upd) {
       $upd->bind_param("ssss", $job_title_input, $company_input, $new_summary, $session_emp);
       if ($upd->execute())
@@ -223,7 +223,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_role'])) {
 /* Delete role (clear the job fields; cannot remove description from summary reliably without parsing) */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_role'])) {
   // clear job-related fields on the applicant row
-  $del = $conn->prepare("UPDATE applicant SET job_title = '', company_name = '', date_started = '0000-00-00', in_role = 'no' WHERE applicantID = ?");
+  $del = $conn->prepare("UPDATE applicant SET previous_job = '', company_name = '', date_started = '0000-00-00', in_role = 'no' WHERE applicantID = ?");
   if ($del) {
     $del->bind_param("s", $session_emp);
     if ($del->execute())
@@ -372,7 +372,7 @@ if (!ensure_applicant_exists($conn, $session_emp, $flash_error, $flash_success))
 }
 
 // Now load applicant data
-$stmt = $conn->prepare("SELECT fullName, email_address, contact_number, home_address, skills, summary, job_title, company_name, date_started, in_role, university, course, year_graduated FROM applicant WHERE applicantID = ?");
+$stmt = $conn->prepare("SELECT fullName, email_address, contact_number, home_address, skills, summary, previous_job, company_name, date_started, in_role, university, course, year_graduated FROM applicant WHERE applicantID = ?");
 $stmt->bind_param("s", $session_emp);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -386,7 +386,7 @@ if ($result && $row = $result->fetch_assoc()) {
   $summary_text = $row['summary'] ?? '';
   $skills_array = array_filter(array_map('trim', preg_split('/\s*,\s*/', $skills_str)));
   // role / career (single)
-  $role_job_title = htmlspecialchars($row['job_title'] ?? '');
+  $role_job_title = htmlspecialchars($row['previous_job'] ?? '');
   $role_company = htmlspecialchars($row['company_name'] ?? '');
   $role_date_started = htmlspecialchars($row['date_started'] ?? '');
   $role_in_role = htmlspecialchars($row['in_role'] ?? 'no');
@@ -759,7 +759,7 @@ if (isset($_POST['upload'])) {
                 <?php foreach ($roles as $r): ?>
                   <div
                     style="background:#fff;padding:10px;border-radius:6px;margin-bottom:8px;max-width:1200px;position:relative;">
-                    <strong><?php echo htmlspecialchars($r['job_title']); ?></strong>
+                    <strong><?php echo htmlspecialchars($r['previous_job']); ?></strong>
                     <?php if (!empty($r['company_name'])): ?>
                       <div style="font-size:14px;color:#555;"><?php echo htmlspecialchars($r['company_name']); ?></div>
                     <?php endif; ?>
@@ -768,7 +768,7 @@ if (isset($_POST['upload'])) {
                     <?php endif; ?>
                     <div style="position:absolute;right:10px;top:10px;display:flex;gap:6px;">
                       <button type="button" class="save-btn"
-                        onclick="openRoleEditModal(<?php echo json_encode($r['job_title']); ?>, <?php echo json_encode($r['company_name']); ?>) ">Edit</button>
+                        onclick="openRoleEditModal(<?php echo json_encode($r['previous_job']); ?>, <?php echo json_encode($r['company_name']); ?>) ">Edit</button>
                       <form method="POST" style="display:inline;" onsubmit="return confirm('Clear role from profile?');">
                         <input type="hidden" name="delete_role" value="1">
                         <button type="submit" class="cancel-btn">Delete</button>
@@ -895,7 +895,7 @@ if (isset($_POST['upload'])) {
       <h3>Add Role</h3>
       <form method="POST">
         <input type="hidden" name="add_role" value="1">
-        <input type="text" name="job_title" placeholder="Job Title" required>
+        <input type="text" name="previous_job" placeholder="previous_job" required>
         <input type="text" name="company_name" placeholder="Company Name" required>
         <textarea name="role_description" rows="3" placeholder="Description" required></textarea>
         <div style="display:flex;justify-content:center;gap:8px;">
@@ -912,7 +912,7 @@ if (isset($_POST['upload'])) {
       <h3>Edit Role</h3>
       <form method="POST">
         <input type="hidden" name="edit_role" value="1">
-        <input type="text" name="job_title_edit" id="job_title_edit" placeholder="Job Title" required>
+        <input type="text" name="previous_job_edit" id="previous_job_edit" placeholder="Job Title" required>
         <input type="text" name="company_name_edit" id="company_name_edit" placeholder="Company Name" required>
         <textarea name="role_description_edit" id="role_description_edit" rows="3" placeholder="Description"
           required></textarea>
@@ -999,7 +999,7 @@ if (isset($_POST['upload'])) {
     window.onclick = function (e) { document.querySelectorAll('.modal').forEach(m => { if (e.target == m) m.style.display = 'none'; }); }
 
     function openRoleEditModal(title, company) {
-      document.getElementById('job_title_edit').value = title || '';
+      document.getElementById('previous_job_edit').value = title || '';
       document.getElementById('company_name_edit').value = company || '';
       document.getElementById('role_description_edit').value = ''; // no per-role description stored separately; user can add a new description and it will be appended to summary
       openModal('editRoleModal');
