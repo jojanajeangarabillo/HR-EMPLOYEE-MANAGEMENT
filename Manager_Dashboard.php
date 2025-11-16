@@ -24,6 +24,11 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
     $applicants = $row['count'];
 }
 
+$pending_applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM applications WHERE id = '0'");
+if ($pending_applicantQuery && $row = $pending_applicantQuery->fetch_assoc()) {
+    $pending_applicantQuery = $row['count'];
+}
+
 // Fetch total number of positions for Hirings (status = 'On-Going' or 'To Post')
 $hiringsQuery = $conn->query("
     SELECT SUM(vacancy_count) AS count 
@@ -147,6 +152,7 @@ $recentVacanciesQuery = $conn->query("
             <li class="active"><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
             <li><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
             <li><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
+            <li ><a href="Manager_Employees.php"><i class="fa-solid fa-user-group me-2"></i>Employees</a></li>
             <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
             <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
             <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
@@ -185,7 +191,7 @@ $recentVacanciesQuery = $conn->query("
 
     <div class="section">
         <label>Pending Applicants</label>
-        <h3><?php echo 0;  ?></h3>
+        <h3><?php echo $pending_applicantQuery;  ?></h3>
     </div>
 </div>
 

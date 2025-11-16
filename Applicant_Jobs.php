@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_apply_job'])) {
   $stmt_active->close();
 
   // Get job info
-  $stmt = $conn->prepare("SELECT job_title, educational_level FROM job_posting WHERE jobID=? LIMIT 1");
+  $stmt = $conn->prepare("SELECT job_title, educational_level, department  FROM job_posting WHERE jobID=? LIMIT 1");
   $stmt->bind_param('i', $job_id);
   $stmt->execute();
   $job_info = $stmt->get_result()->fetch_assoc();
@@ -85,6 +85,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_apply_job'])) {
 
   $job_title = $job_info['job_title'] ?? 'this job';
   $required_level = $job_info['educational_level'] ?? '';
+  $dept_id = $job_info['department'] ?? null;
+
+
+  // Fetch department name
+$department_name = '';
+if ($dept_id) {
+    $stmt = $conn->prepare("SELECT deptName FROM department WHERE deptID=? LIMIT 1");
+    $stmt->bind_param('i', $dept_id);
+    $stmt->execute();
+    $department_name = $stmt->get_result()->fetch_assoc()['deptName'] ?? '';
+    $stmt->close();
+}
 
   // ✅ Immediate course match check and insert
   if (strcasecmp(trim($applicant_course), trim($required_level)) === 0) {
@@ -93,8 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_apply_job'])) {
     try {
       $conn->begin_transaction();
 
-      $stmt = $conn->prepare("INSERT INTO applications(applicantID, jobID, status) VALUES(?,?,?)");
-      $stmt->bind_param('sis', $applicant_id, $job_id, $app_status);
+      $stmt = $conn->prepare("INSERT INTO applications(applicantID, jobID, job_title, department_name, status) VALUES(?,?,?,?,?)");
+      $stmt->bind_param('sissi', $applicant_id, $job_id, $job_title, $department_name, $app_status);
       $stmt->execute();
       $stmt->close();
 
@@ -198,37 +210,139 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_job'])) {
   $applicant_exp = (int) ($app_data->get_result()->fetch_assoc()['years_experience'] ?? 0);
   $app_data->close();
 
-  // Job data
-  $job_data = $conn->prepare("SELECT job_title, experience_years FROM job_posting WHERE jobID = ? LIMIT 1");
-  $job_data->bind_param('i', $job_id);
-  $job_data->execute();
-  $job_info = $job_data->get_result()->fetch_assoc();
-  $job_data->close();
+ // Fetch job info including title
+$job_data = $conn->prepare("SELECT job_title, experience_years FROM job_posting WHERE jobID = ? LIMIT 1");
+$job_data->bind_param('i', $job_id);
+$job_data->execute();
+$job_info = $job_data->get_result()->fetch_assoc();
+$job_data->close();
 
-  $required_exp = (int) ($job_info['experience_years'] ?? 0);
-  $job_title = $job_info['job_title'] ?? 'this job';
+$job_title = $job_info['job_title'] ?? 'this job';
+$required_exp = (int) ($job_info['experience_years'] ?? 0);
 
-  $matches = $applicant_exp >= $required_exp;
-  $app_status = $matches ? 'Pending' : 'Rejected';
+$app_status = ($applicant_exp >= $required_exp) ? 'Pending' : 'Rejected';
 
-  // Insert application
-  $insert = $conn->prepare("INSERT INTO applications (applicantID, jobID, status) VALUES (?, ?, ?)");
-  $insert->bind_param('sis', $applicant_id, $job_id, $app_status);
-  if ($insert->execute()) {
-    if ($app_status === 'Pending') {
-      $_SESSION['apply_success'] = $job_title;
-    } else {
-      $_SESSION['apply_rejected'] = $job_title;
-    }
-  } else {
-    $_SESSION['flash_error'] = 'Failed to submit application.';
-  }
-  $insert->close();
+// Fetch job info
+$job_data = $conn->prepare("SELECT job_title, department FROM job_posting WHERE jobID = ? LIMIT 1");
+$job_data->bind_param('i', $job_id);
+$job_data->execute();
+$job_info = $job_data->get_result()->fetch_assoc();
+$job_data->close();
 
-  header('Location: Applicant_Jobs.php');
-  exit();
+$job_title = $job_info['job_title'] ?? 'this job';
+$dept_id = $job_info['department'] ?? null;
+$department_name = '';
+
+if ($dept_id) {
+    $stmt = $conn->prepare("SELECT deptName FROM department WHERE deptID = ? LIMIT 1");
+    $stmt->bind_param('i', $dept_id);
+    $stmt->execute();
+    $department_name = $stmt->get_result()->fetch_assoc()['deptName'] ?? '';
+    $stmt->close();
 }
+
+// Insert into applications
+$insert = $conn->prepare("
+    INSERT INTO applications (applicantID, jobID, job_title, department_name, status) 
+    VALUES (?, ?, ?, ?, ?)
+");
+$insert->bind_param('sisss', $applicant_id, $job_id, $job_title, $department_name, $app_status);
+$success = $insert->execute();
+$insert->close();
+
+if (!$success) {
+    $_SESSION['flash_error'] = 'Failed to submit application.';
+}
+}
+
 $all_statuses = $applications + $rejected_jobs;
+
+$stmt = $conn->prepare("SELECT job_title, department FROM job_posting WHERE jobID = ? LIMIT 1");
+$stmt->bind_param('i', $job_id);
+$stmt->execute();
+$job_info = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+$job_title = $job_info['job_title'] ?? 'this job';
+
+// Fetch department name
+$dept_id = $job_info['department'] ?? null;
+$department_name = '';
+if ($dept_id) {
+    $stmt = $conn->prepare("SELECT deptName FROM department WHERE deptID = ? LIMIT 1");
+    $stmt->bind_param('i', $dept_id);
+    $stmt->execute();
+    $department_name = $stmt->get_result()->fetch_assoc()['deptName'] ?? '';
+    $stmt->close();
+}
+
+
+// Fetch rejected jobs
+$rejected_jobs = [];
+if (!empty($applicant_id)) {
+    $rej_q = $conn->prepare("SELECT jobID FROM rejected_applications WHERE applicantID = ?");
+    $rej_q->bind_param('s', $applicant_id);
+    $rej_q->execute();
+    $rres = $rej_q->get_result();
+    while ($r = $rres->fetch_assoc()) {
+        $rejected_jobs[$r['jobID']] = 'Rejected';
+    }
+    $rej_q->close();
+}
+
+// Merge applied + rejected
+$all_statuses = $applications + $rejected_jobs;
+
+
+$search = trim($_GET['q'] ?? '');
+$job_sql_base = "
+  SELECT jp.jobID, jp.job_title, jp.job_description,
+         COALESCE(d.deptName,'') AS department_name,
+         jp.educational_level, jp.experience_years,
+         COALESCE(et.typeName,'') AS employment_type,
+         jp.closing_date
+  FROM job_posting jp
+  LEFT JOIN department d ON jp.department = d.deptID
+  LEFT JOIN employment_type et ON jp.employment_type = et.emtypeID
+";
+
+if ($search !== '') {
+    $job_sql = $job_sql_base . " WHERE (jp.job_title LIKE ? OR jp.job_description LIKE ? OR d.deptName LIKE ?) ORDER BY jp.date_posted DESC";
+    $job_stmt = $conn->prepare($job_sql);
+    $like = "%{$search}%";
+    $job_stmt->bind_param('sss', $like, $like, $like);
+} else {
+    $job_sql = $job_sql_base . " ORDER BY jp.date_posted DESC";
+    $job_stmt = $conn->prepare($job_sql);
+}
+
+$jobs = [];
+if ($job_stmt) {
+    $job_stmt->execute();
+    $jobs = $job_stmt->get_result()->fetch_all(MYSQLI_ASSOC); // ✅ Now closing_date is included
+    $job_stmt->close();
+}
+
+$today = date('Y-m-d'); // current date
+
+if ($search !== '') {
+    $job_sql = $job_sql_base . " 
+        WHERE (jp.job_title LIKE ? OR jp.job_description LIKE ? OR d.deptName LIKE ?)
+        AND (jp.closing_date IS NULL OR jp.closing_date >= ?)
+        ORDER BY jp.date_posted DESC";
+    $job_stmt = $conn->prepare($job_sql);
+    $like = "%{$search}%";
+    $job_stmt->bind_param('ssss', $like, $like, $like, $today);
+} else {
+    $job_sql = $job_sql_base . " 
+        WHERE jp.closing_date IS NULL OR jp.closing_date >= ?
+        ORDER BY jp.date_posted DESC";
+    $job_stmt = $conn->prepare($job_sql);
+    $job_stmt->bind_param('s', $today);
+}
+
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -324,6 +438,7 @@ $all_statuses = $applications + $rejected_jobs;
             <th>Type</th>
             <th>Experience</th>
             <th>Description</th>
+            <th>Closing Date</th>
             <th>Action / Status</th>
           </tr>
         </thead>
@@ -337,6 +452,7 @@ $all_statuses = $applications + $rejected_jobs;
               <td><?= htmlspecialchars($job['employment_type']) ?></td>
               <td><?= (int) $job['experience_years'] ?> years</td>
               <td><?= htmlspecialchars(substr($job['job_description'], 0, 80)) ?>...</td>
+              <td><?= !empty($job['closing_date']) ? date('M d, Y', strtotime($job['closing_date'])) : 'N/A' ?></td>
               <td>
                 <?php if ($status): ?>
                   <?php if ($status === 'Rejected'): ?>

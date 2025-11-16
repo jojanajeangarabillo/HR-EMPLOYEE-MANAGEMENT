@@ -23,19 +23,46 @@
     color: #1E3A8A;
   }
 
+<<<<<<< HEAD
+
+=======
+  .sidebar-logo {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+
+        .sidebar-logo img {
+            height: 120px;
+            width: 120px;
+        }
+>>>>>>> 6d6d85e7ca04c628e274c960c41fd8ea2c3d3e00
 
 
-
+        .sidebar-name {
+        display: flex;
+        justify-content: center; 
+        align-items: center;      
+        text-align: center;       
+        color: white;
+        padding: 10px;
+        margin-bottom: 30px;
+        font-size: 18px; 
+        flex-direction: column; 
+        }
   /* HEADER */
   .admin-header {
-    margin-left: 220px;
-    padding: 20px 25px;
-    background-color:
-    border: none;
-    position: relative;
-    top: 0;
-    z-index: 10;
-  }
+  position: fixed;
+  left: 220px; /* width of the sidebar */
+  width: calc(100% - 220px);
+  height: 60px; /* adjust as needed */
+  padding: 15px 25px;
+  border: none;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+}
+
 
   .admin-header h1 {
     font-size: 1.6rem;
@@ -49,12 +76,13 @@
 
   /* MAIN CONTENT */
   .admin-main {
-    margin-left: 220px;
-    padding: 0 25px 40px 25px; /* top padding removed to move content up */
-    width: calc(100% - 220px);
-    background-color: #F5F8FF;
-    box-sizing: border-box;
-  }
+  margin-left: 220px; /* aligns with sidebar */
+  padding: 80px 25px 40px 25px; /* top padding = header height + some space */
+  width: calc(100% - 220px);
+  background-color: #F5F8FF;
+  box-sizing: border-box;
+}
+
 
   /* REPORT CONFIGURATION */
   .report-config-container {
@@ -63,7 +91,7 @@
     padding: 20px 25px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
     margin-bottom: 20px;
-    margin-top: 10px; /* moves it right under Reports header */
+    margin-top: 20px;
   }
 
   .report-config-container h2 {
@@ -190,6 +218,7 @@
 </head>
 
 <body>
+<<<<<<< HEAD
     
     <div class="sidebar">
         <div class="sidebar-logo">
@@ -211,6 +240,46 @@
     <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
     <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
   </ul>
+=======
+  <!-- SIDEBAR -->
+  <div class="sidebar d-flex flex-column align-items-center position-fixed top-0 start-0 h-100 p-3">
+  <div class="text-center mb-4">
+    <img src="Images/hospitallogo.png" alt="Hospital Logo" class="img-fluid rounded-circle mb-3" style="width:75px; height:75px;">
+    <p class="text-white fw-semibold mb-0">
+      <?php echo "Welcome, $adminname"; ?>
+    </p>
+  </div>
+
+  <nav class="nav flex-column w-100">
+    <a href="Admin_Dashboard.php" class="nav-link active d-flex align-items-center text-white py-2 px-3">
+      <i class="fa-solid fa-table-columns me-2"></i>Dashboard
+    </a>
+    <a href="Admin_Employee.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
+      <i class="fa-solid fa-user-group me-2"></i>Employees
+    </a>
+    <a href="Admin-Applicants.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
+      <i class="fa-solid fa-user-group me-2"></i>Applicants
+    </a>
+    <a href="Admin-Pending-Applicants.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
+      <i class="fa-solid fa-user-clock me-2"></i>Pending Applicants
+    </a>
+    <a href="Admin_Vacancies.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
+      <i class="fa-solid fa-briefcase me-2"></i>Vacancies
+    </a>
+    <a href="Admin-request.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
+      <i class="fa-solid fa-code-pull-request me-2"></i>Requests
+    </a>
+    <a href="#" class="nav-link d-flex align-items-center text-white py-2 px-3">
+      <i class="fa-solid fa-chart-simple me-2"></i>Reports
+    </a>
+    <a href="Admin-Settings.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
+      <i class="fa-solid fa-gear me-2"></i>Settings
+    </a>
+    <a href="Login.php" class="nav-link d-flex align-items-center text-white py-2 px-3">
+      <i class="fa-solid fa-right-from-bracket me-2"></i>Logout
+    </a>
+  </nav>
+>>>>>>> 6d6d85e7ca04c628e274c960c41fd8ea2c3d3e00
 </div>
 
   <!-- HEADER -->
@@ -219,43 +288,47 @@
   </header>
 
   <!-- MAIN CONTENT -->
-  <main class="admin-main">
-    <!-- Report Config -->
-    <section class="report-config-container">
-      <h2>Report Configuration</h2>
-      <div class="export-buttons">
-        <button type="button" class="btn export-excel"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
-        <button type="button" class="btn export-pdf"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
-      </div>
-      <form id="report-form">
-        <div class="row g-4 align-items-end">
-          <div class="col-md-4">
-  <label for="report-type" class="form-label">Report Type</label>
-  <select id="report-type" class="form-select">
-    <option value="department-summary">Department Summary</option>
-    <option value="attendance">Attendance Report</option>
-    <option value="employment-type">Employment Type Report</option>
-    <option value="payroll">Payroll Summary</option>
-    <option value="training">Training & Certification Report</option>
-    <option value="leave-overtime">Leave and Overtime Report</option>
-    <option value="contract-expiration">Contract Expiration Report</option>
-  </select>
-</div>
-
-<div id="dynamic-fields" class="col-md-8 row g-3"></div>
-
-<div class="col-md-12 text-end">
-  <button type="submit" class="btn btn-primary">
-    <i class="fa-solid fa-magnifying-glass-chart"></i> Generate Report
-  </button>
-</div>
-
+  <!-- MAIN CONTENT -->
+<main class="admin-main container-fluid">
+  <div class="row">
+    <div class="col-12">
+      <!-- Report Config -->
+      <section class="report-config-container">
+        <h2>Report Configuration</h2>
+        <div class="export-buttons">
+          <button type="button" class="btn export-excel"><i class="fa-solid fa-file-excel"></i> Export Excel</button>
+          <button type="button" class="btn export-pdf"><i class="fa-solid fa-file-pdf"></i> Export PDF</button>
         </div>
-      </form>
-    </section>
+        <form id="report-form">
+          <div class="row g-4 align-items-end">
+            <div class="col-md-4">
+              <label for="report-type" class="form-label">Report Type</label>
+              <select id="report-type" class="form-select">
+                <option value="department-summary">Department Summary</option>
+                <option value="attendance">Attendance Report</option>
+                <option value="employment-type">Employment Type Report</option>
+                <option value="payroll">Payroll Summary</option>
+                <option value="training">Training & Certification Report</option>
+                <option value="leave-overtime">Leave and Overtime Report</option>
+                <option value="contract-expiration">Contract Expiration Report</option>
+              </select>
+            </div>
 
-    <!-- Department Summary (Default Active) -->
-    <section id="department-summary" class="report-section active">
+            <div id="dynamic-fields" class="col-md-8 row g-3"></div>
+
+            <div class="col-12 text-end">
+              <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-magnifying-glass-chart"></i> Generate Report
+              </button>
+            </div>
+          </div>
+        </form>
+      </section>
+    </div>
+
+    <div class="col-12 mt-4">
+      <!-- Department Summary -->
+      <section id="department-summary" class="report-section active">
         <h2 class="fw-bold mb-3">Department Summary</h2>
         <div class="table-responsive">
           <table class="table table-bordered table-hover align-middle text-center">
@@ -270,17 +343,14 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td>General Surgery</td><td>58</td><td>47</td><td>6</td><td>2</td><td>3</td></tr>
-              <tr><td>Anesthetics</td><td>42</td><td>35</td><td>5</td><td>1</td><td>1</td></tr>
-              <tr><td>Human Reource</td><td>12</td><td>10</td><td>2</td><td>0</td><td>0</td></tr>
-              <tr><td>Cardiologyu</td><td>15</td><td>9</td><td>6</td><td>0</td><td>0</td></tr>
-              <tr><td>Hematology</td><td>10</td><td>9</td><td>1</td><td>0</td><td>0</td></tr>
+              <!-- Backend will populate -->
             </tbody>
           </table>
         </div>
-        <p class="total-employees">Total Employees: <strong>137</strong></p>
+        <p class="total-employees">Total Employees: <strong><!-- Backend will populate --></strong></p>
       </section>
 
+      <!-- Attendance Report -->
       <section id="attendance" class="report-section">
         <h2 class="fw-bold mb-3">Attendance Report</h2>
         <div class="table-responsive">
@@ -297,16 +367,13 @@
               </tr> 
             </thead>
             <tbody>
-              <tr><td>25-001</td><td>Dr. River Fuentabella</td><td>General Surgery</td><td>26</td><td>2</td><td>3</td><td>12</td></tr>
-              <tr><td>25-002</td><td>Dr. Katana Montecer</td><td>Anesthetics</td><td>24</td><td>4</td><td>1</td><td>8</td></tr>
-              <tr><td>25-003</td><td>Millicent Rae Velasco</td><td>Human Resource</td><td>22</td><td>3</td><td>2</td><td>5</td></tr>
-              <tr><td>25-004</td><td>Dr. Juancho Montero</td><td>Cardiology</td><td>27</td><td>2</td><td>0</td><td>3</td></tr>
-              <tr><td>25-005</td><td>Amari Mendoza</td><td>Hematology</td><td>29</td><td>0</td><td>4</td><td>4</td></tr>
+              <!-- Backend will populate -->
             </tbody>
           </table>
         </div>
       </section>
 
+      <!-- Employment Type Report -->
       <section id="employment-type" class="report-section">
         <h2 class="fw-bold mb-3">Employment Type Report</h2>
         <div class="table-responsive">
@@ -321,16 +388,13 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td>25-001</td><td>Dr. River Fuentabella</td><td>General Surgery</td><td>General Surgeon</td><td>Regular</td></tr>
-              <tr><td>25-002</td><td>Dr. Katana Montecer</td><td>Anesthetics</td><td>Anesthesiologist</td><td>Regular</td></tr>
-              <tr><td>25-003</td><td>Millicent Rae Velasco</td><td>Human Resource</td><td>HR Officer</td><td>Contractual</td></tr>
-              <tr><td>25-004</td><td>Dr. Juancho Montero</td><td>Cardiology</td><td>Cardiologist</td><td>Regular</td></tr>
-              <tr><td>25-005</td><td>Amari Mendoza</td><td>Hematology</td><td>Hematologist</td><td>Contractual</td></tr>
+              <!-- Backend will populate -->
             </tbody>
           </table>
         </div>
       </section>
 
+      <!-- Payroll Summary -->
       <section id="payroll" class="report-section">
         <h2 class="fw-bold mb-3">Payroll Summary</h2>
         <div class="table-responsive">
@@ -347,16 +411,13 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td>25-001</td><td>Dr. River Fuentabella</td><td>General Surgery</td><td>₱60,000.00</td><td>₱3,500.00</td><td>₱2,200.00</td><td>₱61,300.00</td></tr>
-              <tr><td>25-002</td><td>Dr. Katana Montecer</td><td>Anesthetics</td><td>₱38,000.00</td><td>₱2,000.00</td><td>₱900.00</td><td>₱39,100.00</td></tr>
-              <tr><td>25-003</td><td>Millicent Rae Velasco</td><td>Human Resource</td><td>₱32,000.00</td><td>₱1,800.00</td><td>₱1,000.00</td><td>₱32,000.00</td></tr>
-              <tr><td>25-004</td><td>Dr. Juancho Montero</td><td>Cardiology</td><td>₱48,000.00</td><td>₱3,000.00</td><td>₱900.00</td><td>₱50,100.00</td></tr>
-              <tr><td>25-005</td><td>Amari Mendoza</td><td>Hematology</td><td>₱28,000.00</td><td>₱0.00</td><td>₱0.00</td><td>₱28,000.00</td></tr>
+              <!-- Backend will populate -->
             </tbody>
           </table>
         </div>
       </section>
 
+      <!-- Training & Certification Report -->
       <section id="training" class="report-section">
         <h2 class="fw-bold mb-3">Training & Certification Report</h2>
         <div class="table-responsive">
@@ -372,14 +433,13 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td>25-001</td><td>Dr. River Fuentabella</td><td>General Surgery</td><td>BLS Certificate</td><td>Expiring Soon</td><td>11/05/2025</td></tr>
-              <tr><td>25-002</td><td>Dr. Katana Montecer</td><td>Anesthetics</td><td>Pain Management and Sedation Training</td><td>Valid</td><td>12/02/2025</td></tr>
-              <tr><td>25-003</td><td>Millicent Rae Velasco</td><td>Human Resource</td><td>Conflict Resolution and Employee Relations Seminar</td><td>Expired</td><td>09/30/2025</td></tr>
+              <!-- Backend will populate -->
             </tbody>
           </table>
         </div>
       </section>
 
+      <!-- Leave & Overtime Report -->
       <section id="leave-overtime" class="report-section">
         <h2 class="fw-bold mb-3">Leave and Overtime Report</h2>
         <div class="table-responsive">
@@ -396,14 +456,13 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td>25-001</td><td>Dr. River Fuentabella</td><td>General Surgery</td><td>Sick Leave</td><td></td><td>Approved</td><td>4</td></tr>
-              <tr><td>25-002</td><td>Dr. Katana Montecer</td><td>Anesthetics</td><td>Vacation Leave</td><td>3 Days</td><td>Pending</td><td>6</td></tr>
-              <tr><td>25-003</td><td>Millicent Rae Velasco</td><td>Human Resource</td><td>None</td><td>—</td><td>—</td><td>5</td></tr>
+              <!-- Backend will populate -->
             </tbody>
           </table>
         </div>
       </section>
 
+      <!-- Contract Expiration Report -->
       <section id="contract-expiration" class="report-section">
         <h2 class="fw-bold mb-3">Contract Expiration Report</h2>
         <div class="table-responsive">
@@ -419,13 +478,16 @@
               </tr>
             </thead>
             <tbody>
-              <tr><td>25-001</td><td>Dr. River Fuentabella</td><td>General Surgery</td><td>November 10,2025</td><td>27</td><td>For Renewal</td></tr>
-              <tr><td>25-002</td><td>Dr. Katana Montecer</td><td>Anesthetics</td><td>December 5, 2025</td><td>52</td><td>Renewal Scheduled</td></tr>
+              <!-- Backend will populate -->
             </tbody>
           </table>
         </div>
       </section>
-  </main>
+
+    </div>
+  </div>
+</main>
+
 
   <script>
 const reportDropdown = document.getElementById('report-type');
