@@ -23,33 +23,6 @@
     color: #1E3A8A;
   }
 
-<<<<<<< HEAD
-
-=======
-  .sidebar-logo {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 50px;
-        }
-
-        .sidebar-logo img {
-            height: 120px;
-            width: 120px;
-        }
->>>>>>> 6d6d85e7ca04c628e274c960c41fd8ea2c3d3e00
-
-
-        .sidebar-name {
-        display: flex;
-        justify-content: center; 
-        align-items: center;      
-        text-align: center;       
-        color: white;
-        padding: 10px;
-        margin-bottom: 30px;
-        font-size: 18px; 
-        flex-direction: column; 
-        }
   /* HEADER */
   .admin-header {
   position: fixed;
