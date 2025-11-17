@@ -59,7 +59,7 @@ $recentVacanciesQuery = $conn->query("
     <title>Admin Dashboard </title>
     <link rel="stylesheet" href="admin-sidebar.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://kit.fontawesome.com/a2e0e9d66b.js" crossorigin="anonymous"></script>
+    <script src="https://kit.fontawesome.com/a2e0e9d66b.js" crossorigin="anonymous"></script>
     <!--For icons-->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
@@ -140,20 +140,17 @@ $recentVacanciesQuery = $conn->query("
 
         <div class="sidebar-name">
             <p><?php echo "Welcome, $adminname"; ?></p>
-  </div>
+        </div>
 
-  <ul class="nav flex-column">
-    <li class="active"><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-    <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
-    <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-    <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-clock"></i>Pending Applicants</a></li>
-    <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
-    <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-    <li><a href="Admin_Reports.php"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
-    <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-    <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
-  </ul>
-</div>
+        <ul class="nav flex-column">
+            <li class="active"><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+            <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
+            <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+            <li><a href="Admin_Reports.php"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
+            <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
+            <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+        </ul>
+    </div>
 
     <main class="main-content">
         <div class="main-content-header">
@@ -176,7 +173,7 @@ $recentVacanciesQuery = $conn->query("
             <div class="section">
                 <label for="pending-applicants" class="pending">Pending Applicants</label>
                 <h3 class="pending-applicant-count" name="pending-applicants">
-                    
+
                 </h3>
             </div>
             <div class="section">
@@ -186,16 +183,16 @@ $recentVacanciesQuery = $conn->query("
                 </h3>
             </div>
             <div class="section">
-    <label for="hirings" class="hirings-label">Hirings</label>
-    <h3 class="hiring-count" name="hirings">
-        <?php echo $hirings; ?>
-    </h3>
-</div>
+                <label for="hirings" class="hirings-label">Hirings</label>
+                <h3 class="hiring-count" name="hirings">
+                    <?php echo $hirings; ?>
+                </h3>
+            </div>
 
-<div class="job-posts">
-    <h2>Recent Job Posts</h2>
+            <div class="job-posts">
+                <h2>Recent Job Posts</h2>
 
-</div>
+            </div>
 
 
     </main>

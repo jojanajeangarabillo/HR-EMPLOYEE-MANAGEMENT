@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $departmentID = $_POST['department'] ?? '';
     $positionID = $_POST['position'] ?? '';
     $vacancyCount = $_POST['vacancyCount'] ?? '';
-     $employmentTypeID = $_POST['employment_type'] ?? '';
+    $employmentTypeID = $_POST['employment_type'] ?? '';
 
     if ($departmentID && $positionID && $employmentTypeID && $vacancyCount > 0) { // include employmentTypeID
         $stmt = $conn->prepare("INSERT INTO vacancies (department_id, position_id, employment_type_id, vacancy_count) VALUES (?, ?, ?, ?)");
@@ -78,197 +78,260 @@ while ($row = $etypeQuery->fetch_assoc()) {
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Vacancies</title>
-<link rel="stylesheet" href="admin-sidebar.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Vacancies</title>
+    <link rel="stylesheet" href="admin-sidebar.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
-<style>
-body {
-    font-family: 'Poppins', 'Roboto', sans-serif;
-    margin: 0;
-    display: flex;
-    background-color: #f1f5fc;
-    color: #111827;
-}
-.main-content {
-    padding: 40px 30px;
-    margin-left: 250px;
-    flex: 1;
-    display: flex;
-    flex-direction: column; 
-    overflow-y: auto;      
-    max-height: 100vh;    
-}
+    <style>
+        body {
+            font-family: 'Poppins', 'Roboto', sans-serif;
+            margin: 0;
+            display: flex;
+            background-color: #f1f5fc;
+            color: #111827;
+        }
 
-.main-content-header h1 {
-    color: #1E3A8A;
-    margin-bottom: 20px;
-    margin-left: 50px;
-}
+        .main-content {
+            padding: 40px 30px;
+            margin-left: 250px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
 
-.set-vacancies {
-    background-color: #1E3A8A;
-    display: flex;
-    align-items: center;
-    gap: 40px;
-    flex-wrap: wrap;
-    border-radius: 20px;
-    padding: 30px 50px;
-    width: fit-content;
-    margin-left: 50px;
-    margin-top: 0;
-    margin-bottom: 50px;
-}
+        .main-content-header h1 {
+            color: #1E3A8A;
+            margin-bottom: 20px;
+            margin-left: 50px;
+        }
 
-
-.recent-section {
-    margin-left: 50px;
-    margin-top: 0;
-    width: 90%;
-    max-height: 400px;  
-    overflow-y: auto;  
-}
-
-.recent-section table {
-    width: 100%;
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.recent-section::-webkit-scrollbar {
-    width: 8px;
-}
-.recent-section::-webkit-scrollbar-thumb {
-    background: #1E3A8A;
-    border-radius: 10px;
-}
+        .set-vacancies {
+            background-color: #1E3A8A;
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            border-radius: 20px;
+            padding: 30px 50px;
+            width: fit-content;
+            margin-left: 50px;
+            margin-top: 0;
+            margin-bottom: 50px;
+        }
 
 
-.select-options { display: flex; flex-direction: column; width: 300px; }
-.select-options select, input {
-    font-size: 18px; padding: 10px; border-radius: 10px; border: none; outline: none;
-}
-button {
-    border: 2px solid white; background-color: #1E3A8A; color: white;
-    font-size: 18px; padding: 12px 30px; border-radius: 10px; cursor: pointer;
-}
-button:hover { background-color: white; color: #1E3A8A; }
-.modal {
-    display: none; position: fixed; z-index: 1000; left: 0; top: 0;
-    width: 100%; height: 100%; background: rgba(0,0,0,0.5);
-    justify-content: center; align-items: center;
-}
-.modal-content {
-    background-color: white; padding: 30px; border-radius: 15px;
-    width: 400px; text-align: center; box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-}
-.modal h2 { color: #1E3A8A; margin-bottom: 20px; }
-.modal input { width: 100%; padding: 10px; margin-bottom: 20px; }
-.confirm-btn { background: #1E3A8A; color: white; }
-.cancel-btn { background: red; color: white; }
-.confirm-btn:hover { background: #162c63; }
-.cancel-btn:hover { background: #8b0000; }
+        .recent-section {
+            margin-left: 50px;
+            margin-top: 0;
+            width: 90%;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .recent-section table {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .recent-section::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .recent-section::-webkit-scrollbar-thumb {
+            background: #1E3A8A;
+            border-radius: 10px;
+        }
 
 
-/* Reuse existing modal base styles */
-#alertModal .modal-content {
-    text-align: center;
-    padding: 25px;
-    border-radius: 15px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-}
+        .select-options {
+            display: flex;
+            flex-direction: column;
+            width: 300px;
+        }
 
-#alertModal h2 {
-    color: #1E3A8A;
-    margin-bottom: 10px;
-}
+        .select-options select,
+        input {
+            font-size: 18px;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+        }
 
-#alertModal p {
-    color: #333;
-}
+        button {
+            border: 2px solid white;
+            background-color: #1E3A8A;
+            color: white;
+            font-size: 18px;
+            padding: 12px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
 
-#alertModal .confirm-btn {
-    background-color: #1E3A8A;
-    color: white;
-    padding: 10px 25px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    transition: 0.2s;
-}
-#alertModal .confirm-btn:hover {
-    background-color: #162c63;
-}
+        button:hover {
+            background-color: white;
+            color: #1E3A8A;
+        }
 
-.custom-alert {
-    animation: fadeInSlide 0.5s ease;
-}
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
 
-@keyframes fadeInSlide {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 400px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
 
-#alertModal .confirm-btn {
-  background-color: #1E3A8A;
-  color: white;
-  font-size: 16px;
-  padding: 8px 20px;      
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: 0.2s;
-  width: auto;            
-  min-width: 100px;       
-  display: inline-block;   
-}
+        .modal h2 {
+            color: #1E3A8A;
+            margin-bottom: 20px;
+        }
 
-#alertModal .confirm-btn:hover {
-  background-color: #162c63;
-}
+        .modal input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .confirm-btn {
+            background: #1E3A8A;
+            color: white;
+        }
+
+        .cancel-btn {
+            background: red;
+            color: white;
+        }
+
+        .confirm-btn:hover {
+            background: #162c63;
+        }
+
+        .cancel-btn:hover {
+            background: #8b0000;
+        }
 
 
+        /* Reuse existing modal base styles */
+        #alertModal .modal-content {
+            text-align: center;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
 
-</style>
+        #alertModal h2 {
+            color: #1E3A8A;
+            margin-bottom: 10px;
+        }
+
+        #alertModal p {
+            color: #333;
+        }
+
+        #alertModal .confirm-btn {
+            background-color: #1E3A8A;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        #alertModal .confirm-btn:hover {
+            background-color: #162c63;
+        }
+
+        .custom-alert {
+            animation: fadeInSlide 0.5s ease;
+        }
+
+        @keyframes fadeInSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #alertModal .confirm-btn {
+            background-color: #1E3A8A;
+            color: white;
+            font-size: 16px;
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+            width: auto;
+            min-width: 100px;
+            display: inline-block;
+        }
+
+        #alertModal .confirm-btn:hover {
+            background-color: #162c63;
+        }
+    </style>
 </head>
+
 <body>
-<div class="sidebar">
+    <div class="sidebar">
         <div class="sidebar-logo">
             <img src="Images/hospitallogo.png" alt="Hospital Logo">
         </div>
 
         <div class="sidebar-name">
             <p><?php echo "Welcome, $adminname"; ?></p>
-  </div>
+        </div>
 
-  <ul class="nav flex-column">
-    <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-    <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
-    <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-    <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-clock"></i>Pending Applicants</a></li>
-    <li class="active"><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
-    <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-    <li><a href="Admin_Reports.php"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
-    <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-    <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
-  </ul>
-</div>
+        <ul class="nav flex-column">
+            <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+
+            <li class="active"><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
+            <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+            <li><a href="Admin_Reports.php"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
+            <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
+            <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+        </ul>
+    </div>
     <main class="main-content">
         <div class="main-content-header">
-    <h1>Upload Vacancies</h1>
+            <h1>Upload Vacancies</h1>
 
-    <?php if ($message): ?>
-        <div class="alert alert-<?= $messageType ?> alert-dismissible fade show custom-alert" role="alert">
-            <?= htmlspecialchars($message) ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            <?php if ($message): ?>
+                <div class="alert alert-<?= $messageType ?> alert-dismissible fade show custom-alert" role="alert">
+                    <?= htmlspecialchars($message) ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            <?php endif; ?>
         </div>
-    <?php endif; ?>
-</div>
 
 
         <!-- Set Vacancy Form -->
@@ -281,7 +344,7 @@ button:hover { background-color: white; color: #1E3A8A; }
                             <option value="<?= $dept['deptID'] ?>"><?= htmlspecialchars($dept['deptName']) ?></option>
                         <?php endwhile; ?>
                     </select>
-                    
+
                 </div>
 
                 <div class="select-options">
@@ -290,22 +353,22 @@ button:hover { background-color: white; color: #1E3A8A; }
                     </select>
                 </div>
 
-                  <div class="select-options">
-            <select name="employment_type" id="employment_type" required>
-                <option value="" disabled selected>Select Employment Type</option>
-                <?php foreach ($employmentTypes as $etype): ?>
-                    <option value="<?= $etype['emtypeID'] ?>"><?= htmlspecialchars($etype['typeName']) ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
+                <div class="select-options">
+                    <select name="employment_type" id="employment_type" required>
+                        <option value="" disabled selected>Select Employment Type</option>
+                        <?php foreach ($employmentTypes as $etype): ?>
+                            <option value="<?= $etype['emtypeID'] ?>"><?= htmlspecialchars($etype['typeName']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-                
+
 
                 <button type="button" id="openModalBtn">Set</button>
             </div>
             <input type="hidden" name="vacancyCount" id="vacancyCountInput">
 
-            
+
         </form>
 
         <!-- ✅ Recently Uploaded Vacancies -->
@@ -313,41 +376,44 @@ button:hover { background-color: white; color: #1E3A8A; }
             <h2>Recently Uploaded</h2>
             <table class="table table-bordered table-striped w-75">
                 <thead class="table-primary">
-<tr>
-    <th>Department</th>
-    <th>Position</th>
-    <th>Number of Vacancies</th>
-    <th>Employment Type</th>
-    <th>Status</th>
-    <th>Actions</th> <!-- New Column -->
-</tr>
-</thead>
-<tbody>
-<?php if ($recentQuery && $recentQuery->num_rows > 0): ?>
-    <?php while ($row = $recentQuery->fetch_assoc()): ?>
-        <tr>
-            <td><?= htmlspecialchars($row['deptName']) ?></td>
-            <td><?= htmlspecialchars($row['position_title']) ?></td>
-            <td><?= htmlspecialchars($row['vacancy_count']) ?></td>
-            <td><?= htmlspecialchars($row['employment_type']) ?></td>
-            <td>
-                <?php if ($row['status'] === 'On-Going'): ?>
-                    <span class="badge bg-success"><?= htmlspecialchars($row['status']) ?></span>
-                <?php elseif ($row['status'] === 'Closed'): ?>
-                    <span class="badge bg-danger"><?= htmlspecialchars($row['status']) ?></span>
-                <?php else: ?>
-                    <span class="badge bg-secondary"><?= htmlspecialchars($row['status']) ?></span>
-                <?php endif; ?>
-            </td>
-            <td>
-                
-                <a href="archive_vacancy.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-warning">Archive</a>
-            </td>
-        </tr>
-    <?php endwhile; ?>
-<?php else: ?>
-    <tr><td colspan="6" class="text-center text-muted">No vacancies uploaded yet.</td></tr>
-<?php endif; ?>
+                    <tr>
+                        <th>Department</th>
+                        <th>Position</th>
+                        <th>Number of Vacancies</th>
+                        <th>Employment Type</th>
+                        <th>Status</th>
+                        <th>Actions</th> <!-- New Column -->
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if ($recentQuery && $recentQuery->num_rows > 0): ?>
+                        <?php while ($row = $recentQuery->fetch_assoc()): ?>
+                            <tr>
+                                <td><?= htmlspecialchars($row['deptName']) ?></td>
+                                <td><?= htmlspecialchars($row['position_title']) ?></td>
+                                <td><?= htmlspecialchars($row['vacancy_count']) ?></td>
+                                <td><?= htmlspecialchars($row['employment_type']) ?></td>
+                                <td>
+                                    <?php if ($row['status'] === 'On-Going'): ?>
+                                        <span class="badge bg-success"><?= htmlspecialchars($row['status']) ?></span>
+                                    <?php elseif ($row['status'] === 'Closed'): ?>
+                                        <span class="badge bg-danger"><?= htmlspecialchars($row['status']) ?></span>
+                                    <?php else: ?>
+                                        <span class="badge bg-secondary"><?= htmlspecialchars($row['status']) ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+
+                                    <a href="archive_vacancy.php?id=<?= $row['id'] ?>"
+                                        class="btn btn-sm btn-warning">Archive</a>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No vacancies uploaded yet.</td>
+                        </tr>
+                    <?php endif; ?>
 
                 </tbody>
             </table>
@@ -363,88 +429,89 @@ button:hover { background-color: white; color: #1E3A8A; }
                 <button class="confirm-btn" id="confirmBtn">Confirm</button>
                 <button class="cancel-btn" id="cancelBtn">Cancel</button>
             </div>
-           
+
         </div>
-        </div>
-        </div>
-        </div>
+    </div>
+    </div>
+    </div>
 
-     <div id="alertModal" class="modal">
-    <div class="modal-content" style="width: 350px;">
-        <h2 id="alertTitle">Notice</h2>
-        <p id="alertMessage" style="margin: 15px 0; font-size: 16px;"></p>
-        <button class="confirm-btn" id="alertOkBtn">OK</button>
+    <div id="alertModal" class="modal">
+        <div class="modal-content" style="width: 350px;">
+            <h2 id="alertTitle">Notice</h2>
+            <p id="alertMessage" style="margin: 15px 0; font-size: 16px;"></p>
+            <button class="confirm-btn" id="alertOkBtn">OK</button>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-const allPositions = <?= json_encode($positions); ?>;
-const deptSelect = document.getElementById('department');
-const posSelect = document.getElementById('position');
-const modal = document.getElementById('vacancyModal');
-const openModalBtn = document.getElementById('openModalBtn');
-const cancelBtn = document.getElementById('cancelBtn');
-const confirmBtn = document.getElementById('confirmBtn');
-const vacancyInput = document.getElementById('vacancyCount');
-const vacancyHidden = document.getElementById('vacancyCountInput');
-const form = document.getElementById('vacancyForm');
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+            <script>
+                const allPositions = <?= json_encode($positions); ?>;
+                const deptSelect = document.getElementById('department');
+                const posSelect = document.getElementById('position');
+                const modal = document.getElementById('vacancyModal');
+                const openModalBtn = document.getElementById('openModalBtn');
+                const cancelBtn = document.getElementById('cancelBtn');
+                const confirmBtn = document.getElementById('confirmBtn');
+                const vacancyInput = document.getElementById('vacancyCount');
+                const vacancyHidden = document.getElementById('vacancyCountInput');
+                const form = document.getElementById('vacancyForm');
 
-deptSelect.addEventListener('change', function() {
-    const deptID = this.value;
-    posSelect.innerHTML = '<option value="" disabled selected>Select Position</option>';
-    allPositions.forEach(pos => {
-        if (pos.departmentID == deptID) {
-            const opt = document.createElement('option');
-            opt.value = pos.positionID;
-            opt.textContent = pos.position_title;
-            posSelect.appendChild(opt);
-        }
-    });
-});
+                deptSelect.addEventListener('change', function () {
+                    const deptID = this.value;
+                    posSelect.innerHTML = '<option value="" disabled selected>Select Position</option>';
+                    allPositions.forEach(pos => {
+                        if (pos.departmentID == deptID) {
+                            const opt = document.createElement('option');
+                            opt.value = pos.positionID;
+                            opt.textContent = pos.position_title;
+                            posSelect.appendChild(opt);
+                        }
+                    });
+                });
 
-openModalBtn.onclick = () => {
-    if (!deptSelect.value) {
-        showAlert("Missing Field", "Please select a department first.");
-        return;
-    }
-    if (!posSelect.value) {
-        showAlert("Missing Field", "Please select a position first.");
-        return;
-    }
-    modal.style.display = 'flex';
-};
+                openModalBtn.onclick = () => {
+                    if (!deptSelect.value) {
+                        showAlert("Missing Field", "Please select a department first.");
+                        return;
+                    }
+                    if (!posSelect.value) {
+                        showAlert("Missing Field", "Please select a position first.");
+                        return;
+                    }
+                    modal.style.display = 'flex';
+                };
 
-cancelBtn.onclick = () => { modal.style.display = 'none'; vacancyInput.value = ''; };
-confirmBtn.onclick = () => {
-    const count = vacancyInput.value.trim();
-    if (!count || isNaN(count) || count <= 0) return alert("Please enter a valid number of vacancies.");
-    vacancyHidden.value = count;
-    modal.style.display = 'none';
-    form.submit();
-};
-window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
+                cancelBtn.onclick = () => { modal.style.display = 'none'; vacancyInput.value = ''; };
+                confirmBtn.onclick = () => {
+                    const count = vacancyInput.value.trim();
+                    if (!count || isNaN(count) || count <= 0) return alert("Please enter a valid number of vacancies.");
+                    vacancyHidden.value = count;
+                    modal.style.display = 'none';
+                    form.submit();
+                };
+                window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
 
 
 
-const alertModal = document.getElementById('alertModal');
-const alertTitle = document.getElementById('alertTitle');
-const alertMessage = document.getElementById('alertMessage');
-const alertOkBtn = document.getElementById('alertOkBtn');
+                const alertModal = document.getElementById('alertModal');
+                const alertTitle = document.getElementById('alertTitle');
+                const alertMessage = document.getElementById('alertMessage');
+                const alertOkBtn = document.getElementById('alertOkBtn');
 
-function showAlert(title, message) {
-    alertTitle.textContent = title;
-    alertMessage.textContent = message;
-    alertModal.style.display = 'flex';
-}
+                function showAlert(title, message) {
+                    alertTitle.textContent = title;
+                    alertMessage.textContent = message;
+                    alertModal.style.display = 'flex';
+                }
 
-alertOkBtn.onclick = () => {
-    alertModal.style.display = 'none';
-};
+                alertOkBtn.onclick = () => {
+                    alertModal.style.display = 'none';
+                };
 
-// Allow clicking outside to close alert
-window.addEventListener('click', (e) => {
-    if (e.target === alertModal) alertModal.style.display = 'none';
-});
+                // Allow clicking outside to close alert
+                window.addEventListener('click', (e) => {
+                    if (e.target === alertModal) alertModal.style.display = 'none';
+                });
 
-</script>
+            </script>
 </body>
+
 </html>

@@ -29,7 +29,7 @@ if ($applicant_query) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Applicants</title>
-  <link rel="stylesheet" href="admin-sidebar.css">
+
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
     integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -265,28 +265,28 @@ if ($applicant_query) {
 
 <body>
   <!-- SIDEBAR -->
-     
-    <div class="sidebar">
-        <div class="sidebar-logo">
-            <img src="Images/hospitallogo.png" alt="Hospital Logo">
-        </div>
 
-        <div class="sidebar-name">
-            <p><?php echo "Welcome, $adminname"; ?></p>
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <img src="Images/hospitallogo.png" alt="Hospital Logo">
+    </div>
+
+    <div class="sidebar-name">
+      <p><?php echo "Welcome, $adminname"; ?></p>
+    </div>
+
+    <ul class="nav flex-column">
+      <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+      <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
+      <li class="active"><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
+      <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-clock"></i>Pending Applicants</a></li>
+      <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
+      <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+      <li><a href="Admin_Reports.php"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
+      <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
+      <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+    </ul>
   </div>
-
-  <ul class="nav flex-column">
-    <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-    <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
-    <li class="active"><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-    <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-clock"></i>Pending Applicants</a></li>
-    <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
-    <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-    <li><a href="Admin_Reports.php"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
-    <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-    <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
-  </ul>
-</div>
 
 
   <!-- MAIN CONTENT -->

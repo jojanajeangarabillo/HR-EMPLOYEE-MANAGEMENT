@@ -2,26 +2,23 @@
 session_start();
 require 'admin/db.connect.php';
 
-$employees = 0;
-$requests = 0;
-$hirings = 0;
-$applicants = 0;
-$managername = 0;
+$managername = '';
 
 $managernameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Employee' AND  sub_role ='HR Manager' LIMIT 1");
 if ($managernameQuery && $row = $managernameQuery->fetch_assoc()) {
-    $managername = $row['fullname'];
+  $managername = $row['fullname'];
 }
 
+$applicant_id = '';
+$fullname = '';
+$email = '';
+$status = '';
 
-$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
-if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
-    $employees = $row['count'];
-}
-
-$applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Applicant'");
-if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
-    $applicants = $row['count'];
+$applicant_query = $conn->query("SELECT a.applicantID, a.fullName, u.email, a.status FROM applicant a LEFT JOIN user u ON a.applicantID = u.applicant_employee_id");
+if ($applicant_query) {
+  while ($row = $applicant_query->fetch_assoc()) {
+    $applicants[] = $row;
+  }
 }
 
 ?>
@@ -36,6 +33,7 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
     integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
   <style>
     body {
       font-family: 'Poppins', 'Roboto', sans-serif;
@@ -44,7 +42,6 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
       background-color: #f1f5fc;
       color: #111827;
     }
-
 
     .main-content {
       padding: 40px 30px;
@@ -166,6 +163,7 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
         opacity: 0;
         transform: scale(0.95);
       }
+
       to {
         opacity: 1;
         transform: scale(1);
@@ -186,6 +184,7 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
         transform: translateY(40px);
         opacity: 0;
       }
+
       to {
         transform: translateY(0);
         opacity: 1;
@@ -260,7 +259,6 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
     .close-btn-footer:hover {
       background: #1e3a8a;
     }
-
   </style>
 </head>
 
@@ -271,34 +269,48 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
       <img src="Images/hospitallogo.png" alt="">
     </div>
 
-     <div class="sidebar-name">
-            <p><?php echo "Welcome, $managername"; ?></p>
-        </div>
+    <div class="sidebar-name">
+      <p><?php echo "Welcome, $managername"; ?></p>
+    </div>
 
-      <ul class="nav">
-            <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-            <li class="active"><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-            <li><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
-            <li><a href="Newly-Hired.php"><i class="fa-solid fa-user-plus"></i>Newly Hired</a></li>
-            <li ><a href="Manager_Employees.php"><i class="fa-solid fa-user-group me-2"></i>Employees</a></li>
-            <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-            <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
-            <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
-            <li><a href="Manager_Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
-            <li><a href="Manager_LeaveSettings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-            <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
-        </ul>
+    <ul class="nav">
+      <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+      <li class="active"><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
+      <li><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
+      <li><a href="Newly-Hired.php"><i class="fa-solid fa-user-plus"></i>Newly Hired</a></li>
+      <li><a href="Manager_Employees.php"><i class="fa-solid fa-user-group me-2"></i>Employees</a></li>
+      <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
+      <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
+      <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
+      <li><a href="Manager_Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
+      <li><a href="Manager_LeaveSettings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
+      <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+    </ul>
   </div>
-
   <!-- MAIN CONTENT -->
   <main class="main-content">
     <div class="main-content-header">
       <h1>Applicant List</h1>
     </div>
 
+    <div class="d-flex justify-content-between align-items-center mb-3" style="max-width:1200px;">
+      <!-- SEARCH BAR -->
+      <input type="text" id="searchInput" class="form-control" placeholder="Search by Applicant ID or Full Name"
+        style="max-width: 350px;">
+
+      <!-- FILTER DROPDOWN -->
+      <select id="statusFilter" class="form-select" style="max-width: 200px;">
+        <option value="">All Status</option>
+        <option value="interviewed">Interviewed</option>
+        <option value="rejected">Rejected</option>
+        <option value="pending">Pending</option>
+      </select>
+    </div>
+
+
     <div class="table-container">
       <div class="table-responsive">
-        <table>
+        <table id="applicantTable">
           <thead>
             <tr>
               <th>Applicant ID</th>
@@ -308,28 +320,33 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>25-0001</td>
-              <td>John Smith</td>
-              <td>
-                <button class="view-btn" onclick="viewApplicant('25-0001','John Smith')">
-                  <i class="fa-solid fa-eye"></i> View
-                </button>
-              </td>
-              <td><span class="status interviewed">Interviewed</span></td>
-            </tr>
-            <tr>
-              <td>25-0002</td>
-              <td>Garabillo, Jojana Jean</td>
-              <td>
-                <button class="view-btn" onclick="viewApplicant('25-0002','Garabillo, Jojana Jean')">
-                  <i class="fa-solid fa-eye"></i> View
-                </button>
-              </td>
-              <td><span class="status rejected">Rejected</span></td>
-            </tr>
+            <?php foreach ($applicants as $applicant): ?>
+              <tr>
+                <td><?php echo htmlspecialchars($applicant['applicantID']); ?></td>
+                <td><?php echo htmlspecialchars($applicant['fullName']); ?></td>
+                <td>
+                  <button class="view-btn"
+                    onclick="viewApplicant('<?php echo htmlspecialchars($applicant['applicantID']); ?>', '<?php echo htmlspecialchars($applicant['fullName']); ?>', '<?php echo htmlspecialchars($applicant['email']); ?>', '<?php echo htmlspecialchars($applicant['status']); ?>')">
+                    <i class="fa-solid fa-eye"></i> View
+                  </button>
+                </td>
+                <td>
+                  <?php
+                  $statusClass = '';
+                  if (strtolower($applicant['status']) === 'interviewed') {
+                    $statusClass = 'interviewed';
+                  } elseif (strtolower($applicant['status']) === 'rejected') {
+                    $statusClass = 'rejected';
+                  } ?>
+                  <span class="status <?php echo $statusClass; ?>">
+                    <?php echo htmlspecialchars($applicant['status']); ?></span>
+                </td>
+              </tr>
+            <?php endforeach; ?>
           </tbody>
         </table>
+        <div class="d-flex justify-content-center mt-3" id="pagination"></div>
+
       </div>
     </div>
   </main>
@@ -356,22 +373,77 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
   </div>
 
   <script>
-    function viewApplicant(id, name) {
-      const applicantData = {
-        "25-0001": { email: "john.smith@example.com", status: "Pending" },
-        "25-0002": { email: "jojana.garabillo@example.com", status: "Pending" }
-      };
-      const data = applicantData[id] || {};
+    function viewApplicant(id, name, email, status) {
       document.getElementById("modalApplicantID").textContent = id;
       document.getElementById("modalApplicantName").textContent = name;
-      document.getElementById("modalApplicantEmail").textContent = data.email || "N/A";
-      document.getElementById("modalApplicantStatus").textContent = data.status || "N/A";
+      document.getElementById("modalApplicantEmail").textContent = email || "N/A";
+      document.getElementById("modalApplicantStatus").textContent = status || "N/A";
       document.getElementById("modalOverlay").classList.add("active");
     }
 
     function closeModal() {
       document.getElementById("modalOverlay").classList.remove("active");
     }
+    const rowsPerPage = 10;
+    let currentPage = 1;
+
+    function filterTable() {
+      let search = document.getElementById("searchInput").value.toLowerCase();
+      let filter = document.getElementById("statusFilter").value.toLowerCase();
+      let rows = document.querySelectorAll("#applicantTable tbody tr");
+
+      rows.forEach(row => {
+        let id = row.children[0].innerText.toLowerCase();
+        let name = row.children[1].innerText.toLowerCase();
+        let status = row.children[3].innerText.toLowerCase();
+
+        let matchesSearch = id.includes(search) || name.includes(search);
+        let matchesFilter = filter === "" || status.includes(filter);
+
+        row.style.display = (matchesSearch && matchesFilter) ? "" : "none";
+      });
+
+      paginateTable();
+    }
+
+    document.getElementById("searchInput").addEventListener("input", filterTable);
+    document.getElementById("statusFilter").addEventListener("change", filterTable);
+
+    function paginateTable() {
+      let rows = Array.from(document.querySelectorAll("#applicantTable tbody tr"))
+        .filter(r => r.style.display !== "none");
+
+      let totalPages = Math.ceil(rows.length / rowsPerPage);
+      let pagination = document.getElementById("pagination");
+      pagination.innerHTML = "";
+
+      // Hide all rows first
+      rows.forEach(r => r.style.visibility = "hidden");
+
+      // Determine which rows to show
+      let start = (currentPage - 1) * rowsPerPage;
+      let end = start + rowsPerPage;
+
+      rows.slice(start, end).forEach(r => r.style.visibility = "visible");
+
+      // Build pagination buttons
+      if (totalPages > 1) {
+        for (let i = 1; i <= totalPages; i++) {
+          let btn = document.createElement("button");
+          btn.className = "btn btn-sm mx-1 " + (i === currentPage ? "btn-primary" : "btn-outline-primary");
+          btn.innerText = i;
+
+          btn.addEventListener("click", () => {
+            currentPage = i;
+            paginateTable();
+          });
+
+          pagination.appendChild(btn);
+        }
+      }
+    }
+
+    window.onload = paginateTable;
   </script>
 </body>
 

@@ -51,7 +51,8 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
         }
 
         .request-container {
-            margin-left: 220px; /* space for sidebar */
+            margin-left: 220px;
+            /* space for sidebar */
             padding: 40px 30px;
             background-color: #f1f5fc;
             min-height: 100vh;
@@ -176,27 +177,26 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
 
 <body>
     <!-- SIDEBAR -->
-   <div class="sidebar">
+    <div class="sidebar">
         <div class="sidebar-logo">
             <img src="Images/hospitallogo.png" alt="Hospital Logo">
         </div>
 
         <div class="sidebar-name">
             <p><?php echo "Welcome, $adminname"; ?></p>
-  </div>
+        </div>
 
-  <ul class="nav flex-column">
-    <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-    <li><a href="Admin_Employee.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
-    <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-    <li><a href="Admin-Pending-Applicants.php"><i class="fa-solid fa-user-clock"></i>Pending Applicants</a></li>
-    <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
-    <li class="active"><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-    <li><a href="Admin_Reports.php"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
-    <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-    <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
-  </ul>
-</div>
+        <ul class="nav flex-column">
+            <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+
+            <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
+            <li class="active"><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a>
+            </li>
+            <li><a href="Admin_Reports.php"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
+            <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
+            <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+        </ul>
+    </div>
 
     <!-- MAIN CONTENT -->
     <main class="request-container">
