@@ -116,7 +116,8 @@ $stmt->close();
 
   // ✅ Immediate course match check and insert
   if (strcasecmp(trim($applicant_course), trim($required_level)) === 0) {
-    $app_status = 'Pending';
+     $app_status = 'Pending';
+    
 
     try {
       $conn->begin_transaction();
@@ -259,10 +260,10 @@ if ($dept_id) {
 
 // Insert into applications
 $insert = $conn->prepare("
-    INSERT INTO applications (applicantID, jobID, job_title, department_name, employment_type, status) 
+    INSERT INTO applications (applicantID, jobID, job_title, department_name, type_name, status) 
     VALUES (?, ?, ?, ?, ?,?)
 ");
-$insert->bind_param('sissss', $applicant_id, $job_id, $job_title, $department_name, $employment_type, $app_status);
+$insert->bind_param('sissss', $applicant_id, $job_id, $job_title, $department_name, $applicant_type, $app_status);
 $success = $insert->execute();
 $insert->close();
 
@@ -293,21 +294,33 @@ if ($dept_id) {
 }
 
 
-// Fetch rejected jobs
-$rejected_jobs = [];
+// After AJAX or apply insert
+$applications = [];
 if (!empty($applicant_id)) {
-    $rej_q = $conn->prepare("SELECT jobID FROM rejected_applications WHERE applicantID = ?");
-    $rej_q->bind_param('s', $applicant_id);
-    $rej_q->execute();
-    $rres = $rej_q->get_result();
-    while ($r = $rres->fetch_assoc()) {
-        $rejected_jobs[$r['jobID']] = 'Rejected';
-    }
-    $rej_q->close();
+  $app_q = $conn->prepare("SELECT jobID, status FROM applications WHERE applicantID = ?");
+  $app_q->bind_param('s', $applicant_id);
+  $app_q->execute();
+  $ares = $app_q->get_result();
+  while ($ar = $ares->fetch_assoc()) {
+    $applications[$ar['jobID']] = $ar['status'];
+  }
+  $app_q->close();
 }
 
-// Merge applied + rejected
+// Fetch rejected jobs
+$rejected_jobs = [];
+$rej_q = $conn->prepare("SELECT jobID FROM rejected_applications WHERE applicantID = ?");
+$rej_q->bind_param('s', $applicant_id);
+$rej_q->execute();
+$rres = $rej_q->get_result();
+while ($r = $rres->fetch_assoc()) {
+  $rejected_jobs[$r['jobID']] = 'Rejected';
+}
+$rej_q->close();
+
+// Merge
 $all_statuses = $applications + $rejected_jobs;
+
 
 
 $search = trim($_GET['q'] ?? '');
