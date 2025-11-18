@@ -10,6 +10,21 @@ $employeenameQuery = $conn->query("
 ");
 $employeename = ($employeenameQuery && $row = $employeenameQuery->fetch_assoc()) ? $row['fullname'] : 'Employee';
 
+$employeeID = $_SESSION['applicant_employee_id'] ?? null;
+$employeename = "Employee";
+
+if ($employeeID) {
+    $stmt = $conn->prepare("SELECT fullname FROM user WHERE applicant_employee_id = ?");
+    $stmt->bind_param("s", $employeeID);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($row = $result->fetch_assoc()) {
+        $employeename = $row['fullname'];
+    }
+}
+
+
 // Fetch announcements
 $managerResult = mysqli_query($conn, "SELECT * FROM manager_announcement ORDER BY date_posted DESC");
 $adminResult = mysqli_query($conn, "SELECT * FROM admin_announcement ORDER BY date_posted DESC");

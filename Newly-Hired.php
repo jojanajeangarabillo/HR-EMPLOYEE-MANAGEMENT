@@ -98,6 +98,44 @@ if (isset($_POST['add_employee_id'])) {
             );
             $insertUser->execute();
 
+            // 5. Insert into employee table (NEW)
+// Insert into employee table
+$insertEmployee = $conn->prepare("
+    INSERT INTO employee (
+        empID, fullname, department, position, type_name, 
+        email_address, home_address, contact_number, date_of_birth, gender,
+        emergency_contact, TIN_number, phil_health_number, SSS_number, 
+        pagibig_number, profile_pic, hired_at
+    ) VALUES (
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+    )
+");
+
+$insertEmployee->bind_param(
+    "sssssssssssssssss",
+    $newEmpID,
+    $app['fullName'],
+    $app['department'],
+    $app['position_applied'],
+    $app['type_name'],       // <-- just the string
+    $app['email_address'],
+    $app['home_address'],
+    $app['contact_number'],
+    $app['date_of_birth'],
+    $app['gender'],
+    $app['emergency_contact'],
+    $app['TIN_number'],
+    $app['phil_health_number'],
+    $app['SSS_number'],
+    $app['pagibig_number'],
+    $app['profile_pic'],
+    $app['hired_at']
+);
+
+$insertEmployee->execute();
+
+
+
             // 5. Archive applicant in applicant table (NEW)
             $archiveStmt = $conn->prepare("UPDATE applicant SET status='Archived' WHERE applicantID=?");
             $archiveStmt->bind_param("s", $applicantID);
