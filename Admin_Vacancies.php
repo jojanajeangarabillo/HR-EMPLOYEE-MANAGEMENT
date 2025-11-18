@@ -312,13 +312,14 @@ while ($row = $etypeQuery->fetch_assoc()) {
         </div>
 
         <ul class="nav flex-column">
-            <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-
-            <li class="active"><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i>Vacancies</a></li>
-            <li><a href="Admin-request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-            <li><a href="Admin_Reports.php"><i class="fa-solid fa-chart-simple"></i>Reports</a></li>
-            <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-            <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+            <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i> Dashboard</a></li>
+            <li><a href="Admin_UserManagement.php"><i class="fa-solid fa-users"></i> User Management</a></li>
+             <li><a href="Admin_Departments.php"><i class="fa-building-columns"></i> Departments</a></li>
+            <li class="active"><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i> Vacancies</a></li>
+            <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-check"></i> Applicants</a></li>
+            <li><a href="Admin_Reports.php"><i class="fa-solid fa-chart-simple"></i> Reports</a></li>
+            <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i> Settings</a></li>
+            <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
         </ul>
     </div>
     <main class="main-content">

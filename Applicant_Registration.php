@@ -50,11 +50,12 @@ if (isset($_POST['register'])) {
 
         if ($stmt->execute()) {
             // Insert into applicant table
-            $stmt2 = $conn->prepare("INSERT INTO applicant 
-                (applicantID, fullName, email_address, date_applied) 
-                VALUES (?, ?, ?, NOW())");
-            $stmt2->bind_param("sss", $newID, $fullname, $email);
-            $stmt2->execute();
+           $stmt2 = $conn->prepare("INSERT INTO applicant 
+            (applicantID, fullName, email_address, date_applied, status) 
+            VALUES (?, ?, ?, NOW(), 'Pending')");
+        $stmt2->bind_param("sss", $newID, $fullname, $email);
+        $stmt2->execute();
+
 
             // Send email
             try {
