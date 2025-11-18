@@ -2,27 +2,79 @@
 session_start();
 require 'admin/db.connect.php';
 
-$employees = 0;
-$requests = 0;
-$hirings = 0;
-$applicants = 0;
-$managername = 0;
-
-$managernameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Employee' AND  sub_role ='HR Manager' LIMIT 1");
-if ($managernameQuery && $row = $managernameQuery->fetch_assoc()) {
-    $managername = $row['fullname'];
-}
+// Manager name
+$managername = $_SESSION['fullname'] ?? "Manager";
 
 
-$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
-if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
-    $employees = $row['count'];
-}
+// MENUS
+$menus = [
+  "HR Director" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Employees" => "Manager_Employees.php",
+    "Requests" => "Manager_Request.php",
+    "Vacancies" => "Admin_Vacancies.php",
+    "Job Post" => "Manager-JobPosting.php",
+    "Calendar" => "Manager_Calendar.php",
+    "Approvals" => "Manager_Approvals.php",
+    "Settings" => "Manager_LeaveSettings.php",
+    "Logout" => "Login.php"
+  ],
 
-$applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Applicant'");
-if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
-    $applicants = $row['count'];
-}
+  "HR Manager" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Employees" => "Manager_Employees.php",
+    "Requests" => "Manager_Request.php",
+    "Vacancies" => "Admin_Vacancies.php",
+    "Job Post" => "Manager-JobPosting.php",
+    "Calendar" => "Manager_Calendar.php",
+    "Approvals" => "Manager_Approvals.php",
+    "Settings" => "Manager_LeaveSettings.php",
+    "Logout" => "Login.php"
+  ],
+
+  "Recruitment Manager" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Vacancies" => "Admin_Vacancies.php",
+    "Logout" => "Login.php"
+  ],
+
+  "HR Officer" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Employees" => "Manager_Employees.php",
+    "Logout" => "Login.php"
+  ],
+
+  "HR Assistant" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Employees" => "Manager_Employees.php",
+    "Logout" => "Login.php"
+  ],
+
+  "Training and Development Coordinator" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Employees" => "Manager_Employees.php",
+    "Calendar" => "Manager_Calendar.php",
+    "Requests" => "Manager_Request.php",
+    "Logout" => "Login.php"
+  ]
+];
+
+$role = $_SESSION['sub_role'] ?? "HR Manager";
 
 ?>
 
@@ -48,32 +100,6 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
       display: flex;
       background-color: #f1f5fc;
       color: #111827;
-    }
-
-    .sidebar-logo {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 25px;
-    }
-
-    .sidebar-logo img {
-      height: 110px;
-      width: 110px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 3px solid #ffffff;
-    }
-
-    .sidebar-name {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      color: white;
-      padding: 10px;
-      margin-bottom: 30px;
-      font-size: 18px;
-      flex-direction: column;
     }
 
     .main-content {
@@ -205,15 +231,15 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
 
 
     .sidebar-name {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    color: white;
-    padding: 10px;
-    margin-bottom: 30px;
-    font-size: 18px;
-    flex-direction: column;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 10px;
+      margin-bottom: 30px;
+      font-size: 18px;
+      flex-direction: column;
     }
   </style>
 </head>
@@ -226,21 +252,13 @@ if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
     </div>
 
     <div class="sidebar-name">
-      <p><?php echo "Welcom, $managername" ?></p>
+      <p><?php echo "Welcome, $managername"; ?></p>
     </div>
 
     <ul class="nav">
-      <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-      <li><a href="#"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-      <li><a href="#"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
-      <li><a href="Newly-Hired.php"><i class="fa-solid fa-user-plus"></i>Newly Hired</a></li>
-      <li ><a href="Manager_Employees.php"><i class="fa-solid fa-user-group me-2"></i>Employees</a></li>
-      <li><a href="#"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-      <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
-      <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
-      <li class="active"><a href="Manager_Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
-      <li><a href="Manager_LeaveSettings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-      <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+      <?php foreach ($menus[$role] as $label => $link): ?>
+        <li><a href="<?php echo $link; ?>"><?php echo $label; ?></a></li>
+      <?php endforeach; ?>
     </ul>
   </div>
 

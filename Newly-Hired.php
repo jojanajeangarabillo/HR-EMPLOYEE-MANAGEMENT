@@ -15,13 +15,80 @@ $config = require 'mailer-config.php';
 
 // Initialize counts
 $employees = $applicants = 0;
-$managername = "";
 
-// Fetch HR Manager name
-$managerQuery = $conn->query("SELECT fullname FROM user WHERE role='Employee' AND sub_role='HR Manager' LIMIT 1");
-if ($managerQuery && $row = $managerQuery->fetch_assoc()) {
-    $managername = $row['fullname'];
-}
+// Manager name
+$managername = $_SESSION['fullname'] ?? "Manager";
+
+
+// MENUS
+$menus = [
+    "HR Director" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Requests" => "Manager_Request.php",
+        "Vacancies" => "Admin_Vacancies.php",
+        "Job Post" => "Manager-JobPosting.php",
+        "Calendar" => "Manager_Calendar.php",
+        "Approvals" => "Manager_Approvals.php",
+        "Settings" => "Manager_LeaveSettings.php",
+        "Logout" => "Login.php"
+    ],
+
+    "HR Manager" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Requests" => "Manager_Request.php",
+        "Vacancies" => "Admin_Vacancies.php",
+        "Job Post" => "Manager-JobPosting.php",
+        "Calendar" => "Manager_Calendar.php",
+        "Approvals" => "Manager_Approvals.php",
+        "Settings" => "Manager_LeaveSettings.php",
+        "Logout" => "Login.php"
+    ],
+
+    "Recruitment Manager" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Vacancies" => "Admin_Vacancies.php",
+        "Logout" => "Login.php"
+    ],
+
+    "HR Officer" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Logout" => "Login.php"
+    ],
+
+    "HR Assistant" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Logout" => "Login.php"
+    ],
+
+    "Training and Development Coordinator" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Employees" => "Manager_Employees.php",
+        "Calendar" => "Manager_Calendar.php",
+        "Requests" => "Manager_Request.php",
+        "Logout" => "Login.php"
+    ]
+];
+
+$role = $_SESSION['sub_role'] ?? "HR Manager";
 
 // Count employees
 $employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role='Employee'");
@@ -100,7 +167,7 @@ if (isset($_POST['add_employee_id'])) {
 
             // 5. Insert into employee table (NEW)
 // Insert into employee table
-$insertEmployee = $conn->prepare("
+            $insertEmployee = $conn->prepare("
     INSERT INTO employee (
         empID, fullname, department, position, type_name, 
         email_address, home_address, contact_number, date_of_birth, gender,
@@ -111,28 +178,28 @@ $insertEmployee = $conn->prepare("
     )
 ");
 
-$insertEmployee->bind_param(
-    "sssssssssssssssss",
-    $newEmpID,
-    $app['fullName'],
-    $app['department'],
-    $app['position_applied'],
-    $app['type_name'],       // <-- just the string
-    $app['email_address'],
-    $app['home_address'],
-    $app['contact_number'],
-    $app['date_of_birth'],
-    $app['gender'],
-    $app['emergency_contact'],
-    $app['TIN_number'],
-    $app['phil_health_number'],
-    $app['SSS_number'],
-    $app['pagibig_number'],
-    $app['profile_pic'],
-    $app['hired_at']
-);
+            $insertEmployee->bind_param(
+                "sssssssssssssssss",
+                $newEmpID,
+                $app['fullName'],
+                $app['department'],
+                $app['position_applied'],
+                $app['type_name'],       // <-- just the string
+                $app['email_address'],
+                $app['home_address'],
+                $app['contact_number'],
+                $app['date_of_birth'],
+                $app['gender'],
+                $app['emergency_contact'],
+                $app['TIN_number'],
+                $app['phil_health_number'],
+                $app['SSS_number'],
+                $app['pagibig_number'],
+                $app['profile_pic'],
+                $app['hired_at']
+            );
 
-$insertEmployee->execute();
+            $insertEmployee->execute();
 
 
 
@@ -219,31 +286,6 @@ $insertEmployee->execute();
             color: #111827;
         }
 
-        .sidebar-logo {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 25px;
-        }
-
-        .sidebar-logo img {
-            height: 110px;
-            width: 110px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #fff;
-        }
-
-        .sidebar-name {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            color: white;
-            padding: 10px;
-            margin-bottom: 30px;
-            font-size: 18px;
-            flex-direction: column;
-        }
 
         .main-content {
             padding: 40px 30px;
@@ -321,23 +363,18 @@ $insertEmployee->execute();
 
 <body>
     <div class="sidebar">
-        <div class="sidebar-logo"><img src="Images/hospitallogo.png" alt="Logo"></div>
+        <div class="sidebar-logo">
+            <img src="Images/hospitallogo.png" alt="Hospital Logo">
+        </div>
+
         <div class="sidebar-name">
             <p><?php echo "Welcome, $managername"; ?></p>
         </div>
+
         <ul class="nav">
-            <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-            <li><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-            <li><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a>
-            </li>
-            <li class="active"><a href="Newly-Hired.php"><i class="fa-solid fa-user-plus"></i>Newly Hired</a></li>
-            <li><a href="Manager_Employees.php"><i class="fa-solid fa-user-group"></i>Employees</a></li>
-            <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-            <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
-            <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
-            <li><a href="Manager_Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
-            <li><a href="Manager_LeaveSettings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-            <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+            <?php foreach ($menus[$role] as $label => $link): ?>
+                <li><a href="<?php echo $link; ?>"><?php echo $label; ?></a></li>
+            <?php endforeach; ?>
         </ul>
     </div>
 

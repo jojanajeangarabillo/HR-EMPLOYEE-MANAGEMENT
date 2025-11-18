@@ -13,6 +13,13 @@ if ($q && $row = $q->fetch_assoc()) {
     $pendingApplicants = $row['count'];
 }
 
+// Requests
+$requests = 0;
+$q1 = $conn->query("SELECT COUNT(*) AS count FROM employee_request WHERE status = 'Pending'");
+if ($q1 && $row = $q1->fetch_assoc()) {
+    $requests = $row['count'];
+}
+
 // Hirings
 $hirings = 0;
 $q2 = $conn->query("SELECT SUM(vacancy_count) AS count FROM vacancies WHERE status IN ('On-Going', 'To Post')");
@@ -21,11 +28,8 @@ if ($q2 && $row = $q2->fetch_assoc()) {
 }
 
 // Manager name
-$managername = "Manager";
-$q3 = $conn->query("SELECT fullname FROM user WHERE role='Employee' AND sub_role='HR Manager' LIMIT 1");
-if ($q3 && $row = $q3->fetch_assoc()) {
-    $managername = $row['fullname'];
-}
+$managername = $_SESSION['fullname'] ?? "Manager";
+
 
 // MENUS
 $menus = [
@@ -86,7 +90,7 @@ $menus = [
         "Logout" => "Login.php"
     ],
 
-    "Training & Development Manager" => [
+    "Training and Development Coordinator" => [
         "Dashboard" => "Manager_Dashboard.php",
         "Employees" => "Manager_Employees.php",
         "Calendar" => "Manager_Calendar.php",
@@ -183,21 +187,21 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
 
 <body>
     <!-- SIDEBAR -->
-<div class="sidebar">
-    <div class="sidebar-logo">
-        <img src="Images/hospitallogo.png" alt="Hospital Logo">
-    </div>
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="Images/hospitallogo.png" alt="Hospital Logo">
+        </div>
 
-    <div class="sidebar-name">
-        <p><?php echo "Welcome, $managername"; ?></p>
-    </div>
+        <div class="sidebar-name">
+            <p><?php echo "Welcome, $managername"; ?></p>
+        </div>
 
-    <ul class="nav">
-        <?php foreach ($menus[$role] as $label => $link): ?>
-                <li><a href="<?php echo $link; ?>"><i class="fa-solid fa-circle"></i><?php echo $label; ?></a></li>
-        <?php endforeach; ?>
-    </ul>
-</div>
+        <ul class="nav">
+            <?php foreach ($menus[$role] as $label => $link): ?>
+                <li><a href="<?php echo $link; ?>"><?php echo $label; ?></a></li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
@@ -228,7 +232,7 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
 
             <div class="section">
                 <label>Pending Applicants</label>
-                <h3><?php echo $pending_applicantQuery; ?></h3>
+                <h3><?php echo $pendingApplicants; ?></h3>
             </div>
         </div>
 
