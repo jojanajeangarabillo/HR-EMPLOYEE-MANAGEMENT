@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 14, 2025 at 03:49 PM
+-- Generation Time: Nov 18, 2025 at 10:23 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -65,6 +65,7 @@ CREATE TABLE `applicant` (
   `fullName` varchar(150) NOT NULL,
   `position_applied` varchar(100) NOT NULL,
   `department` varchar(150) NOT NULL,
+  `type_name` varchar(50) DEFAULT NULL,
   `date_applied` date NOT NULL,
   `contact_number` varchar(20) NOT NULL,
   `email_address` varchar(100) NOT NULL,
@@ -88,11 +89,10 @@ CREATE TABLE `applicant` (
 -- Dumping data for table `applicant`
 --
 
-INSERT INTO `applicant` (`applicantID`, `fullName`, `position_applied`, `department`, `date_applied`, `contact_number`, `email_address`, `home_address`, `previous_job`, `company_name`, `date_started`, `years_experience`, `in_role`, `university`, `course`, `year_graduated`, `skills`, `summary`, `status`, `hired_at`, `profile_pic`) VALUES
-('HOS-002', 'Kristina Magnaye', '', '0', '2025-11-04', '09126872701', 'n0305933@gmail.com', 'Pasig City', 'saas', 'sas', '0000-00-00', 0, '', 'Aa', 'BSN', '2005', 'Hardworking, Adaptable, Sincere, Caring, Dependable', 'I am a hard working person\r\n\r\nRole: saas at sas\r\nsaas', 'Pending', NULL, 'applicant_HOS-002.jpg'),
-('HOS-003', 'Joepat Lacerna', '', '0', '2025-11-07', '0909', 'opat09252005@gmail.com', 'Taguig', 'Insurance Specialist', 'BDO', '0000-00-00', 0, '', 'PLP', 'BSA', '2015', 'Hard working, multitasking, communication, computer, secret', 'I am a Insurance Specialist at BDO\r\nbefore and Iam good', 'Initial Interview', NULL, 'applicant_HOS-003.jpg'),
-('EMP-001', 'Rhoanne Nicole Antonio', '', '0', '2025-11-10', '0', 'antonio_rhoannenicole@plpasig.edu.ph', '', '', '', '2025-11-10', NULL, 'no', '', '0', '0000', '', '', 'Active', NULL, NULL),
-('HOS-004', 'Jojana Baglan', 'Phlebotomist', 'Hematology Department', '2025-11-13', '01', 'garabillo_jojanajean@plpasig.edu.ph', 'Pasig', 'ax', 'xs', '0000-00-00', 5, 'no', 'HA', 'BSIT', '0000', 'sa, sa, sa, sa, sa', 'Role: CEO at APPLE\nSKJXAK\n\nRole: ax at xs\nxs', 'Hired', '2025-11-14', 'applicant_HOS-004.jpg');
+INSERT INTO `applicant` (`applicantID`, `fullName`, `position_applied`, `department`, `type_name`, `date_applied`, `contact_number`, `email_address`, `home_address`, `previous_job`, `company_name`, `date_started`, `years_experience`, `in_role`, `university`, `course`, `year_graduated`, `skills`, `summary`, `status`, `hired_at`, `profile_pic`) VALUES
+('HOS-002', 'Kristina Magnaye', '', '0', '', '2025-11-04', '09126872701', 'n0305933@gmail.com', 'Pasig City', 'saas', 'sas', '0000-00-00', 0, '', 'Aa', 'BSN', '2005', 'Hardworking, Adaptable, Sincere, Caring, Dependable', 'I am a hard working person\r\n\r\nRole: saas at sas\r\nsaas', 'Pending', NULL, 'applicant_HOS-002.jpg'),
+('HOS-004', 'Jojana Baglan', 'Phlebotomist', 'Hematology Department', '', '2025-11-13', '01', 'garabillo_jojanajean@plpasig.edu.ph', 'Pasig', 'ax', 'xs', '0000-00-00', 5, 'no', 'HA', 'BSIT', '0000', 'sa, sa, sa, sa, sa', 'Role: CEO at APPLE\nSKJXAK\n\nRole: ax at xs\nxs', 'Archived', '2025-11-14', 'applicant_HOS-004.jpg'),
+('HOS-007', 'Joepat Lacerna', 'Consultant Gynecologist', 'Gynecology Department', 'Full Time', '2025-11-18', '', 'opat09252005@gmail.com', '', NULL, '', '0000-00-00', NULL, '', 'PLP', 'BSA', '2027', '', '', 'Archived', '2025-11-18', NULL);
 
 -- --------------------------------------------------------
 
@@ -106,17 +106,10 @@ CREATE TABLE `applications` (
   `jobID` int(11) NOT NULL,
   `job_title` varchar(150) DEFAULT NULL,
   `department_name` varchar(100) DEFAULT NULL,
+  `type_name` varchar(50) DEFAULT NULL,
   `status` varchar(50) NOT NULL DEFAULT 'Pending',
   `applied_at` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `applications`
---
-
-INSERT INTO `applications` (`id`, `applicantID`, `jobID`, `job_title`, `department_name`, `status`, `applied_at`) VALUES
-(0, 'HOS-002', 29, 'Nurse Anesthetist', 'Anesthetics Department', 'Pending', '2025-11-10 21:13:34'),
-(0, 'HOS-004', 34, 'Phlebotomist', 'Hematology Department', 'Hired', '2025-11-14 15:26:36');
 
 --
 -- Triggers `applications`
@@ -190,21 +183,35 @@ INSERT INTO `department` (`deptID`, `deptName`, `vacancies`) VALUES
 CREATE TABLE `employee` (
   `empID` varchar(100) NOT NULL,
   `fullname` varchar(50) NOT NULL,
-  `department` int(11) NOT NULL,
-  `position` int(11) NOT NULL,
-  `employment_type` int(11) NOT NULL,
+  `department` varchar(50) NOT NULL,
+  `position` varchar(50) NOT NULL,
+  `type_name` varchar(50) NOT NULL,
   `email_address` varchar(100) NOT NULL,
   `home_address` varchar(255) NOT NULL,
   `contact_number` varchar(20) NOT NULL,
-  `date_of_brith` date NOT NULL,
-  `gender` enum('Male','Female') NOT NULL,
-  `emergency_contact` varchar(20) NOT NULL,
-  `TIN_number` varchar(20) NOT NULL,
-  `phil_health_number` varchar(20) NOT NULL,
-  `SSS_number` varchar(20) NOT NULL,
-  `pagibig_number` varchar(20) NOT NULL,
-  `profile_pic` varchar(255) DEFAULT NULL
+  `date_of_birth` date DEFAULT NULL,
+  `gender` enum('Male','Female') DEFAULT NULL,
+  `emergency_contact` varchar(20) DEFAULT NULL,
+  `TIN_number` varchar(20) DEFAULT NULL,
+  `phil_health_number` varchar(20) DEFAULT NULL,
+  `SSS_number` varchar(20) DEFAULT NULL,
+  `pagibig_number` varchar(20) DEFAULT NULL,
+  `profile_pic` varchar(255) DEFAULT NULL,
+  `hired_at` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `employee`
+--
+
+INSERT INTO `employee` (`empID`, `fullname`, `department`, `position`, `type_name`, `email_address`, `home_address`, `contact_number`, `date_of_birth`, `gender`, `emergency_contact`, `TIN_number`, `phil_health_number`, `SSS_number`, `pagibig_number`, `profile_pic`, `hired_at`) VALUES
+('EMP-001', 'Rhoanne Nicole Antonio', 'Human Resources (HR) Department', 'HR Manager', 'Full Time', 'antonio_rhoannenicole@plpasig.edu.ph', '', '', NULL, NULL, '', '', '', '', '', NULL, '2025-11-18'),
+('EMP-002', 'Joepat Lacerna', 'Gynecology Department', 'Consultant Gynecologist', 'Full Time', 'opat09252005@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-18'),
+('EMP-003', 'Jane Garabillo', 'Human Resources (HR) Department', 'HR Director', 'Full Time', 'jojanajeangarabillo@gmail.com', '', '', NULL, NULL, '', '', '', '', '', NULL, '2025-11-18'),
+('EMP-004', 'Jhanna Jaroda', 'Human Resources (HR) Department', 'Recruitment Manager', 'Full Time', 'jaroda_jhanna_rhaynne@plpasig.edu.ph', '', '', NULL, NULL, '', '', '', '', '', NULL, '2025-11-18'),
+('EMP-005', 'Shane Ella Cacho', 'Human Resources (HR) Department', 'Training and Development Coordinator', 'Full Time', 'cacho_shaneellamae@plpasig.edu.ph', '', '', NULL, NULL, '', '', '', '', '', NULL, '2025-11-18'),
+('EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', 'Full Time', 'gutierrez_jodielynn@plpasig.edu.ph', '', '', NULL, NULL, '', '', '', '', '', NULL, '2025-11-18'),
+('EMP-007', 'Sierra Madre', 'Human Resources (HR) Department', 'HR Assistant', 'Full Time', 'sheyn.cacho@gmail.com', '', '', NULL, NULL, '', '', '', '', '', NULL, '2025-11-18');
 
 -- --------------------------------------------------------
 
@@ -439,17 +446,12 @@ INSERT INTO `position` (`positionID`, `departmentID`, `emtypeID`, `position_titl
 (80, 9, NULL, 'Oncology Nurse (Hematology Unit)', NULL),
 (81, 9, NULL, 'Senior Hematology Nurse', NULL),
 (82, 9, NULL, 'Nurse Unit Head', NULL),
-(83, 10, NULL, 'HR Clerk', NULL),
 (84, 10, NULL, 'HR Assistant', NULL),
 (85, 10, NULL, 'HR Officer', NULL),
-(86, 10, NULL, 'HR Supervisor', NULL),
 (87, 10, NULL, 'HR Manager', NULL),
 (88, 10, NULL, 'HR Director', NULL),
-(89, 10, NULL, 'Recruitment Specialist', NULL),
-(90, 10, NULL, 'Senior Recruitment Officer', NULL),
-(91, 10, NULL, 'Recruitment Manager', NULL),
-(92, 10, NULL, 'Training and Development Coordinator', NULL),
-(93, 10, NULL, 'HR Manager (Training and Organizational Development)', NULL);
+(89, 10, NULL, 'Recruitment Manager', NULL),
+(92, 10, NULL, 'Training and Development Coordinator', NULL);
 
 -- --------------------------------------------------------
 
@@ -477,13 +479,10 @@ INSERT INTO `rejected_applications` (`id`, `applicantID`, `jobID`, `reason`, `re
 (58, 'HOS-004', 32, 'Course mismatch', '2025-11-13 21:01:17'),
 (59, 'HOS-004', 33, 'Course mismatch', '2025-11-13 21:01:32'),
 (60, 'HOS-004', 30, 'Course mismatch', '2025-11-13 21:01:35'),
-(67, 'HOS-003', 34, 'Course mismatch', '2025-11-13 21:05:26'),
-(68, 'HOS-003', 27, 'Course mismatch', '2025-11-13 21:05:42'),
-(69, 'HOS-003', 29, 'Course mismatch', '2025-11-13 21:05:49'),
-(70, 'HOS-003', 30, 'Course mismatch', '2025-11-13 21:05:51'),
-(71, 'HOS-003', 31, 'Course mismatch', '2025-11-13 21:05:53'),
-(72, 'HOS-003', 32, 'Course mismatch', '2025-11-13 21:05:55'),
-(73, 'HOS-003', 33, 'Course mismatch', '2025-11-13 21:05:57');
+(79, 'HOS-007', 34, 'Course mismatch', '2025-11-18 14:06:05'),
+(80, 'HOS-007', 27, 'Course mismatch', '2025-11-18 14:10:25'),
+(81, 'HOS-007', 29, 'Course mismatch', '2025-11-18 15:24:40'),
+(82, 'HOS-007', 30, 'Course mismatch', '2025-11-18 16:03:03');
 
 -- --------------------------------------------------------
 
@@ -527,11 +526,35 @@ CREATE TABLE `user` (
 
 INSERT INTO `user` (`user_id`, `applicant_employee_id`, `email`, `password`, `role`, `fullname`, `status`, `created_at`, `profile_pic`, `reset_token`, `token_expiry`, `sub_role`) VALUES
 ('', 'ADM-001', 'admin_jojanajean@plpasig.edu.ph', '$2y$10$wXATHyunepSPHPGolMHnqe54maqVldT7WMxe3XbPB8vwvjPxehk/y', 'Admin', 'Jojana Jean', 'Active', '2025-11-07 23:53:43', NULL, '', '', NULL),
-('', 'EMP-001', 'antonio_rhoannenicole@plpasig.edu.ph', '$2y$10$wXATHyunepSPHPGolMHnqe54maqVldT7WMxe3XbPB8vwvjPxehk/y', 'Employee', 'Rhoanne Nicole Antonio', 'Active', '2025-10-25 10:38:47', NULL, '', '', 'HR Manager'),
-('EMP-002', 'EMP-002', 'employee@gmail.com', '$2y$10$wXATHyunepSPHPGolMHnqe54maqVldT7WMxe3XbPB8vwvjPxehk/y', 'Employee', 'Jackson Wang', 'Active', '2025-11-03 16:43:38', NULL, '', '', 'Staff'),
-('', 'HOS-004', 'garabillo_jojanajean@plpasig.edu.ph', '$2y$10$X9yj.ihYOU/OrTHRBpFlHe3pe5Xwbdw9JtXs0nYxPCNXuOx5HpPmq', 'Applicant', 'Jojana Baglan', 'Pending', '0000-00-00 00:00:00', NULL, '', '', NULL),
+('', 'EMP-001', 'antonio_rhoannenicole@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Rhoanne Nicole Antonio', 'Active', '2025-10-25 10:38:47', NULL, '', '', 'HR Manager'),
+('USR-006', 'EMP-005', 'cacho_shaneellamae@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Shane Ella Cacho', 'Active', '2025-11-18 16:53:26', NULL, '', '', 'Training and Development Coordinator'),
+('USR-007', 'EMP-006', 'gutierrez_jodielynn@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Jodie Lyn Gutierrez', 'Active', '2025-11-18 16:53:26', NULL, '', '', 'HR Officer'),
+('USR-005', 'EMP-004', 'jaroda_jhanna_rhaynne@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Jhanna Jaroda', 'Active', '2025-11-18 16:53:26', NULL, '', '', 'Recruitment Manager'),
+('USR-003', 'EMP-003', 'jojanajeangarabillo@gmail.com', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Jane Garabillo', 'Active', '2025-11-18 16:53:26', NULL, '', '', 'HR Director'),
 ('', 'HOS-002', 'n0305933@gmail.com', '$2y$10$wXATHyunepSPHPGolMHnqe54maqVldT7WMxe3XbPB8vwvjPxehk/y', 'Applicant', 'Kristina Magnaye', 'Pending', '0000-00-00 00:00:00', NULL, '', '', NULL),
-('', 'HOS-003', 'opat09252005@gmail.com', '$2y$10$wXATHyunepSPHPGolMHnqe54maqVldT7WMxe3XbPB8vwvjPxehk/y', 'Applicant', 'Joepat Lacerna', 'Pending', '0000-00-00 00:00:00', NULL, '', '', NULL);
+('', 'EMP-002', 'opat09252005@gmail.com', '$2y$10$0Pg1Uu6LmxuAcfskgoLvz.CDYUrl5mM/aEh.Q85vKcuF2fTHRxG.a', 'Employee', 'Joepat Lacerna', 'Active', '0000-00-00 00:00:00', NULL, '0da2392f59a3d31bc9f2565fc8cd6bc8', '2025-11-21 09:40:51', NULL),
+('USR-008', 'EMP-007', 'sheyn.cacho@gmail.com', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Sierra Madre', 'Active', '2025-11-18 16:53:26', NULL, '', '', 'HR Assistant');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_archive`
+--
+
+CREATE TABLE `user_archive` (
+  `user_id` varchar(100) NOT NULL,
+  `applicant_employee_id` varchar(100) DEFAULT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `role` varchar(50) NOT NULL,
+  `fullname` varchar(150) NOT NULL,
+  `status` varchar(20) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `profile_pic` varchar(255) DEFAULT NULL,
+  `reset_token` varchar(255) NOT NULL,
+  `token_expiry` varchar(255) NOT NULL,
+  `sub_role` varchar(50) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -584,12 +607,14 @@ ALTER TABLE `announcement`
 -- Indexes for table `applicant`
 --
 ALTER TABLE `applicant`
+  ADD UNIQUE KEY `applicantID_unique` (`applicantID`),
   ADD KEY `fk_applicant_user` (`applicantID`);
 
 --
 -- Indexes for table `applications`
 --
 ALTER TABLE `applications`
+  ADD PRIMARY KEY (`id`),
   ADD KEY `fk_applications_job` (`jobID`),
   ADD KEY `fk_applicant` (`applicantID`);
 
@@ -611,7 +636,7 @@ ALTER TABLE `department`
 --
 ALTER TABLE `employee`
   ADD PRIMARY KEY (`empID`),
-  ADD KEY `fk_employee_emtype` (`employment_type`);
+  ADD KEY `fk_employee_emtype` (`type_name`);
 
 --
 -- Indexes for table `employee_request`
@@ -680,6 +705,13 @@ ALTER TABLE `user`
   ADD UNIQUE KEY `uk_applicant_employee_id` (`applicant_employee_id`);
 
 --
+-- Indexes for table `user_archive`
+--
+ALTER TABLE `user_archive`
+  ADD PRIMARY KEY (`email`),
+  ADD UNIQUE KEY `uk_applicant_employee_id` (`applicant_employee_id`);
+
+--
 -- Indexes for table `vacancies`
 --
 ALTER TABLE `vacancies`
@@ -703,6 +735,12 @@ ALTER TABLE `admin_announcement`
 --
 ALTER TABLE `announcement`
   MODIFY `announcementID` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `applications`
+--
+ALTER TABLE `applications`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `calendar`
@@ -750,7 +788,7 @@ ALTER TABLE `position`
 -- AUTO_INCREMENT for table `rejected_applications`
 --
 ALTER TABLE `rejected_applications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=74;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
 
 --
 -- AUTO_INCREMENT for table `system_settings`
@@ -775,12 +813,6 @@ ALTER TABLE `admin_announcement`
   ADD CONSTRAINT `admin_announcement_ibfk_1` FOREIGN KEY (`admin_email`) REFERENCES `user` (`email`) ON DELETE CASCADE;
 
 --
--- Constraints for table `applicant`
---
-ALTER TABLE `applicant`
-  ADD CONSTRAINT `fk_applicant_user` FOREIGN KEY (`applicantID`) REFERENCES `user` (`applicant_employee_id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
 -- Constraints for table `applications`
 --
 ALTER TABLE `applications`
@@ -792,12 +824,6 @@ ALTER TABLE `applications`
 --
 ALTER TABLE `calendar`
   ADD CONSTRAINT `calendar_ibfk_1` FOREIGN KEY (`empID`) REFERENCES `employee` (`empID`);
-
---
--- Constraints for table `employee`
---
-ALTER TABLE `employee`
-  ADD CONSTRAINT `fk_employee_emtype` FOREIGN KEY (`employment_type`) REFERENCES `employment_type` (`emtypeID`) ON UPDATE CASCADE;
 
 --
 -- Constraints for table `employee_request`
