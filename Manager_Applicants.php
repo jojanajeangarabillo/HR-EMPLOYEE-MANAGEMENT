@@ -2,13 +2,6 @@
 session_start();
 require 'admin/db.connect.php';
 
-$managername = '';
-
-$managernameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Employee' AND  sub_role ='HR Manager' LIMIT 1");
-if ($managernameQuery && $row = $managernameQuery->fetch_assoc()) {
-  $managername = $row['fullname'];
-}
-
 $applicant_id = '';
 $fullname = '';
 $email = '';
@@ -20,6 +13,80 @@ if ($applicant_query) {
     $applicants[] = $row;
   }
 }
+
+// Manager name
+$managername = $_SESSION['fullname'] ?? "Manager";
+
+
+// MENUS
+$menus = [
+  "HR Director" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Employees" => "Manager_Employees.php",
+    "Requests" => "Manager_Request.php",
+    "Vacancies" => "Admin_Vacancies.php",
+    "Job Post" => "Manager-JobPosting.php",
+    "Calendar" => "Manager_Calendar.php",
+    "Approvals" => "Manager_Approvals.php",
+    "Settings" => "Manager_LeaveSettings.php",
+    "Logout" => "Login.php"
+  ],
+
+  "HR Manager" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Employees" => "Manager_Employees.php",
+    "Requests" => "Manager_Request.php",
+    "Vacancies" => "Admin_Vacancies.php",
+    "Job Post" => "Manager-JobPosting.php",
+    "Calendar" => "Manager_Calendar.php",
+    "Approvals" => "Manager_Approvals.php",
+    "Settings" => "Manager_LeaveSettings.php",
+    "Logout" => "Login.php"
+  ],
+
+  "Recruitment Manager" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Vacancies" => "Admin_Vacancies.php",
+    "Logout" => "Login.php"
+  ],
+
+  "HR Officer" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Employees" => "Manager_Employees.php",
+    "Logout" => "Login.php"
+  ],
+
+  "HR Assistant" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Employees" => "Manager_Employees.php",
+    "Logout" => "Login.php"
+  ],
+
+  "Training and Development Coordinator" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Employees" => "Manager_Employees.php",
+    "Calendar" => "Manager_Calendar.php",
+    "Requests" => "Manager_Request.php",
+    "Logout" => "Login.php"
+  ]
+];
+
+$role = $_SESSION['sub_role'] ?? "HR Manager";
 
 ?>
 <!DOCTYPE html>
@@ -266,7 +333,7 @@ if ($applicant_query) {
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-logo">
-      <img src="Images/hospitallogo.png" alt="">
+      <img src="Images/hospitallogo.png" alt="Hospital Logo">
     </div>
 
     <div class="sidebar-name">
@@ -274,17 +341,9 @@ if ($applicant_query) {
     </div>
 
     <ul class="nav">
-      <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-      <li class="active"><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-      <li><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
-      <li><a href="Newly-Hired.php"><i class="fa-solid fa-user-plus"></i>Newly Hired</a></li>
-      <li><a href="Manager_Employees.php"><i class="fa-solid fa-user-group me-2"></i>Employees</a></li>
-      <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-      <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
-      <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
-      <li><a href="Manager_Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
-      <li><a href="Manager_LeaveSettings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-      <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+      <?php foreach ($menus[$role] as $label => $link): ?>
+        <li><a href="<?php echo $link; ?>"><?php echo $label; ?></a></li>
+      <?php endforeach; ?>
     </ul>
   </div>
   <!-- MAIN CONTENT -->

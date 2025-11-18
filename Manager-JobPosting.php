@@ -2,24 +2,6 @@
 session_start();
 require 'admin/db.connect.php';
 
-$employees = $requests = $hirings = $applicants = 0;
-$managername = "";
-
-// Fetch HR Manager name
-$managernameQuery = $conn->query("SELECT fullname FROM user WHERE role='Employee' AND sub_role='HR Manager' LIMIT 1");
-if ($managernameQuery && $row = $managernameQuery->fetch_assoc()) {
-    $managername = $row['fullname'];
-}
-
-// Employee & Applicant Counts
-$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role='Employee'");
-if ($employeeQuery && $row = $employeeQuery->fetch_assoc())
-    $employees = $row['count'];
-
-$applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role='Applicant'");
-if ($applicantQuery && $row = $applicantQuery->fetch_assoc())
-    $applicants = $row['count'];
-
 // Handle New Job Post Creation
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['new_post'])) {
     $job_title = trim($_POST['job_title'] ?? '');
@@ -86,7 +68,8 @@ ORDER BY v.created_at DESC
 ";
 $result = $conn->query($vacQuery);
 if ($result && $result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) $vacancies[] = $row;
+    while ($row = $result->fetch_assoc())
+        $vacancies[] = $row;
 }
 
 // Fetch Recently Posted Jobs with department & employment type names
@@ -100,7 +83,8 @@ ORDER BY j.date_posted DESC
 ";
 $res = $conn->query($recentQuery);
 if ($res && $res->num_rows > 0) {
-    while ($row = $res->fetch_assoc()) $recentJobs[] = $row;
+    while ($row = $res->fetch_assoc())
+        $recentJobs[] = $row;
 }
 
 $today = date('Y-m-d'); // current date
@@ -119,182 +103,293 @@ $stmt->bind_param('s', $today);
 $stmt->execute();
 $res = $stmt->get_result();
 $recentJobs = [];
-while ($row = $res->fetch_assoc()) $recentJobs[] = $row;
+while ($row = $res->fetch_assoc())
+    $recentJobs[] = $row;
 $stmt->close();
 
+// Manager name
+$managername = $_SESSION['fullname'] ?? "Manager";
+
+
+// MENUS
+$menus = [
+    "HR Director" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Requests" => "Manager_Request.php",
+        "Vacancies" => "Admin_Vacancies.php",
+        "Job Post" => "Manager-JobPosting.php",
+        "Calendar" => "Manager_Calendar.php",
+        "Approvals" => "Manager_Approvals.php",
+        "Settings" => "Manager_LeaveSettings.php",
+        "Logout" => "Login.php"
+    ],
+
+    "HR Manager" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Requests" => "Manager_Request.php",
+        "Vacancies" => "Admin_Vacancies.php",
+        "Job Post" => "Manager-JobPosting.php",
+        "Calendar" => "Manager_Calendar.php",
+        "Approvals" => "Manager_Approvals.php",
+        "Settings" => "Manager_LeaveSettings.php",
+        "Logout" => "Login.php"
+    ],
+
+    "Recruitment Manager" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Vacancies" => "Admin_Vacancies.php",
+        "Logout" => "Login.php"
+    ],
+
+    "HR Officer" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Logout" => "Login.php"
+    ],
+
+    "HR Assistant" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Logout" => "Login.php"
+    ],
+
+    "Training and Development Coordinator" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Employees" => "Manager_Employees.php",
+        "Calendar" => "Manager_Calendar.php",
+        "Requests" => "Manager_Request.php",
+        "Logout" => "Login.php"
+    ]
+];
+
+$role = $_SESSION['sub_role'] ?? "HR Manager";
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Manager - Job Posting</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-<link rel="stylesheet" href="manager-sidebar.css">
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<style>
-body { margin:0; padding:0; font-family:'Poppins','Roboto',sans-serif; background:#f1f5fc; display:flex; color:#111827; }
-.job-postings-container { flex-grow:1; margin-left:220px; padding:40px; }
-.job-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:25px; }
-.job-header h2 { font-size:26px; font-weight:700; color:#1f3c88; display:flex; align-items:center; gap:10px; }
-</style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Manager - Job Posting</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="manager-sidebar.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', 'Roboto', sans-serif;
+            background: #f1f5fc;
+            display: flex;
+            color: #111827;
+        }
+
+        .job-postings-container {
+            flex-grow: 1;
+            margin-left: 220px;
+            padding: 40px;
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .job-header h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #1f3c88;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+    </style>
 </head>
+
 <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <img src="Images/hospitallogo.png" alt="Hospital Logo">
+        </div>
 
-<div class="sidebar">
-    <div class="sidebar-logo"><img src="Images/hospitallogo.png" alt="Hospital Logo"></div>
-    <div class="sidebar-name"><p><?php echo "Welcome, ".htmlspecialchars($managername); ?></p></div>
-    <ul class="nav">
-      <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-      <li><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-      <li><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
-        <li><a href="Newly-Hired.php"><i class="fa-solid fa-user-plus"></i>Newly Hired</a></li>
-      <li ><a href="Manager_Employees.php"><i class="fa-solid fa-user-group me-2"></i>Employees</a></li>
-      <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-      <li class="active"><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
-      <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
-      <li><a href="Manager_Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
-      <li><a href="Manager_LeaveSettings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-      <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
-    </ul>
-</div>
+        <div class="sidebar-name">
+            <p><?php echo "Welcome, $managername"; ?></p>
+        </div>
 
-<main class="job-postings-container">
-    <div class="job-header">
-        <h2><i class="fa-solid fa-briefcase"></i> Job Posting</h2>
-        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#jobModal">+ Add New Job</button>
+        <ul class="nav">
+            <?php foreach ($menus[$role] as $label => $link): ?>
+                <li><a href="<?php echo $link; ?>"><?php echo $label; ?></a></li>
+            <?php endforeach; ?>
+        </ul>
     </div>
 
-    <!-- Available Jobs -->
-    <div class="available-jobs mb-4">
-        <h3 style="color:#1f3c88;">Available Jobs to Upload</h3>
-        <?php if(!empty($vacancies)): ?>
-        <div class="row fw-bold bg-light p-2 rounded mb-2">
-            <div class="col-4">Job Title</div>
-            <div class="col-3">Department</div>
-            <div class="col-2">Vacancies</div>
-            <div class="col-3">Status</div>
+    <main class="job-postings-container">
+        <div class="job-header">
+            <h2><i class="fa-solid fa-briefcase"></i> Job Posting</h2>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#jobModal">+ Add New Job</button>
         </div>
-        <?php foreach($vacancies as $job): ?>
-        <div class="row align-items-center bg-white p-2 rounded mb-1">
-            <div class="col-4"><?= htmlspecialchars($job['position_title']); ?></div>
-            <div class="col-3"><?= htmlspecialchars($job['deptName']); ?></div>
-            <div class="col-2"><?= htmlspecialchars($job['vacancy_count']); ?></div>
-            <div class="col-3">
-                <select class="form-select status-dropdown" data-id="<?= (int)$job['id']; ?>">
-                    <option value="To Post" <?= ($job['status']=='To Post')?'selected':''; ?>>To Post</option>
-                    <option value="On-Going" <?= ($job['status']=='On-Going')?'selected':''; ?>>On-Going</option>
-                </select>
+
+        <!-- Available Jobs -->
+        <div class="available-jobs mb-4">
+            <h3 style="color:#1f3c88;">Available Jobs to Upload</h3>
+            <?php if (!empty($vacancies)): ?>
+                <div class="row fw-bold bg-light p-2 rounded mb-2">
+                    <div class="col-4">Job Title</div>
+                    <div class="col-3">Department</div>
+                    <div class="col-2">Vacancies</div>
+                    <div class="col-3">Status</div>
+                </div>
+                <?php foreach ($vacancies as $job): ?>
+                    <div class="row align-items-center bg-white p-2 rounded mb-1">
+                        <div class="col-4"><?= htmlspecialchars($job['position_title']); ?></div>
+                        <div class="col-3"><?= htmlspecialchars($job['deptName']); ?></div>
+                        <div class="col-2"><?= htmlspecialchars($job['vacancy_count']); ?></div>
+                        <div class="col-3">
+                            <select class="form-select status-dropdown" data-id="<?= (int) $job['id']; ?>">
+                                <option value="To Post" <?= ($job['status'] == 'To Post') ? 'selected' : ''; ?>>To Post</option>
+                                <option value="On-Going" <?= ($job['status'] == 'On-Going') ? 'selected' : ''; ?>>On-Going</option>
+                            </select>
+                        </div>
+                    </div>
+                <?php endforeach; else: ?>
+                <p>No available jobs found.</p>
+            <?php endif; ?>
+        </div>
+
+        <!-- Recently Posted -->
+        <div class="job-table">
+            <h3 style="color:#1f3c88;">Recently Posted</h3>
+            <?php if (!empty($recentJobs)): ?>
+                <!-- Scrollable container -->
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <div class="row fw-bold bg-primary text-white p-2 rounded mb-2">
+                        <div class="col-3">Job Title</div>
+                        <div class="col-2">Department</div>
+                        <div class="col-2">Vacancies</div>
+                        <div class="col-2">Date Posted</div>
+                        <div class="col-3">Closing Date</div>
+                    </div>
+                    <?php foreach ($recentJobs as $job): ?>
+                        <div class="row bg-white p-2 rounded mb-1">
+                            <div class="col-3"><?= htmlspecialchars($job['job_title']); ?></div>
+                            <div class="col-2"><?= htmlspecialchars($job['deptName']); ?></div>
+                            <div class="col-2"><?= htmlspecialchars($job['vacancies']); ?></div>
+                            <div class="col-2"><?= htmlspecialchars($job['date_posted']); ?></div>
+                            <div class="col-3"><?= htmlspecialchars($job['closing_date']); ?></div>
+
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php else: ?>
+                <p>No job posts yet.</p>
+            <?php endif; ?>
+        </div>
+
+    </main>
+
+    <!-- Add Job Modal -->
+    <div class="modal fade" id="jobModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 700px;" style="max-height: 100px;"
+            style="font-size:15px;">
+            <div class="modal-content">
+                <form id="addJobForm" method="POST">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">Add New Job</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="new_post" value="1">
+                        <input type="hidden" name="vacancy_id" id="vacancy_id">
+                        <div class="mb-3">
+                            <label>Job Title</label>
+                            <select name="job_title" id="job_title" class="form-select" required>
+                                <option value="">-- Select Job Title --</option>
+                                <?php foreach ($vacancies as $vac): ?>
+                                    <option value="<?= htmlspecialchars($vac['position_title']); ?>"
+                                        data-department="<?= htmlspecialchars($vac['deptName']); ?>"
+                                        data-employment="<?= htmlspecialchars($vac['employment_type']); ?>"
+                                        data-vacancies="<?= htmlspecialchars($vac['vacancy_count']); ?>"
+                                        data-id="<?= (int) $vac['id']; ?>">
+                                        <?= htmlspecialchars($vac['position_title']); ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="mb-3"><label>Department</label><input type="text" id="department"
+                                class="form-control" readonly></div>
+                        <div class="mb-3"><label>Employment Type</label><input type="text" id="employment_type"
+                                class="form-control" readonly></div>
+                        <div class="mb-3"><label>Vacancies</label><input type="number" id="vacancies"
+                                class="form-control" readonly></div>
+                        <div class="mb-3"><label>Educational Level</label><input type="text" name="educational_level"
+                                class="form-control" required></div>
+                        <div class="mb-3"><label>Skills</label><input type="text" name="skills" class="form-control">
+                        </div>
+                        <div class="mb-3"><label>Expected Salary</label><input type="text" name="expected_salary"
+                                class="form-control" required></div>
+                        <div class="mb-3"><label>Experience in Years</label><input type="text" name="experience_years"
+                                class="form-control" required></div>
+                        <div class="mb-3"><label>Job Description</label><textarea name="job_description"
+                                class="form-control" rows="4" required></textarea></div>
+                        <div class="mb-3"><label>Closing Date</label><input type="date" name="closing_date"
+                                class="form-control" required></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success">Post Job</button>
+                    </div>
+                </form>
             </div>
         </div>
-        <?php endforeach; else: ?>
-        <p>No available jobs found.</p>
-        <?php endif; ?>
     </div>
 
-   <!-- Recently Posted -->
-<div class="job-table">
-    <h3 style="color:#1f3c88;">Recently Posted</h3>
-    <?php if(!empty($recentJobs)): ?>
-    <!-- Scrollable container -->
-    <div style="max-height: 400px; overflow-y: auto;">
-        <div class="row fw-bold bg-primary text-white p-2 rounded mb-2">
-            <div class="col-3">Job Title</div>
-            <div class="col-2">Department</div>
-            <div class="col-2">Vacancies</div>
-            <div class="col-2">Date Posted</div>
-            <div class="col-3">Closing Date</div>
-        </div>
-        <?php foreach($recentJobs as $job): ?>
-        <div class="row bg-white p-2 rounded mb-1">
-            <div class="col-3"><?= htmlspecialchars($job['job_title']); ?></div>
-            <div class="col-2"><?= htmlspecialchars($job['deptName']); ?></div>
-            <div class="col-2"><?= htmlspecialchars($job['vacancies']); ?></div>
-            <div class="col-2"><?= htmlspecialchars($job['date_posted']); ?></div>
-            <div class="col-3"><?= htmlspecialchars($job['closing_date']); ?></div>
-            
-        </div>
-        <?php endforeach; ?>
-    </div>
-    <?php else: ?>
-    <p>No job posts yet.</p>
-    <?php endif; ?>
-</div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            // Auto-fill Add Job fields
+            $('#job_title').change(function () {
+                var selected = $(this).find(':selected');
+                $('#department').val(selected.data('department') || '');
+                $('#employment_type').val(selected.data('employment') || '');
+                $('#vacancies').val(selected.data('vacancies') || '');
+                $('#vacancy_id').val(selected.data('id') || '');
+            });
 
-</main>
-
-<!-- Add Job Modal -->
-<div class="modal fade" id="jobModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" style="max-width: 700px;" style="max-height: 100px;" style="font-size:15px;">
-    <div class="modal-content">
-      <form id="addJobForm" method="POST">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title">Add New Job</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <input type="hidden" name="new_post" value="1">
-          <input type="hidden" name="vacancy_id" id="vacancy_id">
-          <div class="mb-3">
-            <label>Job Title</label>
-            <select name="job_title" id="job_title" class="form-select" required>
-              <option value="">-- Select Job Title --</option>
-              <?php foreach($vacancies as $vac): ?>
-              <option value="<?= htmlspecialchars($vac['position_title']); ?>"
-                      data-department="<?= htmlspecialchars($vac['deptName']); ?>"
-                      data-employment="<?= htmlspecialchars($vac['employment_type']); ?>"
-                      data-vacancies="<?= htmlspecialchars($vac['vacancy_count']); ?>"
-                      data-id="<?= (int)$vac['id']; ?>">
-                <?= htmlspecialchars($vac['position_title']); ?>
-              </option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-          <div class="mb-3"><label>Department</label><input type="text" id="department" class="form-control" readonly></div>
-          <div class="mb-3"><label>Employment Type</label><input type="text" id="employment_type" class="form-control" readonly></div>
-          <div class="mb-3"><label>Vacancies</label><input type="number" id="vacancies" class="form-control" readonly></div>
-          <div class="mb-3"><label>Educational Level</label><input type="text" name="educational_level" class="form-control" required></div>
-          <div class="mb-3"><label>Skills</label><input type="text" name="skills" class="form-control"></div>
-          <div class="mb-3"><label>Expected Salary</label><input type="text" name="expected_salary" class="form-control" required></div>
-          <div class="mb-3"><label>Experience in Years</label><input type="text" name="experience_years" class="form-control" required></div>
-          <div class="mb-3"><label>Job Description</label><textarea name="job_description" class="form-control" rows="4" required></textarea></div>
-          <div class="mb-3"><label>Closing Date</label><input type="date" name="closing_date" class="form-control" required></div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-success">Post Job</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-$(document).ready(function() {
-    // Auto-fill Add Job fields
-    $('#job_title').change(function(){
-        var selected = $(this).find(':selected');
-        $('#department').val(selected.data('department') || '');
-        $('#employment_type').val(selected.data('employment') || '');
-        $('#vacancies').val(selected.data('vacancies') || '');
-        $('#vacancy_id').val(selected.data('id') || '');
-    });
-
-    // AJAX status update
-    $('.status-dropdown').change(function(){
-        var status = $(this).val();
-        var id = $(this).data('id');
-        $.ajax({
-            url: 'update_vacancy_status.php',
-            type: 'POST',
-            data: {vacancy_id:id, status:status},
-            success:function(res){ console.log(res); },
-            error:function(){ alert('Error updating status.'); }
+            // AJAX status update
+            $('.status-dropdown').change(function () {
+                var status = $(this).val();
+                var id = $(this).data('id');
+                $.ajax({
+                    url: 'update_vacancy_status.php',
+                    type: 'POST',
+                    data: { vacancy_id: id, status: status },
+                    success: function (res) { console.log(res); },
+                    error: function () { alert('Error updating status.'); }
+                });
+            });
         });
-    });
-});
-</script>
+    </script>
 </body>
+
 </html>

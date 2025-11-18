@@ -2,58 +2,106 @@
 session_start();
 require 'admin/db.connect.php';
 
-$employees = 0;
+// Fetch counts
+$employees = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role='Employee'")->fetch_assoc()['count'] ?? 0;
+$applicants = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role='Applicant'")->fetch_assoc()['count'] ?? 0;
+
+// Pending applicants
+$pendingApplicants = 0;
+$q = $conn->query("SELECT COUNT(*) AS count FROM applications WHERE id = 0");
+if ($q && $row = $q->fetch_assoc()) {
+    $pendingApplicants = $row['count'];
+}
+
+// Requests
 $requests = 0;
+$q1 = $conn->query("SELECT COUNT(*) AS count FROM employee_request WHERE status = 'Pending'");
+if ($q1 && $row = $q1->fetch_assoc()) {
+    $requests = $row['count'];
+}
+
+// Hirings
 $hirings = 0;
-$applicants = 0;
-$managername = 0;
-
-$managernameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Employee' AND  sub_role ='HR Manager' LIMIT 1");
-if ($managernameQuery && $row = $managernameQuery->fetch_assoc()) {
-    $managername = $row['fullname'];
+$q2 = $conn->query("SELECT SUM(vacancy_count) AS count FROM vacancies WHERE status IN ('On-Going', 'To Post')");
+if ($q2 && $row = $q2->fetch_assoc()) {
+    $hirings = $row['count'] ?? 0;
 }
 
-
-$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
-if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
-    $employees = $row['count'];
-}
-
-$applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Applicant'");
-if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
-    $applicants = $row['count'];
-}
-
-$pending_applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM applications WHERE id = '0'");
-if ($pending_applicantQuery && $row = $pending_applicantQuery->fetch_assoc()) {
-    $pending_applicantQuery = $row['count'];
-}
-
-// Fetch total number of positions for Hirings (status = 'On-Going' or 'To Post')
-$hiringsQuery = $conn->query("
-    SELECT SUM(vacancy_count) AS count 
-    FROM vacancies 
-    WHERE status IN ('On-Going', 'To Post')
-");
-if ($hiringsQuery && $row = $hiringsQuery->fetch_assoc()) {
-    $hirings = $row['count'] ?? 0; 
-}
-
-// Fetch recent vacancies for listing (only On-Going)
-$recentVacanciesQuery = $conn->query("
-    SELECT v.id, v.vacancy_count, v.status, d.deptName, p.position_title, e.typeName AS employment_type
-    FROM vacancies v
-    JOIN department d ON v.department_id = d.deptID
-    JOIN position p ON v.position_id = p.positionID
-    JOIN employment_type e ON v.employment_type_id = e.emtypeID
-    WHERE v.status = 'On-Going'
-    ORDER BY v.id DESC
-    LIMIT 5
-");
+// Manager name
+$managername = $_SESSION['fullname'] ?? "Manager";
 
 
+// MENUS
+$menus = [
+    "HR Director" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Requests" => "Manager_Request.php",
+        "Vacancies" => "Admin_Vacancies.php",
+        "Job Post" => "Manager-JobPosting.php",
+        "Calendar" => "Manager_Calendar.php",
+        "Approvals" => "Manager_Approvals.php",
+        "Settings" => "Manager_LeaveSettings.php",
+        "Logout" => "Login.php"
+    ],
 
+    "HR Manager" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Requests" => "Manager_Request.php",
+        "Vacancies" => "Admin_Vacancies.php",
+        "Job Post" => "Manager-JobPosting.php",
+        "Calendar" => "Manager_Calendar.php",
+        "Approvals" => "Manager_Approvals.php",
+        "Settings" => "Manager_LeaveSettings.php",
+        "Logout" => "Login.php"
+    ],
+
+    "Recruitment Manager" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Vacancies" => "Admin_Vacancies.php",
+        "Logout" => "Login.php"
+    ],
+
+    "HR Officer" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Logout" => "Login.php"
+    ],
+
+    "HR Assistant" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Logout" => "Login.php"
+    ],
+
+    "Training and Development Coordinator" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Employees" => "Manager_Employees.php",
+        "Calendar" => "Manager_Calendar.php",
+        "Requests" => "Manager_Request.php",
+        "Logout" => "Login.php"
+    ]
+];
+
+$role = $_SESSION['sub_role'] ?? "HR Manager";
 ?>
+
 
 
 
@@ -149,17 +197,9 @@ $recentVacanciesQuery = $conn->query("
         </div>
 
         <ul class="nav">
-            <li class="active"><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-            <li><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-            <li><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
-            <li><a href="Newly-Hired.php"><i class="fa-solid fa-user-plus"></i>Newly Hired</a></li>
-            <li ><a href="Manager_Employees.php"><i class="fa-solid fa-user-group me-2"></i>Employees</a></li>
-            <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-            <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
-            <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
-            <li><a href="Manager_Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
-            <li><a href="Manager_LeaveSettings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-            <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
+            <?php foreach ($menus[$role] as $label => $link): ?>
+                <li><a href="<?php echo $link; ?>"><?php echo $label; ?></a></li>
+            <?php endforeach; ?>
         </ul>
     </div>
 
@@ -170,31 +210,31 @@ $recentVacanciesQuery = $conn->query("
         </div>
 
         <div class="stats">
-    <div class="section">
-        <label>Employees</label>
-        <h3><?php echo $employees; ?></h3>
-    </div>
+            <div class="section">
+                <label>Employees</label>
+                <h3><?php echo $employees; ?></h3>
+            </div>
 
-    <div class="section">
-        <label>Applicants</label>
-        <h3><?php echo $applicants; ?></h3>
-    </div>
+            <div class="section">
+                <label>Applicants</label>
+                <h3><?php echo $applicants; ?></h3>
+            </div>
 
-    <div class="section">
-        <label>Requests</label>
-        <h3><?php echo $requests; ?></h3>
-    </div>
+            <div class="section">
+                <label>Requests</label>
+                <h3><?php echo $requests; ?></h3>
+            </div>
 
-    <div class="section">
-        <label>Hirings</label>
-        <h3><?php echo $hirings; ?></h3>
-    </div>
+            <div class="section">
+                <label>Hirings</label>
+                <h3><?php echo $hirings; ?></h3>
+            </div>
 
-    <div class="section">
-        <label>Pending Applicants</label>
-        <h3><?php echo $pending_applicantQuery;  ?></h3>
-    </div>
-</div>
+            <div class="section">
+                <label>Pending Applicants</label>
+                <h3><?php echo $pendingApplicants; ?></h3>
+            </div>
+        </div>
 
 
         <div class="job-posts">

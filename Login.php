@@ -18,7 +18,7 @@ if (isset($_POST['login'])) {
 
         if (password_verify($password, $hashedPassword)) {
 
-            
+
             $_SESSION['email'] = $row['email'];
             $_SESSION['role'] = $row['role'];
             $_SESSION['fullname'] = $row['fullname'];
@@ -28,30 +28,61 @@ if (isset($_POST['login'])) {
 
 
             $role = strtolower(trim($row['role']));
-            $sub_role = strtolower(trim($row['sub_role'] ?? ''));
+            $sub_role = trim($row['sub_role'] ?? '');
 
-           
-            if ($role === 'admin') {
-                header("Location: Admin_Dashboard.php");
-                exit;
-            } elseif ($role === 'applicant') {
-                header("Location: Applicant_Dashboard.php");
-                exit;
-            } elseif ($role === 'employee' && $sub_role === 'hr manager') {
-                header("Location: Manager_Dashboard.php");
-                exit;
-            } elseif ($role === 'employee') {
-                header("Location: Employee_Dashboard.php");
-                exit;
+            /* REDIRECTION MAP */
+            $redirects = [
+
+                // Main roles
+                "admin" => "Admin_Dashboard.php",
+                "applicant" => "Applicant_Dashboard.php",
+
+                // Employee sub-roles
+                "employee" => [
+
+                    "HR Director" => "Manager_Dashboard.php",
+                    "HR Manager" => "Manager_Dashboard.php",
+                    "Recruitment Manager" => "Manager_Dashboard.php",
+                    "HR Officer" => "Manager_Dashboard.php",
+                    "HR Assistant" => "Manager_Dashboard.php",
+                    "Training and Development Coordinator" => "Manager_Dashboard.php",
+
+                    // fallback if sub_role does not match any above
+                    "default" => "Employee_Dashboard.php"
+                ]
+            ];
+
+            /* REDIRECTION LOGIC */
+            if (isset($redirects[$role])) {
+
+                // EMPLOYEE ROLE → requires sub_role check
+                if ($role === "employee") {
+
+                    if (isset($redirects["employee"][$sub_role])) {
+                        header("Location: " . $redirects["employee"][$sub_role]);
+                        exit;
+                    } else {
+                        // Unknown employee sub-role → go to general employee dashboard
+                        header("Location: " . $redirects["employee"]["default"]);
+                        exit;
+                    }
+
+                } else {
+                    // Normal roles (admin, applicant)
+                    header("Location: " . $redirects[$role]);
+                    exit;
+                }
+
             } else {
                 echo "<script>alert('Unknown role for this account.');</script>";
             }
 
+            $success_msg = "Login successful!";
         } else {
-            echo "<script>alert('Incorrect password.');</script>";
+            $error_msg = "Incorrect password.";
         }
     } else {
-        echo "<script>alert('Email not found.');</script>";
+        $error_msg = "No account found with that email.";
     }
 }
 ?>
@@ -65,7 +96,7 @@ if (isset($_POST['login'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="stylesheet.css">
-   
+
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -109,13 +140,11 @@ if (isset($_POST['login'])) {
             border-radius: 5px;
             cursor: pointer;
         }
-
-        
     </style>
 </head>
 
 <body class="login-body">
-   
+
     <nav class="top-bar">
         <div class="logo-header">
             <img src="Images/hospitallogo.png" alt="Happy Picture">
@@ -155,7 +184,7 @@ if (isset($_POST['login'])) {
         </section>
     </main>
 
-    
+
     <div id="successModal" class="modal">
         <div class="modal-content">
             <h2>Login Successful!</h2>
@@ -164,7 +193,7 @@ if (isset($_POST['login'])) {
         </div>
     </div>
 
-   
+
     <div id="errorModal" class="modal">
         <div class="modal-content">
             <h2>Login Failed</h2>

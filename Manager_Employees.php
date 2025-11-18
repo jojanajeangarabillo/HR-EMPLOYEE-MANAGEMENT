@@ -8,19 +8,15 @@ $hirings = 0;
 $applicants = 0;
 $managername = 0;
 
-$managernameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Employee' AND  sub_role ='HR Manager' LIMIT 1");
-if ($managernameQuery && $row = $managernameQuery->fetch_assoc()) {
-    $managername = $row['fullname'];
-}
 
 $employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
 if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
-    $employees = $row['count'];
+  $employees = $row['count'];
 }
 
 $applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Applicant'");
 if ($applicantQuery && $row = $applicantQuery->fetch_assoc()) {
-    $applicants = $row['count'];
+  $applicants = $row['count'];
 }
 
 // Fetch newly hired applicants
@@ -30,6 +26,80 @@ $newlyHiredQuery = $conn->query("
     WHERE status='Hired'
 ");
 $newlyHired = $newlyHiredQuery ? $newlyHiredQuery->fetch_all(MYSQLI_ASSOC) : [];
+
+// Manager name
+$managername = $_SESSION['fullname'] ?? "Manager";
+
+
+// MENUS
+$menus = [
+  "HR Director" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Employees" => "Manager_Employees.php",
+    "Requests" => "Manager_Request.php",
+    "Vacancies" => "Admin_Vacancies.php",
+    "Job Post" => "Manager-JobPosting.php",
+    "Calendar" => "Manager_Calendar.php",
+    "Approvals" => "Manager_Approvals.php",
+    "Settings" => "Manager_LeaveSettings.php",
+    "Logout" => "Login.php"
+  ],
+
+  "HR Manager" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Employees" => "Manager_Employees.php",
+    "Requests" => "Manager_Request.php",
+    "Vacancies" => "Admin_Vacancies.php",
+    "Job Post" => "Manager-JobPosting.php",
+    "Calendar" => "Manager_Calendar.php",
+    "Approvals" => "Manager_Approvals.php",
+    "Settings" => "Manager_LeaveSettings.php",
+    "Logout" => "Login.php"
+  ],
+
+  "Recruitment Manager" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Vacancies" => "Admin_Vacancies.php",
+    "Logout" => "Login.php"
+  ],
+
+  "HR Officer" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Employees" => "Manager_Employees.php",
+    "Logout" => "Login.php"
+  ],
+
+  "HR Assistant" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Employees" => "Manager_Employees.php",
+    "Logout" => "Login.php"
+  ],
+
+  "Training and Development Coordinator" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Employees" => "Manager_Employees.php",
+    "Calendar" => "Manager_Calendar.php",
+    "Requests" => "Manager_Request.php",
+    "Logout" => "Login.php"
+  ]
+];
+
+$role = $_SESSION['sub_role'] ?? "HR Manager";
 ?>
 
 
@@ -39,105 +109,81 @@ $newlyHired = $newlyHiredQuery ? $newlyHiredQuery->fetch_all(MYSQLI_ASSOC) : [];
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manager Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manager Dashboard</title>
 
-    <link rel="stylesheet" href="manager-sidebar.css">
+  <link rel="stylesheet" href="manager-sidebar.css">
 
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
-        integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
+    integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <style>
-        body {
-            font-family: 'Poppins', 'Roboto', sans-serif;
-            margin: 0;
-            display: flex;
-            background-color: #f1f5fc;
-            color: #111827;
-        }
-
-        .sidebar-logo {
-     display: flex;
-     justify-content: center;
-     margin-bottom: 25px;
-    }
-
-    .sidebar-logo img {
-     height: 110px;
-     width: 110px;
-     border-radius: 50%;
-     object-fit: cover;
-     border: 3px solid #ffffff;
+  <style>
+    body {
+      font-family: 'Poppins', 'Roboto', sans-serif;
+      margin: 0;
+      display: flex;
+      background-color: #f1f5fc;
+      color: #111827;
     }
 
 
-        .sidebar-name {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            color: white;
-            padding: 10px;
-            margin-bottom: 30px;
-            font-size: 18px;
-            flex-direction: column;
-        }
 
-        .main-content {
-            padding: 40px 30px;
-            margin-left: 220px;
-            display: flex;
-            flex-direction: column;
-        }
+    .main-content {
+      padding: 40px 30px;
+      margin-left: 220px;
+      display: flex;
+      flex-direction: column;
+    }
 
-        .main-content-header h1 {
-            padding: 25px 30px;
-            margin: 0;
-            font-size: 2rem;
-            margin-bottom: 40px;
-            color: #1E3A8A;
-        }
+    .main-content-header h1 {
+      padding: 25px 30px;
+      margin: 0;
+      font-size: 2rem;
+      margin-bottom: 40px;
+      color: #1E3A8A;
+    }
 
-        .job-posts h2 {
-            padding: 25px 30px;
-            margin: 0;
-            font-size: 2rem;
-            margin-bottom: 40px;
-            color: #1E3A8A;
-        }
+    .job-posts h2 {
+      padding: 25px 30px;
+      margin: 0;
+      font-size: 2rem;
+      margin-bottom: 40px;
+      color: #1E3A8A;
+    }
 
-        .stats {
-            display: flex;
-            gap: 40px;
-            flex-wrap: wrap;
-            margin-left: 40px;
-        }
+    .stats {
+      display: flex;
+      gap: 40px;
+      flex-wrap: wrap;
+      margin-left: 40px;
+    }
 
-        .section {
-            padding: 25px 30px;
-            border-radius: 15px;
-            border-top-style: solid;
-            border-color: #1E3A8A;
-            width: 350px;
-            height: 120px;
-            background-color: white;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease;
-        }
+    .section {
+      padding: 25px 30px;
+      border-radius: 15px;
+      border-top-style: solid;
+      border-color: #1E3A8A;
+      width: 350px;
+      height: 120px;
+      background-color: white;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
+    }
 
-        .section label {
-            font-size: 20px;
-        }
+    .section label {
+      font-size: 20px;
+    }
 
-        .section h3 {
-            color: #1E3A8A;
-            margin-top: 15px;
-            font-size: 25px;
-        }
-        /* Content section wrapper */
+    .section h3 {
+      color: #1E3A8A;
+      margin-top: 15px;
+      font-size: 25px;
+    }
+
+    /* Content section wrapper */
     .content-section {
       max-width: 1400px;
       margin: 0 auto;
@@ -216,23 +262,23 @@ $newlyHired = $newlyHiredQuery ? $newlyHiredQuery->fetch_all(MYSQLI_ASSOC) : [];
       box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
     }
 
-   .table-container {
-  width: 100%;
-  padding: 0 30px;
-  margin-top: 20px;
-  box-sizing: border-box;
-}
+    .table-container {
+      width: 100%;
+      padding: 0 30px;
+      margin-top: 20px;
+      box-sizing: border-box;
+    }
 
 
-   .table-responsive {
-  width: 100%;
-  overflow-x: auto;
-}
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+    }
 
-.table-responsive table {
-  width: 100%;
-  border-collapse: collapse;
-}
+    .table-responsive table {
+      width: 100%;
+      border-collapse: collapse;
+    }
 
 
     table {
@@ -295,36 +341,28 @@ $newlyHired = $newlyHiredQuery ? $newlyHiredQuery->fetch_all(MYSQLI_ASSOC) : [];
     .action-icons a.delete:hover {
       color: #dc3545;
     }
-    </style>
+  </style>
 </head>
 
 <body>
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-        <div class="sidebar-logo">
-            <img src="Images/hospitallogo.png" alt="Hospital Logo">
-        </div>
-
-        <div class="sidebar-name">
-            <p><?php echo "Welcome, $managername"; ?></p>
-        </div>
-
-        <ul class="nav">
-            <li><a href="Manager_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-            <li><a href="Manager_Applicants.php"><i class="fa-solid fa-user-group"></i>Applicants</a></li>
-            <li><a href="Manager_PendingApplicants.php"><i class="fa-solid fa-hourglass-half"></i>Pending Applicants</a></li>
-            <li><a href="Newly-Hired.php"><i class="fa-solid fa-user-plus"></i>Newly Hired</a></li>
-            <li class="active"><a href="Manager_Employees.php"><i class="fa-solid fa-user-group me-2"></i>Employees</a></li>
-            <li><a href="Manager_Request.php"><i class="fa-solid fa-code-pull-request"></i>Requests</a></li>
-            <li><a href="Manager-JobPosting.php"><i class="fa-solid fa-briefcase"></i>Job Post</a></li>
-            <li><a href="Manager_Calendar.php"><i class="fa-solid fa-calendar"></i>Calendar</a></li>
-            <li><a href="Manager_Approvals.php"><i class="fa-solid fa-circle-check"></i>Approvals</a></li>
-            <li><a href="Manager_LeaveSettings.php"><i class="fa-solid fa-gear"></i>Settings</a></li>
-            <li><a href="#"><i class="fa-solid fa-right-from-bracket"></i>Logout</a></li>
-        </ul>
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <img src="Images/hospitallogo.png" alt="Hospital Logo">
     </div>
 
-   <div class="main-content">
+    <div class="sidebar-name">
+      <p><?php echo "Welcome, $managername"; ?></p>
+    </div>
+
+    <ul class="nav">
+      <?php foreach ($menus[$role] as $label => $link): ?>
+        <li><a href="<?php echo $link; ?>"><?php echo $label; ?></a></li>
+      <?php endforeach; ?>
+    </ul>
+  </div>
+
+  <div class="main-content">
     <div class="main-content-header">
       <h1>Employee List</h1>
     </div>
