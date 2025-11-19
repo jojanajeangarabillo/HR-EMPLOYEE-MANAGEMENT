@@ -120,7 +120,7 @@ $menus = [
         "Newly Hired" => "Newly-Hired.php",
         "Employees" => "Manager_Employees.php",
         "Requests" => "Manager_Request.php",
-        "Vacancies" => "Admin_Vacancies.php",
+        "Vacancies" => "Manager_Vacancies.php",
         "Job Post" => "Manager-JobPosting.php",
         "Calendar" => "Manager_Calendar.php",
         "Approvals" => "Manager_Approvals.php",
@@ -135,7 +135,7 @@ $menus = [
         "Newly Hired" => "Newly-Hired.php",
         "Employees" => "Manager_Employees.php",
         "Requests" => "Manager_Request.php",
-        "Vacancies" => "Admin_Vacancies.php",
+        "Vacancies" => "Manager_Vacancies.php",
         "Job Post" => "Manager-JobPosting.php",
         "Calendar" => "Manager_Calendar.php",
         "Approvals" => "Manager_Approvals.php",
@@ -148,7 +148,7 @@ $menus = [
         "Applicants" => "Manager_Applicants.php",
         "Pending Applicants" => "Manager_PendingApplicants.php",
         "Newly Hired" => "Newly-Hired.php",
-        "Vacancies" => "Admin_Vacancies.php",
+        "Vacancies" => "Manager_Vacancies.php",
         "Logout" => "Login.php"
     ],
 

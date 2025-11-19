@@ -2,9 +2,81 @@
 session_start();
 require 'admin/db.connect.php';
 
-// Get Admin Name
-$adminQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin'");
-$adminname = ($adminQuery && $row = $adminQuery->fetch_assoc()) ? $row['fullname'] : 'Admin';
+
+// Manager name
+$managername = $_SESSION['fullname'] ?? "Manager";
+
+
+// MENUS
+$menus = [
+    "HR Director" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Requests" => "Manager_Request.php",
+        "Vacancies" => "Admin_Vacancies.php",
+        "Job Post" => "Manager-JobPosting.php",
+        "Calendar" => "Manager_Calendar.php",
+        "Approvals" => "Manager_Approvals.php",
+        "Settings" => "Manager_LeaveSettings.php",
+        "Logout" => "Login.php"
+    ],
+
+    "HR Manager" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Requests" => "Manager_Request.php",
+        "Vacancies" => "Admin_Vacancies.php",
+        "Job Post" => "Manager-JobPosting.php",
+        "Calendar" => "Manager_Calendar.php",
+        "Approvals" => "Manager_Approvals.php",
+        "Settings" => "Manager_LeaveSettings.php",
+        "Logout" => "Login.php"
+    ],
+
+    "Recruitment Manager" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Vacancies" => "Admin_Vacancies.php",
+        "Logout" => "Login.php"
+    ],
+
+    "HR Officer" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Logout" => "Login.php"
+    ],
+
+    "HR Assistant" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Applicants" => "Manager_Applicants.php",
+        "Pending Applicants" => "Manager_PendingApplicants.php",
+        "Newly Hired" => "Newly-Hired.php",
+        "Employees" => "Manager_Employees.php",
+        "Logout" => "Login.php"
+    ],
+
+    "Training and Development Coordinator" => [
+        "Dashboard" => "Manager_Dashboard.php",
+        "Employees" => "Manager_Employees.php",
+        "Calendar" => "Manager_Calendar.php",
+        "Requests" => "Manager_Request.php",
+        "Logout" => "Login.php"
+    ]
+];
+
+$role = $_SESSION['sub_role'] ?? "HR Manager";
+$posted_by = $_SESSION['fullname'] ?? "Manager";
 
 $message = '';
 $messageType = '';
@@ -17,8 +89,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $employmentTypeID = $_POST['employment_type'] ?? '';
 
     if ($departmentID && $positionID && $employmentTypeID && $vacancyCount > 0) { // include employmentTypeID
-        $stmt = $conn->prepare("INSERT INTO vacancies (department_id, position_id, employment_type_id, vacancy_count) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("iiii", $departmentID, $positionID, $employmentTypeID, $vacancyCount);
+        $stmt = $conn->prepare("INSERT INTO vacancies (department_id, position_id, employment_type_id, vacancy_count, posted_by) VALUES (?, ?, ?, ?, ?)");
+        $stmt->bind_param("iiiss", $departmentID, $positionID, $employmentTypeID, $vacancyCount, $posted_by);
 
         if ($stmt->execute()) {
             header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
@@ -75,18 +147,20 @@ while ($row = $etypeQuery->fetch_assoc()) {
 }
 
 
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Vacancies</title>
-    <link rel="stylesheet" href="admin-sidebar.css">
+    <title>Manager Vacancies</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="manager-sidebar.css">
     <style>
         body {
             font-family: 'Poppins', 'Roboto', sans-serif;
@@ -302,26 +376,24 @@ while ($row = $etypeQuery->fetch_assoc()) {
 </head>
 
 <body>
+    <!-- SIDEBAR -->
     <div class="sidebar">
         <div class="sidebar-logo">
             <img src="Images/hospitallogo.png" alt="Hospital Logo">
         </div>
 
         <div class="sidebar-name">
-            <p><?php echo "Welcome, $adminname"; ?></p>
+            <p><?php echo "Welcome, $managername"; ?></p>
         </div>
 
-        <ul class="nav flex-column">
-            <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i> Dashboard</a></li>
-            <li><a href="Admin_UserManagement.php"><i class="fa-solid fa-users"></i> User Management</a></li>
-            <li><a href="Admin_Departments.php"><i class="fa-building-columns"></i> Departments</a></li>
-            <li class="active"><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i> Vacancies</a></li>
-            <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-check"></i> Applicants</a></li>
-            <li><a href="Admin_Reports.php"><i class="fa-solid fa-chart-simple"></i> Reports</a></li>
-            <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i> Settings</a></li>
-            <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+        <ul class="nav">
+            <?php foreach ($menus[$role] as $label => $link): ?>
+                <li><a href="<?php echo $link; ?>"><?php echo $label; ?></a></li>
+            <?php endforeach; ?>
         </ul>
     </div>
+
+
     <main class="main-content">
         <div class="main-content-header">
             <h1>Upload Vacancies</h1>
@@ -511,6 +583,8 @@ while ($row = $etypeQuery->fetch_assoc()) {
                 });
 
             </script>
+
+
 </body>
 
 </html>

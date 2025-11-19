@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 18, 2025 at 10:23 AM
+-- Generation Time: Nov 19, 2025 at 02:41 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -569,6 +569,7 @@ CREATE TABLE `vacancies` (
   `employment_type_id` int(11) NOT NULL,
   `vacancy_count` int(11) NOT NULL,
   `status` varchar(255) NOT NULL DEFAULT 'To Post',
+  `posted_by` varchar(100) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -576,15 +577,16 @@ CREATE TABLE `vacancies` (
 -- Dumping data for table `vacancies`
 --
 
-INSERT INTO `vacancies` (`id`, `department_id`, `position_id`, `employment_type_id`, `vacancy_count`, `status`, `created_at`) VALUES
-(41, 1, 1, 4, 1, 'On-Going', '2025-11-10 11:59:15'),
-(42, 8, 66, 1, 1, 'On-Going', '2025-11-10 12:04:51'),
-(43, 1, 2, 4, 1, 'On-Going', '2025-11-10 12:32:38'),
-(44, 2, 9, 4, 1, 'On-Going', '2025-11-10 12:34:52'),
-(45, 1, 1, 4, 1, 'On-Going', '2025-11-10 13:44:28'),
-(46, 2, 9, 4, 1, 'On-Going', '2025-11-10 13:55:14'),
-(47, 2, 12, 5, 1, 'On-Going', '2025-11-10 13:56:40'),
-(48, 9, 73, 1, 1, 'On-Going', '2025-11-10 14:04:01');
+INSERT INTO `vacancies` (`id`, `department_id`, `position_id`, `employment_type_id`, `vacancy_count`, `status`, `posted_by`, `created_at`) VALUES
+(41, 1, 1, 4, 1, 'On-Going', '', '2025-11-10 11:59:15'),
+(42, 8, 66, 1, 1, 'On-Going', '', '2025-11-10 12:04:51'),
+(43, 1, 2, 4, 1, 'On-Going', '', '2025-11-10 12:32:38'),
+(44, 2, 9, 4, 1, 'On-Going', '', '2025-11-10 12:34:52'),
+(45, 1, 1, 4, 1, 'On-Going', '', '2025-11-10 13:44:28'),
+(46, 2, 9, 4, 1, 'On-Going', '', '2025-11-10 13:55:14'),
+(47, 2, 12, 5, 1, 'On-Going', '', '2025-11-10 13:56:40'),
+(48, 9, 73, 1, 1, 'On-Going', '', '2025-11-10 14:04:01'),
+(49, 3, 24, 2, 20, 'To Post', 'Jane Garabillo', '2025-11-19 13:39:12');
 
 --
 -- Indexes for dumped tables
@@ -800,7 +802,7 @@ ALTER TABLE `system_settings`
 -- AUTO_INCREMENT for table `vacancies`
 --
 ALTER TABLE `vacancies`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- Constraints for dumped tables
