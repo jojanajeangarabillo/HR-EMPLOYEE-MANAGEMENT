@@ -271,108 +271,133 @@ $pdf->Ln(4);
  <link rel="stylesheet" href="admin-sidebar.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"/>
+
+<style>
+
+  body { font-family: 'Poppins', sans-serif; margin:0; display:flex; background-color:#f1f5fc; color:#111827; }
+        .main-content { padding:40px 30px; margin-left:220px; display:flex; flex-direction:column; }
+
+          .main-content h1 {
+            color: #1E3A8A;
+            margin-bottom: 20px;
+            margin-left: 10px;
+        }
+
+
+
+</style>
+
+
+
 </head>
 <body>
-<div class="container-fluid p-4">
-    <h1 class="mb-4"><i class="fa-solid fa-chart-column"></i> Admin Reports</h1>
+  
 
-    <form method="GET" class="row g-3 mb-3">
-        <div class="col-md-3">
-            <label class="form-label">Report Type</label>
-            <select class="form-select" name="report" onchange="this.form.submit()">
-                <option value="department-summary" <?= $report_type=='department-summary'?'selected':'' ?>>Department Summary</option>
-                <!-- More report types can be added here -->
-            </select>
-        </div>
-
-        <div class="col-md-3">
-            <label class="form-label">Department</label>
-            <select class="form-select" name="dept">
-                <option value="all">All Departments</option>
-                <?php foreach($departments as $d): ?>
-                    <option value="<?= $d['deptID'] ?>" <?= ($filter_dept==$d['deptID'])?'selected':'' ?>><?= $d['deptName'] ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-
-       <div class="col-md-3">
-    <label class="form-label">Employment Type</label>
-    <select class="form-select" name="type" id="typeSelect">
-        <option value="all">All Types</option>
-        <?php foreach($types as $t): ?>
-            <option value="<?= $t ?>" <?= ($filter_type==$t)?'selected':'' ?>><?= $t ?></option>
-        <?php endforeach; ?>
-    </select>
+<!-- Sidebar -->
+<div class="sidebar">
+    <div class="sidebar-logo"><img src="Images/hospitallogo.png" alt="Hospital Logo"></div>
+    <div class="sidebar-name"><p><?php echo "Welcome Admin, $adminname"; ?></p></div>
+    <ul class="nav flex-column">
+             <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i> Dashboard</a></li>
+            <li><a href="Admin_UserManagement.php"><i class="fa-solid fa-users"></i> User Management</a></li>
+             <li><a href="Admin_Departments.php"><i class="fa-solid fa-building-columns"></i> Departments</a></li>
+            <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i> Vacancies</a></li>
+            <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-check"></i> Applicants</a></li>
+            <li  class="active"><a href="Admin_Reports.php"><i class="fa-solid fa-chart-simple"></i> Reports</a></li>
+            <li><a href="Admin-Settings.php"><i class="fa-solid fa-gear"></i> Settings</a></li>
+            <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+    </ul>
 </div>
+<main class="main-content">
+    <div class="container-fluid p-4">
+        <h1><i class="fa-solid fa-chart-column"></i> Admin Reports</h1>
 
+        <!-- Filters Card -->
+        <div class="card mb-4 shadow-sm border-0">
+            <div class="card-body">
+                <form method="GET" class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Report Type</label>
+                        <select class="form-select" name="report" onchange="this.form.submit()">
+                            <option value="department-summary" <?= $report_type=='department-summary'?'selected':'' ?>>Department Summary</option>
+                        </select>
+                    </div>
 
-        <div class="col-md-2">
-            <label class="form-label">From</label>
-            <input type="date" class="form-control" name="from" value="<?= $filter_from ?>">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Department</label>
+                        <select class="form-select" name="dept">
+                            <option value="all">All Departments</option>
+                            <?php foreach($departments as $d): ?>
+                                <option value="<?= $d['deptID'] ?>" <?= ($filter_dept==$d['deptID'])?'selected':'' ?>><?= $d['deptName'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Employment Type</label>
+                        <select class="form-select" name="type" id="typeSelect">
+                            <option value="all">All Types</option>
+                            <?php foreach($types as $t): ?>
+                                <option value="<?= $t ?>" <?= ($filter_type==$t)?'selected':'' ?>><?= $t ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">From</label>
+                        <input type="date" class="form-control" name="from" value="<?= $filter_from ?>">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">To</label>
+                        <input type="date" class="form-control" name="to" value="<?= $filter_to ?>">
+                    </div>
+
+                    <div class="col-12 d-flex gap-2 mt-2">
+                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Filter</button>
+                        <a href="?<?= http_build_query($_GET) ?>&export=pdf" class="btn btn-danger"><i class="fa-solid fa-file-pdf"></i> Export PDF</a>
+                    </div>
+                </form>
+            </div>
         </div>
 
-        <div class="col-md-2">
-            <label class="form-label">To</label>
-            <input type="date" class="form-control" name="to" value="<?= $filter_to ?>">
-        </div>
-
-        <div class="col-md-12 mt-2 d-flex gap-2">
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Filter</button>
-            <a href="?<?= http_build_query($_GET) ?>&export=excel" class="btn btn-success"><i class="fa-solid fa-file-excel"></i> Export Excel</a>
-            <a href="?<?= http_build_query($_GET) ?>&export=pdf" class="btn btn-danger"><i class="fa-solid fa-file-pdf"></i> Export PDF</a>
-        </div>
-    </form>
-
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover align-middle text-center">
-            <thead class="table-dark">
-                <tr>
-                    <th>Department</th>
-                    <th>Position</th>
-                    <th>Employment Type</th>
-                    <th>Total Employees</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach($summary as $dept => $positions): ?>
-                    <?php foreach($positions as $pos => $types): ?>
-                        <?php foreach($types as $type => $total): ?>
+        <!-- Report Table Card -->
+        <div class="card shadow-sm border-0">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle text-center mb-0">
+                        <thead class="table-dark">
                             <tr>
-                                <td><?= $dept ?></td>
-                                <td><?= $pos ?></td>
-                                <td><?= $type ?></td>
-                                <td><?= $total ?></td>
+                                <th>Department</th>
+                                <th>Position</th>
+                                <th>Employment Type</th>
+                                <th>Total Employees</th>
                             </tr>
-                        <?php endforeach; ?>
-                    <?php endforeach; ?>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach($summary as $dept => $positions): ?>
+                                <?php foreach($positions as $pos => $types): ?>
+                                    <?php foreach($types as $type => $total): ?>
+                                        <tr>
+                                            <td><?= $dept ?></td>
+                                            <td><?= $pos ?></td>
+                                            <td><?= $type ?></td>
+                                            <td><?= $total ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php endforeach; ?>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
-</div>
+</main>
 </body>
 
 <script>
-const filterForm = document.querySelector('form');
-const deptSelect = document.querySelector('select[name="dept"]');
-const typeSelect = document.querySelector('select[name="type"]');
 
-deptSelect.addEventListener('change', () => {
-    const deptID = deptSelect.value;
-
-    // Fetch filtered employment types from the same file
-    fetch(`?ajax=1&dept=${deptID}`)
-        .then(res => res.json())
-        .then(types => {
-    typeSelect.innerHTML = '<option value="all">All Types</option>';
-    types.forEach(t => {
-        const selected = t === "<?= $filter_type ?>" ? 'selected' : '';
-        typeSelect.innerHTML += `<option value="${t}" ${selected}>${t}</option>`;
-    });
-    filterForm.submit(); // correct placement
-});
-
-});
 
 
 const filterForm = document.querySelector('form');
