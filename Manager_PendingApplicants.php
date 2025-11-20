@@ -468,6 +468,7 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
   }
 }
 
+//applicant info in modal
 
 ?>
 <!DOCTYPE html>
@@ -876,13 +877,9 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
           <div class="row mb-3">
             <div class="col-md-6">
               <p><strong>Education:</strong> <span id="applicantEducation"></span></p>
-              <p><strong>Experience:</strong> <span id="applicantExperience"></span></p>
+              <p><strong>Employment Experience:</strong> <span id="applicantExperience"></span></p>
             </div>
-            <div class="col-md-6">
-              <p><strong>Skills:</strong> <span id="applicantSkills"></span></p>
-              <p><strong>Summary:</strong> <span id="applicantSummary"></span></p>
-            </div>
-          </div>
+
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -1117,7 +1114,7 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
 
         const d = data.data;
         document.getElementById('applicantModalTitle').textContent = d.fullName;
-        document.getElementById('applicantPic').src = d.profile_pic || 'Images/default-profile.png';
+        document.getElementById('applicantPic').src = d.profile_pic || 'uploads/applicants/default.png';
         document.getElementById('applicantName').textContent = d.fullName;
         document.getElementById('applicantEmail').textContent = d.email_address;
         document.getElementById('applicantContact').textContent = d.contact_number || '-';
@@ -1125,9 +1122,9 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
         document.getElementById('applicantDepartment').textContent = d.department_name || '-';
         document.getElementById('applicantDateApplied').textContent = d.date_applied || '-';
         document.getElementById('applicantEducation').textContent = `${d.university || '-'} (${d.course || '-'}, Graduated: ${d.year_graduated || '-'})`;
-        document.getElementById('applicantExperience').textContent = `${d.years_experience || 0} years, Role: ${d.in_role || '-'}, Company: ${d.company_name || '-'}, Started: ${d.date_started || '-'}`;
-        document.getElementById('applicantSkills').textContent = d.skills || '-';
-        document.getElementById('applicantSummary').textContent = d.summary || '-';
+       document.getElementById('applicantExperience').innerHTML =
+  `${d.years_experience || 0} years<br>Previous Company: ${d.company_name || '-'}`;
+       
 
         const modal = new bootstrap.Modal(document.getElementById('applicantModal'));
         modal.show();

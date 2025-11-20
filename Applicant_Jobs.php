@@ -145,7 +145,7 @@ $stmt->close();
     }
   } else {
     // Course mismatch
-    $reason = 'Course mismatch';
+    $reason = 'Qualification mismatch';
     $stmt = $conn->prepare("INSERT INTO rejected_applications(applicantID, jobID, reason, rejected_at) VALUES(?,?,?,NOW())");
     $stmt->bind_param('sis', $applicantID, $job_id, $reason);
     $stmt->execute();
@@ -582,7 +582,7 @@ if ($search !== '') {
             btn.removeClass('btn-success').addClass('btn-warning').text('Pending').prop('disabled', true);
           }
           else if (res.status === 'rejected') {
-            $('#rejectedMessage').text("Your application for " + res.job + " was rejected due to a course mismatch.");
+            $('#rejectedMessage').text("Your application for " + res.job + " was rejected due to qualification mismatch.");
             new bootstrap.Modal($('#rejectedModal')).show();
             btn.removeClass('btn-success').addClass('btn-danger').text('Rejected').prop('disabled', true);
           }
