@@ -2,10 +2,8 @@
 session_start();
 require 'admin/db.connect.php';
 
-
 // Manager name
 $managername = $_SESSION['fullname'] ?? "Manager";
-
 
 // MENUS
 $menus = [
@@ -23,7 +21,6 @@ $menus = [
         "Settings" => "Manager_LeaveSettings.php",
         "Logout" => "Login.php"
     ],
-
     "HR Manager" => [
         "Dashboard" => "Manager_Dashboard.php",
         "Applicants" => "Manager_Applicants.php",
@@ -38,7 +35,6 @@ $menus = [
         "Settings" => "Manager_LeaveSettings.php",
         "Logout" => "Login.php"
     ],
-
     "Recruitment Manager" => [
         "Dashboard" => "Manager_Dashboard.php",
         "Applicants" => "Manager_Applicants.php",
@@ -47,7 +43,6 @@ $menus = [
         "Vacancies" => "Admin_Vacancies.php",
         "Logout" => "Login.php"
     ],
-
     "HR Officer" => [
         "Dashboard" => "Manager_Dashboard.php",
         "Applicants" => "Manager_Applicants.php",
@@ -56,7 +51,6 @@ $menus = [
         "Employees" => "Manager_Employees.php",
         "Logout" => "Login.php"
     ],
-
 ];
 
 $role = $_SESSION['sub_role'] ?? "HR Manager";
@@ -72,10 +66,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $vacancyCount = $_POST['vacancyCount'] ?? '';
     $employmentTypeID = $_POST['employment_type'] ?? '';
 
-    if ($departmentID && $positionID && $employmentTypeID && $vacancyCount > 0) { // include employmentTypeID
+    if ($departmentID && $positionID && $employmentTypeID && $vacancyCount > 0) {
         $stmt = $conn->prepare("INSERT INTO vacancies (department_id, position_id, employment_type_id, vacancy_count, posted_by) VALUES (?, ?, ?, ?, ?)");
         $stmt->bind_param("iiiss", $departmentID, $positionID, $employmentTypeID, $vacancyCount, $posted_by);
-
         if ($stmt->execute()) {
             header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
             exit;
@@ -94,11 +87,10 @@ if (isset($_GET['success'])) {
     $message = "✅ Vacancy successfully added!";
     $messageType = "success";
 } elseif (isset($_GET['error'])) {
-    if ($_GET['error'] === 'fields') {
+    if ($_GET['error'] === 'fields')
         $message = "⚠️ Please fill in all required fields.";
-    } elseif ($_GET['error'] === 'db') {
+    elseif ($_GET['error'] === 'db')
         $message = "❌ Database error occurred. Please try again.";
-    }
     $messageType = "danger";
 }
 
@@ -108,11 +100,34 @@ $deptQuery = $conn->query("SELECT deptID, deptName FROM department");
 // Fetch Positions
 $posQuery = $conn->query("SELECT positionID, position_title, departmentID FROM position");
 $positions = [];
-while ($row = $posQuery->fetch_assoc()) {
+while ($row = $posQuery->fetch_assoc())
     $positions[] = $row;
-}
 
-// Fetch 10 Recently Uploaded Vacancies 
+// 1️⃣ Update vacancies that are fully hired
+$conn->query("
+    UPDATE vacancies v
+    JOIN position p ON v.position_id = p.positionID
+    SET v.status = 'Positions Filled'
+    WHERE v.status != 'Positions Filled'
+    AND (
+        SELECT COUNT(*) 
+        FROM applications a
+        JOIN job_posting j ON a.jobID = j.jobID
+        WHERE j.job_title = p.position_title
+        AND a.status = 'Hired'
+    ) >= v.vacancy_count
+");
+
+// 2️⃣ Delete associated job postings automatically
+$conn->query("
+    DELETE jp
+    FROM job_posting jp
+    JOIN position p ON jp.job_title = p.position_title
+    JOIN vacancies v ON v.position_id = p.positionID
+    WHERE v.status = 'Positions Filled'
+");
+
+// Fetch 10 Recently Uploaded Vacancies
 $recentQuery = $conn->query("
     SELECT 
         v.id,
@@ -121,14 +136,13 @@ $recentQuery = $conn->query("
         d.deptName,
         p.position_title,
         e.typeName AS employment_type,
-
         (
             SELECT COUNT(*) 
             FROM applications a
-            WHERE a.jobID = v.position_id
+            JOIN job_posting j ON a.jobID = j.jobID
+            WHERE j.job_title = p.position_title
               AND a.status = 'Hired'
         ) AS hired_count
-
     FROM vacancies v
     JOIN department d ON v.department_id = d.deptID
     JOIN position p ON v.position_id = p.positionID
@@ -137,19 +151,14 @@ $recentQuery = $conn->query("
     LIMIT 10
 ");
 
-
 // Fetch Employment Types
 $etypeQuery = $conn->query("SELECT emtypeID, typeName FROM employment_type ORDER BY typeName ASC");
 $employmentTypes = [];
-while ($row = $etypeQuery->fetch_assoc()) {
+while ($row = $etypeQuery->fetch_assoc())
     $employmentTypes[] = $row;
-}
-
-
-
-
 
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -469,22 +478,20 @@ while ($row = $etypeQuery->fetch_assoc()) {
                                 <td><?= htmlspecialchars($row['employment_type']) ?></td>
                                 <td>
                                     <?php if ($row['status'] === 'On-Going'): ?>
-                                        <span class="badge bg-success"><?= htmlspecialchars($row['status']) ?></span>
+                                        <span class="badge bg-success">On-Going</span>
                                     <?php elseif ($row['status'] === 'Closed'): ?>
-                                        <span class="badge bg-danger"><?= htmlspecialchars($row['status']) ?></span>
+                                        <span class="badge bg-danger">Closed</span>
+                                    <?php elseif ($row['status'] === 'Positions Filled'): ?>
+                                        <span class="badge bg-primary">Positions Filled</span>
                                     <?php else: ?>
                                         <span class="badge bg-secondary"><?= htmlspecialchars($row['status']) ?></span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
                                     <?php if ($row['hired_count'] >= $row['vacancy_count']): ?>
-                                        <!-- Vacancy is fully filled — allow delete -->
-                                        <a href="delete_vacancy.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-danger"
-                                            onclick="return confirm('Are you sure you want to delete this vacancy? This action cannot be undone.');">
-                                            Delete
-                                        </a>
+                                        <!-- Remove manual Delete button -->
+                                        <span class="text-muted">Filled</span>
                                     <?php else: ?>
-                                        <!-- Still open — show archive only -->
                                         <a href="archive_vacancy.php?id=<?= $row['id'] ?>"
                                             class="btn btn-sm btn-warning">Archive</a>
                                     <?php endif; ?>
