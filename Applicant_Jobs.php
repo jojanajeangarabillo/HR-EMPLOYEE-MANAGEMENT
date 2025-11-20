@@ -2,36 +2,39 @@
 session_start();
 require 'admin/db.connect.php';
 
-// Applicant data
-$applicant_id = $_SESSION['applicant_employee_id'] ?? $_SESSION['applicantID'] ?? '';
-$applicantname = 'Applicant';
+// -------------------------------
+// 1. Get Applicant ID from Session
+// -------------------------------
+$applicantID = $_SESSION['applicant_employee_id'] ?? null;
 
+if (!$applicantID) {
+    die("Applicant ID not found in session.");
+}
 
-// Fetch applicant name and profile picture
+// -------------------------------
+// 2. Fetch Applicant Basic Info (Full Name + Picture)
+// -------------------------------
 $stmt = $conn->prepare("SELECT fullName, profile_pic FROM applicant WHERE applicantID = ?");
-$stmt->bind_param("s", $applicant_id);
+$stmt->bind_param("s", $applicantID);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
-  $row = $result->fetch_assoc();
-  $applicantname = $row['fullName'];
-
-  // ✅ Check if a profile picture exists
-  if (!empty($row['profile_pic'])) {
-    $profile_picture = $row['profile_pic'];
-  }
+    $row = $result->fetch_assoc();
+    $applicantname = $row['fullName'];
+    $profile_picture = !empty($row['profile_pic'])
+        ? "uploads/applicants/" . $row['profile_pic']
+        : "uploads/employees/default.png";
 } else {
-  // fallback if not found in applicant table
-  $applicantname = $_SESSION['fullname'] ?? "Applicant";
-  $stmt->close();
+    $applicantname = "Applicant";
+    $profile_picture = "uploads/employees/default.png";
 }
 
 // Handle AJAX apply request
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_apply_job'])) {
   header('Content-Type: application/json');
 
-  if (empty($applicant_id)) {
+  if (empty($applicantID)) {
     echo json_encode(['status' => 'error', 'message' => 'Please login first.']);
     exit();
   }
@@ -44,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_apply_job'])) {
 
   // Check profile completion
   $stmt = $conn->prepare("SELECT course FROM applicant WHERE applicantID=? LIMIT 1");
-  $stmt->bind_param('s', $applicant_id);
+  $stmt->bind_param('s', $applicantID);
   $stmt->execute();
   $res = $stmt->get_result()->fetch_assoc();
   $stmt->close();
@@ -62,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_apply_job'])) {
   $types = str_repeat('s', count($active_statuses) + 1);
   $sql_active = "SELECT id FROM applications WHERE applicantID = ? AND status IN ($placeholders)";
   $stmt_active = $conn->prepare($sql_active);
-  $params = array_merge([$applicant_id], $active_statuses);
+  $params = array_merge([$applicantID], $active_statuses);
   $refs = [];
   foreach ($params as $key => $value)
     $refs[$key] = &$params[$key];
@@ -123,12 +126,12 @@ $stmt->close();
       $conn->begin_transaction();
 
       $stmt = $conn->prepare("INSERT INTO applications(applicantID, jobID, job_title, department_name, type_name, status) VALUES(?,?,?,?,?,?)");
-      $stmt->bind_param('sissss', $applicant_id, $job_id, $job_title, $department_name, $applicant_type, $app_status);
+      $stmt->bind_param('sissss', $applicantID, $job_id, $job_title, $department_name, $applicant_type, $app_status);
       $stmt->execute();
       $stmt->close();
 
       $stmt = $conn->prepare("UPDATE applicant SET status=? WHERE applicantID=?");
-      $stmt->bind_param('ss', $app_status, $applicant_id);
+      $stmt->bind_param('ss', $app_status, $applicantID);
       $stmt->execute();
       $stmt->close();
 
@@ -144,7 +147,7 @@ $stmt->close();
     // Course mismatch
     $reason = 'Course mismatch';
     $stmt = $conn->prepare("INSERT INTO rejected_applications(applicantID, jobID, reason, rejected_at) VALUES(?,?,?,NOW())");
-    $stmt->bind_param('sis', $applicant_id, $job_id, $reason);
+    $stmt->bind_param('sis', $applicantID, $job_id, $reason);
     $stmt->execute();
     $stmt->close();
 
@@ -183,9 +186,9 @@ if ($job_stmt) {
 // Fetch applications + rejected
 $applications = [];
 $rejected_jobs = [];
-if (!empty($applicant_id)) {
+if (!empty($applicantID)) {
   $app_q = $conn->prepare("SELECT jobID, status FROM applications WHERE applicantID = ?");
-  $app_q->bind_param('s', $applicant_id);
+  $app_q->bind_param('s', $applicantID);
   $app_q->execute();
   $ares = $app_q->get_result();
   while ($ar = $ares->fetch_assoc()) {
@@ -196,7 +199,7 @@ if (!empty($applicant_id)) {
 
 // Apply logic
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_job'])) {
-  if (empty($applicant_id)) {
+  if (empty($applicantID)) {
     header('Location: Login.php');
     exit();
   }
@@ -210,7 +213,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_job'])) {
 
   // Prevent duplicate
   $check = $conn->prepare("SELECT id FROM applications WHERE applicantID = ? AND jobID = ? LIMIT 1");
-  $check->bind_param('si', $applicant_id, $job_id);
+  $check->bind_param('si', $applicantID, $job_id);
   $check->execute();
   if ($check->get_result()->num_rows > 0) {
     $_SESSION['flash_error'] = 'You have already applied for this job.';
@@ -222,7 +225,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_job'])) {
 
   // Applicant experience
   $app_data = $conn->prepare("SELECT years_experience FROM applicant WHERE applicantID = ? LIMIT 1");
-  $app_data->bind_param('s', $applicant_id);
+  $app_data->bind_param('s', $applicantID);
   $app_data->execute();
   $applicant_exp = (int) ($app_data->get_result()->fetch_assoc()['years_experience'] ?? 0);
   $app_data->close();
@@ -263,7 +266,7 @@ $insert = $conn->prepare("
     INSERT INTO applications (applicantID, jobID, job_title, department_name, type_name, status) 
     VALUES (?, ?, ?, ?, ?,?)
 ");
-$insert->bind_param('sissss', $applicant_id, $job_id, $job_title, $department_name, $applicant_type, $app_status);
+$insert->bind_param('sissss', $applicantID, $job_id, $job_title, $department_name, $applicant_type, $app_status);
 $success = $insert->execute();
 $insert->close();
 
@@ -296,9 +299,9 @@ if ($dept_id) {
 
 // After AJAX or apply insert
 $applications = [];
-if (!empty($applicant_id)) {
+if (!empty($applicantID)) {
   $app_q = $conn->prepare("SELECT jobID, status FROM applications WHERE applicantID = ?");
-  $app_q->bind_param('s', $applicant_id);
+  $app_q->bind_param('s', $applicantID);
   $app_q->execute();
   $ares = $app_q->get_result();
   while ($ar = $ares->fetch_assoc()) {
@@ -310,7 +313,7 @@ if (!empty($applicant_id)) {
 // Fetch rejected jobs
 $rejected_jobs = [];
 $rej_q = $conn->prepare("SELECT jobID FROM rejected_applications WHERE applicantID = ?");
-$rej_q->bind_param('s', $applicant_id);
+$rej_q->bind_param('s', $applicantID);
 $rej_q->execute();
 $rres = $rej_q->get_result();
 while ($r = $rres->fetch_assoc()) {
@@ -441,8 +444,8 @@ if ($search !== '') {
 <body>
   <div class="sidebar">
     <a href="Applicant_Profile.php" class="profile">
-      <img src="uploads/applicants/<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile"
-        class="sidebar-profile-img">
+    <img src="<?php echo !empty($profile_picture) ? htmlspecialchars($profile_picture) : 'uploads/employees/default.png'; ?>" 
+     alt="Profile" class="sidebar-profile-img">
     </a>
     <div class="sidebar-name">
       <p><?= "Welcome, $applicantname" ?></p>

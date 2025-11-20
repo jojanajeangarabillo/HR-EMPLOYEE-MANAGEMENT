@@ -25,6 +25,29 @@ if ($employeeID) {
 }
 
 
+
+// Fetch employee name and profile picture
+if ($employeeID) {
+    $stmt = $conn->prepare("SELECT fullname, profile_pic FROM employee WHERE empID = ?");
+    $stmt->bind_param("s", $employeeID);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $employeename = $row['fullname'];
+        $profile_picture = !empty($row['profile_pic']) 
+                           ? "uploads/employees/" . $row['profile_pic'] 
+                           : "uploads/employees/default.png";
+    } else {
+        $employeename = $_SESSION['fullname'] ?? "Employee";
+        $profile_picture = "uploads/employees/default";
+    }
+} else {
+    $employeename = $_SESSION['fullname'] ?? "Employee";
+    $profile_picture = "uploads/employees/default";
+}
+
 // Fetch announcements
 $managerResult = mysqli_query($conn, "SELECT * FROM manager_announcement ORDER BY date_posted DESC");
 $adminResult = mysqli_query($conn, "SELECT * FROM admin_announcement ORDER BY date_posted DESC");
@@ -62,6 +85,18 @@ if (isset($_GET['view']) && isset($_GET['id'])) {
     $announcement = mysqli_fetch_assoc($res);
     $openModal = true;
 }
+
+
+// Count Employee Requests
+$countRequests = 0;
+if ($employeeID) {
+    $stmt = $conn->prepare("SELECT COUNT(*) AS total FROM employee_request WHERE empID = ?");
+    $stmt->bind_param("s", $employeeID);
+    $stmt->execute();
+    $countRequests = $stmt->get_result()->fetch_assoc()['total'] ?? 0;
+}
+
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -86,9 +121,32 @@ h1 { font-family:'Roboto',sans-serif; font-size:35px; color:white; text-align:ce
 .card-container { display:flex; flex-wrap:wrap; gap:20px; margin-bottom:40px; }
 .card { display:flex; align-items:center; justify-content:flex-start; background-color:#f3f3f9; border-radius:10px; padding:20px; width:500px; height:150px; box-shadow:0 2px 5px rgba(0,0,0,0.1); transition:transform 0.3s; }
 .card:hover { transform:translateY(-5px); }
-.card i { font-size:35px; margin-right:20px; color:#1E3A8A; }
-.info h2 { font-size:18px; font-weight:bold; margin:0; }
-.info p { font-size:20px; font-weight:bold; margin:0; }
+.card i { font-size:35px; color:#1E3A8A;  display: flex;
+    flex-direction: column;
+    justify-content: center; /* vertical centering */
+    align-items: center;     /* horizontal centering */
+    text-align: center;      /* text alignment */
+    height: 100%;  }
+.info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* vertical centering */
+    align-items: center;     /* horizontal centering */
+    text-align: center;      /* text alignment */
+    height: 100%;            /* make it fill the card */
+}
+
+.info h2 {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.info p {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 5px 0 0 0;
+}
 .salary { border-left:5px solid #3b82f6; }
 .attendance { border-left:5px solid #ec4899; }
 .requests { border-left:5px solid #dc2626; }
@@ -102,16 +160,33 @@ h1 { font-family:'Roboto',sans-serif; font-size:35px; color:white; text-align:ce
 .announcement-table td { background-color:#6674cc; }
 .announcement-table button { background-color:#1E3A8A; border:none; color:white; padding:8px 15px; border-radius:5px; cursor:pointer; }
 .announcement-table button:hover { background-color:#142b66; }
+
+        .sidebar-profile-img {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-profile-img:hover {
+            transform: scale(1.05);
+        }
 </style>
 </head>
 
 <body>
 
-<div class="sidebar">
-<div class="sidebar-logo">
-<a href="Employee_Profile.php"><img src="Images/profile.png" alt="Profile"></a>
-<div class="sidebar-name"><p><?php echo "Welcome, $employeename"; ?></p></div>
-</div>
+ <div class="sidebar">
+            <div class="sidebar-logo">
+            <a href="Employee_Profile.php" class="profile">
+             <img src="<?php echo htmlspecialchars($profile_picture); ?>" 
+             alt="Profile" class="sidebar-profile-img">
+            </a>
+
+            <div class="sidebar-name"><p><?php echo "Welcome, $employeename"; ?></p></div>
+      </div>
 
 <ul class="nav">
 <h4 class="menu-board-title">Menu Board</h4>
@@ -130,9 +205,9 @@ h1 { font-family:'Roboto',sans-serif; font-size:35px; color:white; text-align:ce
 </div>
 
 <div class="card-container">
-<div class="card salary"><i class="fa-solid fa-folder"></i><div class="info"><h2>Salary Slip</h2><p>20</p></div></div>
-<div class="card attendance"><i class="fa-solid fa-chart-column"></i><div class="info"><h2>Attendance</h2><p>20</p></div></div>
-<div class="card requests"><i class="fa-solid fa-code-branch"></i><div class="info"><h2>Requests</h2><p>5</p></div></div>
+<div class="card salary"><i class="fa-solid fa-folder"></i><div class="info"><h2>Salary Slip</h2><p>0</p></div></div>
+<div class="card attendance"><i class="fa-solid fa-chart-column"></i><div class="info"><h2>Attendance</h2><p>0</p></div></div>
+<div class="card requests"><i class="fa-solid fa-code-branch"></i><div class="info"><h2>Requests</h2><p><?php echo $countRequests; ?></p></div></div>
 <div class="card announcements">
 <i class="fa-solid fa-comment"></i>
 <div class="info"><h2>Announcements</h2><p><?php echo $totalAnnouncements; ?></p></div>

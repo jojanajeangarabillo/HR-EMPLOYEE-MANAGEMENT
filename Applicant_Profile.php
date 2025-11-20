@@ -1,1048 +1,673 @@
 <?php
 session_start();
-include 'admin/db.connect.php';
+require 'admin/db.connect.php';
 
-// Ensure the session key we agreed on is present
-if (!isset($_SESSION['applicant_employee_id']) || empty($_SESSION['applicant_employee_id'])) {
-  // If your previous logic uses applicantID, you might want to fallback to that:
-  if (isset($_SESSION['applicantID'])) {
-    $_SESSION['applicant_employee_id'] = $_SESSION['applicantID'];
-  } else {
-    header("Location: Login.php");
-    exit();
-  }
-}
-$session_emp = $_SESSION['applicant_employee_id'];
+// -------------------------------
+// 1. Get Applicant ID from Session
+// -------------------------------
+$applicantID = $_SESSION['applicant_employee_id'] ?? null;
 
-// flash messages
-$flash_success = $_SESSION['flash_success'] ?? '';
-$flash_error = $_SESSION['flash_error'] ?? '';
-unset($_SESSION['flash_success'], $_SESSION['flash_error']);
-
-/* ------------------------- Helper: ensure applicant row exists ------------------------- */
-/*
-  If there's no applicant row for the session_emp, try to seed one using the user table's fullname and email.
-  Because the applicant table has many NOT NULL columns, we supply minimal defaults here.
-*/
-function ensure_applicant_exists($conn, $applicantID, &$flash_error, &$flash_success)
-{
-  $check = $conn->prepare("SELECT applicantID FROM applicant WHERE applicantID = ?");
-  if (!$check) {
-    $flash_error = "Server error (prepare failed).";
-    return false;
-  }
-  $check->bind_param("s", $applicantID);
-  $check->execute();
-  $res = $check->get_result();
-  if ($res && $res->num_rows > 0) {
-    $check->close();
-    return true;
-  }
-  $check->close();
-
-  // Get user fullname and email (if available)
-  $u = $conn->prepare("SELECT fullname, email, user_id FROM user WHERE applicant_employee_id = ? OR user_id = ?");
-  if (!$u) {
-    $flash_error = "Server error (prepare failed).";
-    return false;
-  }
-  $u->bind_param("ss", $applicantID, $applicantID);
-  $u->execute();
-  $urow = $u->get_result()->fetch_assoc();
-  $u->close();
-
-  $fullname = $urow['fullname'] ?? 'Unknown Applicant';
-  $email = $urow['email'] ?? '';
-
-  // Provide safe defaults for required NOT NULL fields in applicant table
-  $position_applied = '';
-  $department = 0;
-  $date_applied = date('Y-m-d');
-  $contact_number = '';
-  $email_address = $email;
-  $home_address = '';
-  $previous_job = '';
-  $company_name = '';
-  $date_started = date('Y-m-d');
-  $years_experience = 0;
-  $in_role = 'no';
-  $university = '';
-  $course = '';
-  $year_graduated = '0000';
-  $skills = '';
-  $summary = '';
-  $status = 'Active';
-  $profile_pic = null;
-
-  $ins = $conn->prepare("INSERT INTO applicant (applicantID, fullName, position_applied, department, date_applied, contact_number, email_address, home_address, previous_job, company_name, date_started, in_role, university, course, year_graduated, skills, summary, status, profile_pic)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-  if (!$ins) {
-    $flash_error = "Server error (prepare failed inserting).";
-    return false;
-  }
-  $ins->bind_param(
-    "sssissssssissssssss",
-    $applicantID,
-    $fullname,
-    $position_applied,
-    $department,
-    $date_applied,
-    $contact_number,
-    $email_address,
-    $home_address,
-    $previous_job,
-    $company_name,
-    $date_started,
-    $years_experience,
-    $in_role,
-    $university,
-    $course,
-    $year_graduated,
-    $skills,
-    $summary,
-    $status,
-    $profile_pic
-  );
-
-
-  // Note: if your DB rejects '0000' year or null profile_pic, adjust accordingly.
-  if ($ins->execute()) {
-    $flash_success = "Applicant record created.";
-    $ins->close();
-    return true;
-  } else {
-    $flash_error = "Failed to create applicant record: " . $ins->error;
-    $ins->close();
-    return false;
-  }
+if (!$applicantID) {
+    die("Applicant ID not found in session.");
 }
 
-/* -------------------------- Handle form submissions (CRUD) -------------------------- */
-
-/* Update profile (phone, home address) */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
-  $new_phone = trim($_POST['phoneNumber'] ?? '');
-  $new_location = trim($_POST['homeLocation'] ?? '');
-
-  if ($new_phone === '' || $new_location === '') {
-    $_SESSION['flash_error'] = 'Please fill all profile fields.';
-  } else {
-    $update = $conn->prepare("UPDATE applicant SET contact_number = ?, home_address = ? WHERE applicantID = ?");
-    if ($update) {
-      $update->bind_param("sss", $new_phone, $new_location, $session_emp);
-      if ($update->execute()) {
-        $_SESSION['flash_success'] = 'Profile updated successfully.';
-      } else {
-        $_SESSION['flash_error'] = 'Failed to update profile.';
-      }
-      $update->close();
-    } else {
-      $_SESSION['flash_error'] = 'Server error (prepare failed).';
-    }
-  }
-  header("Location: Applicant_Profile.php");
-  exit();
-}
-
-/* Add role */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_role'])) {
-  $job_title_input = trim($_POST['previous_job'] ?? '');
-  $company_input = trim($_POST['company_name'] ?? '');
-  $years_experience = trim($_POST['years_experience'] ?? '0');
-
-  if ($job_title_input === '' || $company_input === '') {
-    $_SESSION['flash_error'] = 'Please fill all role fields.';
-  } else {
-    // Fetch existing summary to append description
-    $get = $conn->prepare("SELECT summary FROM applicant WHERE applicantID = ?");
-    $existing_summary = '';
-    if ($get) {
-      $get->bind_param("s", $session_emp);
-      $get->execute();
-      $row = $get->get_result()->fetch_assoc();
-      $existing_summary = $row['summary'] ?? '';
-      $get->close();
-    }
-
-    // Append role description to summary so users can still see it (single-row table limitation)
-    $append_text = "Role: " . $job_title_input . " at " . $company_input . "\n" . $role_desc;
-    $new_summary = trim(($existing_summary ? ($existing_summary . "\n\n" . $append_text) : $append_text));
-
-    $ins = $conn->prepare("UPDATE applicant SET previous_job = ?, company_name = ?, summary = ? WHERE applicantID = ?");
-    if ($ins) {
-      $ins->bind_param("ssis", $job_title_input, $company_input, $years_experience, $session_emp);
-      if ($ins->execute()) {
-        $_SESSION['flash_success'] = 'Role saved successfully.';
-      } else {
-        $_SESSION['flash_error'] = 'Failed to save role: ' . $ins->error;
-      }
-      $ins->close();
-    } else {
-      $_SESSION['flash_error'] = 'Server error (prepare failed).';
-    }
-  }
-
-  header("Location: Applicant_Profile.php");
-  exit();
-}
-
-
-/* Edit role */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_role'])) {
-  $job_title_input = trim($_POST['job_title_edit'] ?? '');
-  $company_input = trim($_POST['company_name_edit'] ?? '');
-  $years_experience = trim($_POST['years_experience_edit'] ?? '0');
-
-  if ($job_title_input === '' || $company_input === '') {
-    $_SESSION['flash_error'] = 'Please fill all role fields.';
-  } else {
-    // Fetch existing summary and append an "edited" note so the description is preserved
-    $get = $conn->prepare("SELECT summary FROM applicant WHERE applicantID = ?");
-    $existing_summary = '';
-    if ($get) {
-      $get->bind_param("s", $session_emp);
-      $get->execute();
-      $row = $get->get_result()->fetch_assoc();
-      $existing_summary = $row['summary'] ?? '';
-      $get->close();
-    }
-
-    $append_text = "Edited Role: " . $job_title_input . " at " . $company_input . "\n" . $role_desc;
-    $new_summary = trim(($existing_summary ? ($existing_summary . "\n\n" . $append_text) : $append_text));
-
-    $upd = $conn->prepare("UPDATE applicant SET previous_job = ?, company_name = ?, summary = ? WHERE applicantID = ?");
-    if ($upd) {
-      $upd->bind_param("ssis", $job_title_input, $company_input, $years_experience, $session_emp);
-      if ($upd->execute()) {
-        $_SESSION['flash_success'] = 'Role updated successfully.';
-      } else {
-        $_SESSION['flash_error'] = 'Failed to update role: ' . $upd->error;
-      }
-      $upd->close();
-    } else {
-      $_SESSION['flash_error'] = 'Server error (prepare failed).';
-    }
-  }
-
-  header("Location: Applicant_Profile.php");
-  exit();
-}
-
-
-/* Delete role */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_role'])) {
-  // clear job-related fields on the applicant row
-  $del = $conn->prepare("UPDATE applicant SET previous_job = '', company_name = '', date_started = '0000-00-00', in_role = 'no' WHERE applicantID = ?");
-  if ($del) {
-    $del->bind_param("s", $session_emp);
-    if ($del->execute()) {
-      $_SESSION['flash_success'] = 'Role deleted.';
-    } else {
-      $_SESSION['flash_error'] = 'Failed to delete role.';
-    }
-    $del->close();
-  } else {
-    $_SESSION['flash_error'] = 'Server error (prepare failed).';
-  }
-
-  header("Location: Applicant_Profile.php");
-  exit();
-}
-
-
-/* Add education (single-entry fields on applicant table) */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_education'])) {
-  $school = trim($_POST['school'] ?? '');
-  $degree = trim($_POST['degree'] ?? '');
-
-  if ($school === '' || $degree === '') {
-    $_SESSION['flash_error'] = 'Please fill all education fields.';
-  } else {
-    // year_graduated not collected in modal — keep default '0000' unless provided
-    $year_graduated = $_POST['year_graduated'] ?? '0000';
-
-    $ins = $conn->prepare("UPDATE applicant SET university = ?, course = ?, year_graduated = ? WHERE applicantID = ?");
-    if ($ins) {
-      $ins->bind_param("ssis", $school, $degree, $year_graduated, $session_emp);
-      if ($ins->execute())
-        $_SESSION['flash_success'] = 'Education saved.';
-      else
-        $_SESSION['flash_error'] = 'Failed to save education: ' . $ins->error;
-      $ins->close();
-    } else {
-      $_SESSION['flash_error'] = 'Server error (prepare failed).';
-    }
-  }
-  header("Location: Applicant_Profile.php");
-  exit();
-}
-
-/* Edit education */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_education'])) {
-  $school_edit = trim($_POST['school_edit'] ?? '');
-  $degree_edit = trim($_POST['degree_edit'] ?? '');
-  $year_graduated = trim($_POST['year_graduated_edit'] ?? '0000');
-
-  if ($school_edit === '' || $degree_edit === '') {
-    $_SESSION['flash_error'] = 'Please fill all education fields.';
-  } else {
-    $updEdu = $conn->prepare("UPDATE applicant SET university = ?, course = ?, year_graduated = ? WHERE applicantID = ?");
-    if ($updEdu) {
-      $updEdu->bind_param("ssis", $school_edit, $degree_edit, $year_graduated, $session_emp);
-      if ($updEdu->execute())
-        $_SESSION['flash_success'] = 'Education updated.';
-      else
-        $_SESSION['flash_error'] = 'Failed to update education.';
-      $updEdu->close();
-    } else {
-      $_SESSION['flash_error'] = 'Server error (prepare failed).';
-    }
-  }
-  header("Location: Applicant_Profile.php");
-  exit();
-}
-
-/* Delete education (clear single-entry education fields) */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_education'])) {
-  $delEdu = $conn->prepare("UPDATE applicant SET university = '', course = '', year_graduated = '0000' WHERE applicantID = ?");
-  if ($delEdu) {
-    $delEdu->bind_param("s", $session_emp);
-    if ($delEdu->execute())
-      $_SESSION['flash_success'] = 'Education cleared.';
-    else
-      $_SESSION['flash_error'] = 'Failed to clear education.';
-    $delEdu->close();
-  } else {
-    $_SESSION['flash_error'] = 'Server error (prepare failed).';
-  }
-  header("Location: Applicant_Profile.php");
-  exit();
-}
-
-/* Add skills */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_skills'])) {
-  $skills = [];
-  $missing = false;
-  for ($i = 1; $i <= 5; $i++) {
-    $k = trim($_POST['skill' . $i] ?? '');
-    if ($k === '') {
-      $missing = true;
-      break;
-    }
-    $skills[] = $k;
-  }
-  if ($missing) {
-    $_SESSION['flash_error'] = 'Please fill in all five skills before saving.';
-  } else {
-    $skills_str = implode(', ', $skills);
-    $update_stmt = $conn->prepare("UPDATE applicant SET skills = ? WHERE applicantID = ?");
-    if ($update_stmt) {
-      $update_stmt->bind_param("ss", $skills_str, $session_emp);
-      if ($update_stmt->execute())
-        $_SESSION['flash_success'] = 'Skills updated.';
-      else
-        $_SESSION['flash_error'] = 'Failed to update skills.';
-      $update_stmt->close();
-    } else {
-      $_SESSION['flash_error'] = 'Server error (prepare failed).';
-    }
-  }
-  header("Location: Applicant_Profile.php");
-  exit();
-}
-
-/* Add summary */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_summary'])) {
-  $summary_text = trim($_POST['summary_text'] ?? '');
-  if ($summary_text === '') {
-    $_SESSION['flash_error'] = 'Please write a summary before saving.';
-  } else {
-    $update_stmt = $conn->prepare("UPDATE applicant SET summary = ? WHERE applicantID = ?");
-    if ($update_stmt) {
-      $update_stmt->bind_param("ss", $summary_text, $session_emp);
-      if ($update_stmt->execute())
-        $_SESSION['flash_success'] = 'Summary saved.';
-      else
-        $_SESSION['flash_error'] = 'Failed to save summary.';
-      $update_stmt->close();
-    } else {
-      $_SESSION['flash_error'] = 'Server error (prepare failed).';
-    }
-  }
-  header("Location: Applicant_Profile.php");
-  exit();
-}
-
-/* -------------------------- Ensure applicant exists & load data -------------------------- */
-if (!ensure_applicant_exists($conn, $session_emp, $flash_error, $flash_success)) {
-  // If we failed to create or check, set a flash and continue (page will show "Unknown Applicant")
-  if (!empty($flash_error))
-    $_SESSION['flash_error'] = $flash_error;
-  header("Location: Applicant_Profile.php");
-  exit();
-}
-
-// Now load applicant data
-$stmt = $conn->prepare("SELECT fullName, email_address, contact_number, home_address, skills, summary, previous_job, company_name, date_started, in_role, university, course, year_graduated FROM applicant WHERE applicantID = ?");
-$stmt->bind_param("s", $session_emp);
+// -------------------------------
+// 2. Fetch Applicant Basic Info (Full Name + Picture)
+// -------------------------------
+$stmt = $conn->prepare("SELECT fullName, profile_pic FROM applicant WHERE applicantID = ?");
+$stmt->bind_param("s", $applicantID);
 $stmt->execute();
 $result = $stmt->get_result();
 
-if ($result && $row = $result->fetch_assoc()) {
-  $name = htmlspecialchars($row['fullName'] ?? 'Unknown Applicant');
-  $email = htmlspecialchars($row['email_address'] ?? '');
-  $phone = htmlspecialchars($row['contact_number'] ?? '');
-  $location = htmlspecialchars($row['home_address'] ?? '');
-  $skills_str = $row['skills'] ?? '';
-  $summary_text = $row['summary'] ?? '';
-  $skills_array = array_filter(array_map('trim', preg_split('/\s*,\s*/', $skills_str)));
-  // role / career (single)
-  $role_job_title = htmlspecialchars($row['previous_job'] ?? '');
-  $role_company = htmlspecialchars($row['company_name'] ?? '');
-  $role_date_started = htmlspecialchars($row['date_started'] ?? '');
-  $years_experience = htmlspecialchars($row['years_experience'] ?? '0');
-  $role_in_role = htmlspecialchars($row['in_role'] ?? 'no');
-  // education (single)
-  $edu_school = htmlspecialchars($row['university'] ?? '');
-  $edu_degree = htmlspecialchars($row['course'] ?? '');
-  $edu_year = htmlspecialchars($row['year_graduated'] ?? '');
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $applicantname = $row['fullName'];
+    $profile_picture = !empty($row['profile_pic'])
+        ? "uploads/applicants/" . $row['profile_pic']
+        : "uploads/employees/default.png";
 } else {
-  $name = "Unknown Applicant";
-  $email = "";
-  $phone = "";
-  $location = "";
-  $skills_array = [];
-  $summary_text = '';
-  $role_job_title = $role_company = $role_date_started = $role_in_role = '';
-  $edu_school = $edu_degree = $edu_year = '';
-}
-$stmt->close();
-
-/* -------------------------- For display we will create 'roles' as a single-item array if job_title exists -------------------------- */
-$roles = [];
-if (!empty($role_job_title) || !empty($role_company) || !empty($years_experience)) {
-  $roles[] = [
-    'job_title' => $role_job_title,
-    'company_name' => $role_company,
-    'years_experience' => $years_experience
-  ];
+    $applicantname = "Applicant";
+    $profile_picture = "uploads/employees/default.png";
 }
 
-/* education is single entry */
-$edus = [];
-if (!empty($edu_school) || !empty($edu_degree)) {
-  $edus[] = ['id' => 0, 'school' => $edu_school, 'degree' => $edu_degree, 'created_at' => $edu_year];
+// -------------------------------
+// 3. Fetch ALL Applicant Details
+// -------------------------------
+$stmt = $conn->prepare("
+    SELECT applicantID, fullName, position_applied, department, type_name, date_applied,
+           contact_number, email_address, home_address,
+           university, course, year_graduated,
+           job_title, company_name, years_experience, in_role,
+           summary, skills, status, hired_at, profile_pic
+    FROM applicant
+    WHERE applicantID = ?
+");
+$stmt->bind_param("s", $applicantID);
+$stmt->execute();
+$result = $stmt->get_result();
+
+$applicant = $result->fetch_assoc();
+
+// Helper for displaying empty fields
+function displayOrEmpty($value) {
+    return !empty($value) ? htmlspecialchars($value) : "<span style='color:#888;'>Not set</span>";
 }
+// Handle applicant profile picture upload
+if (isset($_POST['upload_pic'])) {
 
-// Pass any session flashes through to local variables to show in HTML
-$flash_success = $_SESSION['flash_success'] ?? $flash_success;
-$flash_error = $_SESSION['flash_error'] ?? $flash_error;
-unset($_SESSION['flash_success'], $_SESSION['flash_error']);
+    if (isset($_FILES['profile_pic']) && $_FILES['profile_pic']['error'] === 0) {
 
+        $file_name = $_FILES['profile_pic']['name'];
+        $file_tmp = $_FILES['profile_pic']['tmp_name'];
+        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 
-// Handle profile picture upload
-if (isset($_POST['upload'])) {
-  if (isset($_FILES['profile_pic']) && $_FILES['profile_pic']['error'] === 0) {
-    $file_name = $_FILES['profile_pic']['name'];
-    $file_tmp = $_FILES['profile_pic']['tmp_name'];
-    $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+        $allowed_extensions = ['jpg', 'jpeg', 'png'];
 
-    $allowed_extensions = ['jpg', 'jpeg', 'png']; // Allow PNG too if needed
-    if (in_array($file_ext, $allowed_extensions)) {
-      $upload_dir = "uploads/applicants/";
-      if (!is_dir($upload_dir)) {
-        mkdir($upload_dir, 0777, true);
-      }
+        if (in_array($file_ext, $allowed_extensions)) {
 
-      // Use applicantID (or session_emp) for unique filename
-      $new_filename = "applicant_" . $session_emp . "." . $file_ext;
-      $upload_path = $upload_dir . $new_filename;
+            // Directory for applicants
+            $upload_dir = "uploads/applicants/";
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
 
-      // Move file and update database
-      if (move_uploaded_file($file_tmp, $upload_path)) {
-        $update = $conn->prepare("UPDATE applicant SET profile_pic = ? WHERE applicantID = ?");
-        $update->bind_param("ss", $new_filename, $session_emp);
-        if ($update->execute()) {
-          $_SESSION['flash_success'] = 'Profile picture updated successfully.';
+            // Rename the file
+            $new_filename = "applicant_" . $applicantID . "." . $file_ext;
+            $upload_path = $upload_dir . $new_filename;
+
+            // Move uploaded file
+            if (move_uploaded_file($file_tmp, $upload_path)) {
+
+                // Update database
+                $update = $conn->prepare("UPDATE applicant SET profile_pic = ? WHERE applicantID = ?");
+                $update->bind_param("ss", $new_filename, $applicantID);
+
+                if ($update->execute()) {
+                    $_SESSION['flash_success'] = 'Profile picture updated successfully.';
+                } else {
+                    $_SESSION['flash_error'] = 'Failed to update profile picture in the database.';
+                }
+
+                $update->close();
+
+            } else {
+                $_SESSION['flash_error'] = 'Error uploading the file.';
+            }
+
         } else {
-          $_SESSION['flash_error'] = 'Failed to update profile picture in database.';
+            $_SESSION['flash_error'] = 'Invalid file type. Only JPG, JPEG, or PNG allowed.';
         }
-        $update->close();
-      } else {
-        $_SESSION['flash_error'] = 'Error uploading the file.';
-      }
+
     } else {
-      $_SESSION['flash_error'] = 'Invalid file type. Only JPG, JPEG, or PNG allowed.';
+        $_SESSION['flash_error'] = 'No file selected or upload error.';
     }
-  } else {
-    $_SESSION['flash_error'] = 'No file selected or upload error.';
-  }
-  header("Location: Applicant_Profile.php");
-  exit();
+
+    header("Location: Applicant_Profile.php");
+    exit();
 }
+
+// -------------------------------
+// 4. UPDATE: PERSONAL INFORMATION
+// -------------------------------
+if (isset($_POST['save_personal'])) {
+    $stmt = $conn->prepare("
+        UPDATE applicant 
+        SET fullName=?, contact_number=?, email_address=?, home_address=? 
+        WHERE applicantID=?
+    ");
+    $stmt->bind_param("sssss",
+        $_POST['fullName'],
+        $_POST['contact_number'],
+        $_POST['email_address'],
+        $_POST['home_address'],
+        $applicantID
+    );
+    $stmt->execute();
+    header("Location: Applicant_Profile.php");
+    exit();
+}
+
+
+// -------------------------------
+// 5. UPDATE: EDUCATION
+// -------------------------------
+if (isset($_POST['save_education'])) {
+    $stmt = $conn->prepare("
+        UPDATE applicant 
+        SET university=?, course=?, year_graduated=?
+        WHERE applicantID=?
+    ");
+    $stmt->bind_param("ssss",
+        $_POST['university'],
+        $_POST['course'],
+        $_POST['year_graduated'],
+        $applicantID
+    );
+    $stmt->execute();
+    header("Location: Applicant_Profile.php");
+    exit();
+}
+
+
+// -------------------------------
+// 6. UPDATE: WORK EXPERIENCE
+// -------------------------------
+if (isset($_POST['save_job'])) {
+    $stmt = $conn->prepare("
+        UPDATE applicant 
+        SET job_title=?, company_name=?, years_experience=?
+        WHERE applicantID=?
+    ");
+    $stmt->bind_param("ssss",
+        $_POST['job_title'],
+        $_POST['company_name'],
+        $_POST['years_experience'],
+        $applicantID
+    );
+    $stmt->execute();
+    header("Location: Applicant_Profile.php");
+    exit();
+}
+
+
+// -------------------------------
+// 7. UPDATE: SKILLS & SUMMARY
+// -------------------------------
+if (isset($_POST['save_skills'])) {
+    // Use 'skill[]' from the form
+    $skills = isset($_POST['skill']) ? implode(", ", array_map('trim', $_POST['skill'])) : '';
+    $summary = $_POST['summary'] ?? '';
+
+    $stmt = $conn->prepare("
+        UPDATE applicant 
+        SET skills=?, summary=?
+        WHERE applicantID=?
+    ");
+    $stmt->bind_param("sss", $skills, $summary, $applicantID);
+    $stmt->execute();
+
+    header("Location: Applicant_Profile.php");
+    exit();
+}
+
+
+
 
 ?>
 
-<!doctype html>
-<html lang="en">
 
+
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Applicant Profile</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <!-- Fonts / Icons -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Roboto:wght@400;500&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="applicant.css">
-  <style>
-    /* Preserve your inline styles from previous file so layout remains consistent */
+<meta charset="UTF-8">
+<title>Applicant Profile</title>
+<link rel="stylesheet" href="applicant.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+<style>
     body {
-      font-family: 'Poppins', 'Roboto', sans-serif;
-      margin: 0;
-      display: flex;
-      background: #f1f5fc;
-      color: #111827;
+        font-family: 'Poppins', 'Roboto', sans-serif;
+        margin: 0;
+        display: flex;
+        background-color: #f4f6f9;
+        color: #111827;
     }
 
     .main-content {
-      flex: 1;
-      padding: 30px 80px;
-      display: flex;
-      flex-direction: column;
-      gap: 40px;
+        flex: 1;
+        padding: 40px 60px;
+        display: flex;
+        flex-direction: column;
+        gap: 40px;
     }
 
-    .profile-header {
-      padding: 5px 10px;
-      margin-left: 200px;
-      font-size: 40px;
+    h1 {
+        color: #1f2937;
+        font-weight: 600;
+        font-size: 2rem;
     }
 
-    .personal-info {
-      background: #1E3A8A;
-      color: #fff;
-      padding: 30px;
-      margin-left: 200px;
-      border-radius: 15px;
-      width: 1550px;
-      height: 600px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-      font-size: 20px;
-      font-weight: 500;
+    section {
+        background: #ffffff;
+        border-radius: 15px;
+        padding: 30px 40px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        position: relative;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .info {
-      display: flex;
-      margin-left: 50px;
-      gap: 15px;
-      flex-direction: column;
+    section:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
     }
 
-    .phone,
-    .location,
-    .email {
-      display: flex;
+    section h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #1e3a8a;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 5px;
     }
 
-    p {
-      margin-left: 20px;
+    section div {
+        font-size: 1rem;
+        margin-bottom: 10px;
     }
 
     .edit-btn {
-      height: 42px;
-      width: 93px;
-      border-color: white;
-      border-style: solid;
-      background: #1E3A8A;
-      color: #fff;
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        border: none;
+        background: #1e3a8a;
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: background 0.2s ease;
     }
 
     .edit-btn:hover {
-      background: #e5edfb;
+        background: #3b82f6;
+    }
+
+    .text-center img {
+        border: 3px solid #1e3a8a;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+ /* Cleaner, modern modal */
+.modal-dialog {
+    max-width: 600px !important;
+}
+
+.modal-content {
+    border-radius: 16px;
+    border: none;
+    padding: 10px 5px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+
+.modal-header {
+    background: #1E3A8A;
+    color: white;
+    border-bottom: none;
+    padding: 18px 24px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+
+.modal-title {
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.btn-close {
+    filter: brightness(0) invert(1);
+}
+
+.modal-body {
+    padding: 20px 25px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.form-control {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    font-size: 0.95rem;
+    transition: all .2s;
+}
+
+.form-control:focus {
+    border-color: #1E3A8A;
+    box-shadow: 0 0 0 3px rgba(30,58,138,0.15);
+}
+
+.modal-footer {
+    padding: 15px 25px;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #1E3A8A;
+    border-radius: 10px;
+    border: none;
+    padding: 10px 18px;
+    font-weight: 500;
+}
+
+.btn-primary:hover {
+    background-color: #2d4fbf;
+}
+
+.btn-secondary {
+    border-radius: 10px;
+    padding: 10px 18px;
+}
+
+/* Slight spacing fix between fields */
+.mb-3 {
+    margin-bottom: 18px !important;
+}
+
+/* Prevent global SECTION styling from affecting modals */
+.modal section {
+    width: auto !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+}
+
+
+
+
+/* Section width */
+section {
+    width: 90%; /* fit main-content width */
+    max-width: 100%; /* prevent narrow sections */
+    background: #fff;
+    padding: 25px 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    position: relative;
+    margin-left: 220px;
+}
+.edit-btn {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1.2em;
+    color: #224288;
+}
+.edit-btn:hover {
+    color: #274ea0;
+}
+
+.sidebar-profile-img {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-profile-img:hover {
+            transform: scale(1.05);
+        }
+
+         .sidebar-name {
+        display: flex;
+        justify-content: center; 
+        align-items: center;      
+        text-align: center;       
+        color: white;
+        padding: 10px;
+        margin-bottom: 30px;
+        font-size: 18px; 
+        flex-direction: column; 
+        }
+ .main-content h1 {
       color: #1E3A8A;
+      font-weight: 700;
+      font-size: 2.2rem;
+      margin-bottom: 20px;
+      margin-left: -690px;
     }
 
-    .section {
-      padding: 30px;
-      border-radius: 15px;
-      width: 1550px;
-      color: #1E3A8A;
-    }
-
-    .reminder {
-      display: flex;
-      align-items: center;
-      background: #e5ebf7;
-      height: 86px;
-      color: #1E3A8A;
-      border-radius: 20px;
-      width: 1250px;
-    }
-
-    .add-btn {
-      height: 51px;
-      width: 213px;
-      border-color: #1E3A8A;
-      border-style: solid;
-      background: #fff;
-      color: #1E3A8A;
-    }
-
-    .complete-box {
-      padding: 30px;
-      border-radius: 15px;
-      width: 1250px;
-      background: #e5ebf7;
-      color: #1E3A8A;
-    }
-
-    .complete-btn {
-      background: #1E3A8A;
-      border-style: solid;
-      color: #fff;
-      padding: 8px 14px;
-      border-radius: 6px;
-    }
-
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      overflow: auto;
-      background: rgba(0, 0, 0, 0.4);
-      justify-content: center;
-      align-items: center;
-    }
-
-    .modal-content {
-      background: #fff;
-      padding: 25px;
-      border-radius: 10px;
-      width: 400px;
-      max-width: 90%;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    }
-
-    .modal-content input,
-    .modal-content textarea {
-      width: 100%;
-      padding: 8px;
-      margin-top: 10px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      font-family: 'Poppins', sans-serif;
-    }
-
-    .save-btn {
-      background: #1E3A8A;
-      color: #fff;
-      padding: 8px 12px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .cancel-btn {
-      background: #ccc;
-      padding: 8px 12px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      margin-left: 8px;
-    }
-
-    .skill-chip {
-      display: inline-block;
-      background: linear-gradient(135deg, #eef2ff 0%, #e6f0ff 100%);
-      color: #0f172a;
-      padding: 6px 12px;
-      border-radius: 999px;
-      margin: 4px;
-      font-size: 14px;
-    }
-
-    .flash-success {
-      background: #d1fae5;
-      color: #065f46;
-      padding: 12px;
-      border-radius: 8px;
-      margin-left: 200px;
-      max-width: 1200px;
-      box-shadow: 0 2px 6px rgba(16, 24, 40, 0.06);
-    }
-
-    .flash-error {
-      background: #fee2e2;
-      color: #991b1b;
-      padding: 12px;
-      border-radius: 8px;
-      margin-left: 200px;
-      max-width: 1200px;
-      box-shadow: 0 2px 6px rgba(16, 24, 40, 0.06);
-    }
-  </style>
+</style>
 </head>
-
 <body>
 
-  <div class="sidebar">
-    <a href="Applicant_Profile.php" class="profile"><i class="fa-solid fa-user"></i></a>
+<!-- Sidebar -->
+<div class="sidebar">
+    <a href="Applicant_Profile.php" class="profile">
+         <img src="<?php echo !empty($profile_picture) ? htmlspecialchars($profile_picture) : 'uploads/employees/default.png'; ?>" 
+     alt="Profile" class="sidebar-profile-img">
+
+    </a>
+
+    <div class="sidebar-name">
+        <p><?php echo "Welcome, $applicantname"; ?></p>
+    </div>
+
     <ul class="nav">
-      <li><a href="Applicant_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-      <li><a href="Applicant_Application.php"><i class="fa-solid fa-file-lines"></i>Applications</a></li>
-      <li><a href="Applicant_Jobs.php"><i class="fa-solid fa-briefcase"></i>Jobs</a></li>
-      <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Log Out</a></li>
+        <li><a href="Applicant_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+        <li><a href="Applicant_Application.php"><i class="fa-solid fa-file-lines"></i>Applications</a></li>
+        <li><a href="Applicant_Jobs.php"><i class="fa-solid fa-briefcase"></i>Jobs</a></li>
+        <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Log Out</a></li>
     </ul>
-  </div>
+</div>
 
-  <main class="main-content">
-    <div class="profile-header">
-      <h2>Applicant Profile</h2>
-    </div>
-    <?php if (!empty($flash_success)): ?>
-      <div class="flash-success"><?php echo htmlspecialchars($flash_success); ?></div>
-    <?php endif; ?>
-    <?php if (!empty($flash_error)): ?>
-      <div class="flash-error"><?php echo htmlspecialchars($flash_error); ?></div>
-    <?php endif; ?>
+<main class="main-content">
+<h1 class="text-center mb-4">Applicant Profile</h1>
 
-    <div class="personal-info">
-      <div class="info">
-        <h1 name="full-name"><?php echo $name; ?></h1>
+<!-- Personal Info Section -->
+<section>
+<h2>Personal Information</h2>
+<div class="text-center mb-3">
+    <img id="profile-preview" src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="rounded-circle" style="width:130px; height:130px; border:2px solid #224288; object-fit:cover;">
+    <form action="" method="post" enctype="multipart/form-data">
+        <input type="file" name="profile_pic" id="profile-upload" style="display:none;" accept="image/*">
+        <button type="button" class="btn btn-primary btn-sm mt-2" id="upload-btn">Upload Photo</button>
+        <button type="submit" name="upload_pic" id="submit-btn" style="display:none;"></button>
+    </form>
+</div>
+<div><strong>Full Name:</strong> <?php echo displayOrEmpty($applicant['fullName']); ?></div>
+<div><strong>Applicant ID:</strong> <?php echo htmlspecialchars($applicantID); ?></div>
+<div><strong>Contact:</strong> <?php echo displayOrEmpty($applicant['contact_number']); ?></div>
+<div><strong>Email:</strong> <?php echo displayOrEmpty($applicant['email_address']); ?></div>
+<div><strong>Home Address:</strong> <?php echo displayOrEmpty($applicant['home_address']); ?></div>
+<button class="edit-btn" data-bs-toggle="modal" data-bs-target="#personalModal"><i class="fa-solid fa-pen-to-square"></i></button>
+</section>
 
-        <div class="phone"><i class="fa-solid fa-phone"></i>
-          <p name="phone"><?php echo $phone ?: 'Not provided'; ?></p>
-        </div>
-        <div class="location"><i class="fa-solid fa-location-dot"></i>
-          <p name="location"><?php echo $location ?: 'Not provided'; ?></p>
-        </div>
-        <div class="email"><i class="fa-solid fa-envelope"></i>
-          <p name="email"><?php echo $email ?: 'Not provided'; ?></p>
-        </div>
+<!-- Job / Experience Section -->
+<section>
+<h2>Job / Experience</h2>
+<div><strong>Job Title:</strong> <?php echo displayOrEmpty($applicant['job_title']); ?></div>
+<div><strong>Company:</strong> <?php echo displayOrEmpty($applicant['company_name']); ?></div>
+<div><strong>Years Experience:</strong> <?php echo displayOrEmpty($applicant['years_experience']); ?></div>
+<button class="edit-btn" data-bs-toggle="modal" data-bs-target="#jobModal"><i class="fa-solid fa-pen-to-square"></i></button>
+</section>
 
+<!-- Education Section -->
+<section>
+<h2>Education</h2>
+<div><strong>University:</strong> <?php echo displayOrEmpty($applicant['university']); ?></div>
+<div><strong>Course:</strong> <?php echo displayOrEmpty($applicant['course']); ?></div>
+<div><strong>Year Graduated:</strong> <?php echo displayOrEmpty($applicant['year_graduated']); ?></div>
+<button class="edit-btn" data-bs-toggle="modal" data-bs-target="#educationModal"><i class="fa-solid fa-pen-to-square"></i></button>
+</section>
 
-
-
-        <button onclick="openModal('editModal')" class="edit-btn"><i class="fa-solid fa-pen"></i> Edit</button>
-
-        <div class="profile-pic-container">
-          <?php
-          // Fetch the current profile pic filename
-          $stmtPic = $conn->prepare("SELECT profile_pic FROM applicant WHERE applicantID = ?");
-          $stmtPic->bind_param("s", $session_emp);
-          $stmtPic->execute();
-          $picResult = $stmtPic->get_result()->fetch_assoc();
-          $stmtPic->close();
-
-          $profile_pic = $picResult['profile_pic'] ?? 'default.jpg';
-          ?>
-          <img src="uploads/applicants/<?php echo htmlspecialchars($profile_pic); ?>" alt="Profile Picture"
-            class="profile-pic" style="width:150px; height:150px; border-radius:50%; object-fit:cover;">
-
-          <form method="POST" enctype="multipart/form-data" class="upload-form" style="margin-top:10px;">
-            <input type="file" name="profile_pic" accept=".jpg, .jpeg, .png" required>
-            <button type="submit" name="upload">Upload</button>
-
-          </form>
-
-        </div>
-
-        <!-- Career / Roles -->
-        <div class="section">
-          <div class="career">
-            <h3>Career history</h3>
-            <div class="reminder">
-              <p><i class="fa-solid fa-circle-exclamation"></i> Please add your most recent roles</p>
-            </div>
-            <button onclick="openModal('roleModal')" class="add-btn">Add role</button>
-
-            <?php if (!empty($roles)): ?>
-              <div style="margin-top:12px;margin-left:10px;">
-                <?php foreach ($roles as $r): ?>
-                  <div
-                    style="background:#fff;padding:10px;border-radius:6px;margin-bottom:8px;max-width:1200px;position:relative;">
-                    <strong><?php echo htmlspecialchars($r['previous_job']); ?></strong>
-                    <?php if (!empty($r['company_name'])): ?>
-                      <div style="font-size:14px;color:#555;"><?php echo htmlspecialchars($r['company_name']); ?></div>
-                    <?php endif; ?>
-
-                    <?php if (!empty($r['years_experience'])): ?>
-                      <div style="font-size:14px;color:#555;"><?php echo htmlspecialchars($r['years_experience']); ?> years
-                      </div>
-                    <?php endif; ?>
-
-                    <div style="position:absolute;right:10px;top:10px;display:flex;gap:6px;">
-                      <button type="button" class="save-btn"
-                        onclick="openRoleEditModal(<?php echo json_encode($r['previous_job']); ?>, <?php echo json_encode($r['company_name']); ?>) ">Edit</button>
-                      <form method="POST" style="display:inline;" onsubmit="return confirm('Clear role from profile?');">
-                        <input type="hidden" name="delete_role" value="1">
-                        <button type="submit" class="cancel-btn">Delete</button>
-                      </form>
-                    </div>
-                  </div>
-                <?php endforeach; ?>
-              </div>
-            <?php endif; ?>
-          </div>
-        </div>
-
-        <!-- Education -->
-        <div class="section">
-          <div class="education">
-            <h3>Education</h3>
-            <div class="reminder">
-              <p><i class="fa-solid fa-circle-exclamation"></i> Please add your most recent qualifications</p>
-            </div>
-            <button onclick="openModal('educationModal')" class="add-btn">Add education</button>
-
-            <?php if (!empty($edus)): ?>
-              <div style="margin-top:12px;margin-left:10px;">
-                <?php foreach ($edus as $e): ?>
-                  <div
-                    style="background:#fff;padding:10px;border-radius:6px;margin-bottom:8px;max-width:1200px;position:relative;">
-                    <strong><?php echo htmlspecialchars($e['school']); ?></strong>
-                    <?php if (!empty($e['degree'])): ?>
-                      <div style="font-size:14px;color:#555;"><?php echo htmlspecialchars($e['degree']); ?></div>
-                    <?php endif; ?>
-                    <div style="position:absolute;right:10px;top:10px;display:flex;gap:6px;">
-                      <button type="button" class="save-btn"
-                        onclick="openEducationEditModal(<?php echo json_encode($e['school']); ?>, <?php echo json_encode($e['degree']); ?>)">Edit</button>
-                      <form method="POST" style="display:inline;" onsubmit="return confirm('Clear education entry?');">
-                        <input type="hidden" name="delete_education" value="1">
-                        <button type="submit" class="cancel-btn">Delete</button>
-                      </form>
-                    </div>
-                  </div>
-                <?php endforeach; ?>
-              </div>
-            <?php endif; ?>
-          </div>
-        </div>
-
-        <!-- Skills -->
-        <div class="section">
-          <h3>Skills</h3>
-          <div class="reminder">
-            <p><i class="fa-solid fa-circle-exclamation"></i> Please add at least five skills</p>
-          </div>
-          <button onclick="prefillSkillsModal(); openModal('skillsModal');" class="add-btn">Add / Edit skills</button>
-
-          <?php if (!empty($skills_array)): ?>
-            <div style="margin-top:12px;margin-left:10px;">
-              <div style="background:#fff;padding:10px;border-radius:6px;margin-bottom:8px;max-width:1200px;">
-                <?php foreach ($skills_array as $sk): ?>
-                  <span class="skill-chip"><?php echo htmlspecialchars($sk); ?></span>
-                <?php endforeach; ?>
-              </div>
-            </div>
-          <?php endif; ?>
-        </div>
-
-        <!-- Summary -->
-        <div class="section">
-          <h3>Summary</h3>
-          <div class="reminder">
-            <p><i class="fa-solid fa-circle-exclamation"></i> Please add a summary</p>
-          </div>
-          <button onclick="prefillSummaryModal(); openModal('summaryModal');" class="add-btn">Add / Edit
-            summary</button>
-
-          <?php if (!empty($summary_text)): ?>
-            <div
-              style="margin-top:12px;margin-left:10px;max-width:1200px;background:#fff;padding:12px;border-radius:8px;">
-              <?php echo nl2br(htmlspecialchars($summary_text)); ?>
-            </div>
-          <?php endif; ?>
-        </div>
-        <!--
-        <div class="complete-box">
-          <p>Ensure all information are correct, your resume will be created</p>
-          <button class="complete-btn">Complete</button>
-        </div>
-          -->
-
-  </main>
-
-  <!-- EDIT Profile Modal -->
-  <div id="editModal" class="modal">
-    <div class="modal-content">
-      <h3>Edit Profile</h3>
-      <form method="POST">
-        <input type="hidden" name="update_profile" value="1">
-        <div style="text-align:left;margin-bottom:8px;">
-          <label style="font-weight:600;">Name</label>
-          <div style="background:#f3f4f6;padding:8px;border-radius:6px;margin-top:4px;">
-            <?php echo htmlspecialchars($name); ?>
-          </div>
-        </div>
-        <div style="text-align:left;margin-bottom:8px;">
-          <label style="font-weight:600;">Email</label>
-          <div style="background:#f3f4f6;padding:8px;border-radius:6px;margin-top:4px;">
-            <?php echo htmlspecialchars($email); ?>
-          </div>
-        </div>
-
-        <input type="text" name="phoneNumber" placeholder="Phone number" required
-          value="<?php echo htmlspecialchars($phone); ?>">
-        <input type="text" name="homeLocation" placeholder="Home location" required
-          value="<?php echo htmlspecialchars($location); ?>">
-
-        <div style="display:flex;justify-content:center;gap:8px;">
-          <button type="submit" class="save-btn">Save</button>
-          <button type="button" class="cancel-btn" onclick="closeModal('editModal')">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- ROLE Modal -->
-  <div id="roleModal" class="modal">
-    <div class="modal-content">
-      <h3>Add Role</h3>
-      <form method="POST">
-        <input type="hidden" name="add_role" value="1">
-        <input type="text" name="previous_job" placeholder="previous_job" required>
-        <input type="text" name="company_name" placeholder="Company Name" required>
-        <input type="number" name="years_experience" placeholder="Years of Experience" min="0" required>
-        <div style="display:flex;justify-content:center;gap:8px;">
-          <button type="submit" class="save-btn">Save</button>
-          <button type="button" class="cancel-btn" onclick="closeModal('roleModal')">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- EDIT ROLE Modal -->
-  <div id="editRoleModal" class="modal">
-    <div class="modal-content">
-      <h3>Edit Role</h3>
-      <form method="POST">
-        <input type="hidden" name="edit_role" value="1">
-        <input type="text" name="previous_job_edit" id="previous_job_edit" placeholder="Job Title" required>
-        <input type="text" name="company_name_edit" id="company_name_edit" placeholder="Company Name" required>
-
-        <div style="display:flex;justify-content:center;gap:8px;">
-          <button type="submit" class="save-btn">Save</button>
-          <button type="button" class="cancel-btn" onclick="closeModal('editRoleModal')">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- EDUCATION Modal -->
-  <div id="educationModal" class="modal">
-    <div class="modal-content">
-      <h3>Add Education</h3>
-      <form method="POST">
-        <input type="hidden" name="add_education" value="1">
-        <input type="text" name="school" placeholder="School / University" required>
-        <input type="text" name="degree" placeholder="Degree / Course" required>
-        <input type="text" name="year_graduated" placeholder="Year graduated (YYYY)">
-        <div style="display:flex;justify-content:center;gap:8px;">
-          <button type="submit" class="save-btn">Save</button>
-          <button type="button" class="cancel-btn" onclick="closeModal('educationModal')">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- EDIT EDUCATION Modal -->
-  <div id="editEducationModal" class="modal">
-    <div class="modal-content">
-      <h3>Edit Education</h3>
-      <form method="POST">
-        <input type="hidden" name="edit_education" value="1">
-        <input type="text" name="school_edit" id="school_edit" placeholder="School / University" required>
-        <input type="text" name="degree_edit" id="degree_edit" placeholder="Degree / Course" required>
-        <input type="text" name="year_graduated_edit" id="year_graduated_edit" placeholder="Year graduated (YYYY)">
-        <div style="display:flex;justify-content:center;gap:8px;">
-          <button type="submit" class="save-btn">Save</button>
-          <button type="button" class="cancel-btn" onclick="closeModal('editEducationModal')">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- SKILLS Modal -->
-  <div id="skillsModal" class="modal">
-    <div class="modal-content">
-      <h3>Add Skills</h3>
-      <form method="POST">
-        <input type="hidden" name="add_skills" value="1">
-        <input type="text" id="skill1" name="skill1" placeholder="Skill 1" required>
-        <input type="text" id="skill2" name="skill2" placeholder="Skill 2" required>
-        <input type="text" id="skill3" name="skill3" placeholder="Skill 3" required>
-        <input type="text" id="skill4" name="skill4" placeholder="Skill 4" required>
-        <input type="text" id="skill5" name="skill5" placeholder="Skill 5" required>
-        <div style="display:flex;justify-content:center;gap:8px;">
-          <button type="submit" class="save-btn">Save</button>
-          <button type="button" class="cancel-btn" onclick="closeModal('skillsModal')">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- SUMMARY Modal -->
-  <div id="summaryModal" class="modal">
-    <div class="modal-content">
-      <h3>Add Summary</h3>
-      <form method="POST">
-        <input type="hidden" name="add_summary" value="1">
-        <textarea id="summary_text" name="summary_text" rows="4" placeholder="Write a short professional summary..."
-          required></textarea>
-        <div style="display:flex;justify-content:center;gap:8px;">
-          <button type="submit" class="save-btn">Save</button>
-          <button type="button" class="cancel-btn" onclick="closeModal('summaryModal')">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script>
-    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-    window.onclick = function (e) { document.querySelectorAll('.modal').forEach(m => { if (e.target == m) m.style.display = 'none'; }); }
-
-    function openRoleEditModal(title, company) {
-      document.getElementById('previous_job_edit').value = title || '';
-      document.getElementById('company_name_edit').value = company || '';
-      document.getElementById('role_description_edit').value = ''; // no per-role description stored separately; user can add a new description and it will be appended to summary
-      openModal('editRoleModal');
-    }
-
-    function openEducationEditModal(school, degree) {
-      document.getElementById('school_edit').value = school || '';
-      document.getElementById('degree_edit').value = degree || '';
-      document.getElementById('year_graduated_edit').value = '<?php echo addslashes($edu_year); ?>' || '';
-      openModal('editEducationModal');
-    }
-
-    function prefillSkillsModal() {
-      try {
-        const skills = <?php echo json_encode(array_values($skills_array)); ?>;
-        for (let i = 1; i <= 5; i++) {
-          const el = document.getElementById('skill' + i);
-          if (el) el.value = skills[i - 1] || '';
+<!-- Skills & Summary Section -->
+<section>
+    <h2>Skills & Summary</h2>
+    <div><strong>Skills:</strong> 
+        <?php
+        $skills_list = array_filter(array_map('trim', explode(',', $applicant['skills'] ?? '')));
+        if (!empty($skills_list)) {
+            foreach ($skills_list as $skill) {
+                echo "<span class='badge bg-primary me-1'>" . htmlspecialchars($skill) . "</span>";
+            }
+        } else {
+            echo "<span style='color:#888;'>Not set</span>";
         }
-      } catch (e) { }
-    }
+        ?>
+    </div>
+    <div><strong>Summary:</strong> <?php echo displayOrEmpty($applicant['summary']); ?></div>
+    <button class="edit-btn" data-bs-toggle="modal" data-bs-target="#skillsModal"><i class="fa-solid fa-pen-to-square"></i></button>
+</section>
 
-    function prefillSummaryModal() {
-      try {
-        const text = <?php echo json_encode($summary_text ?? ''); ?>;
-        const el = document.getElementById('summary_text');
-        if (el) el.value = text;
-      } catch (e) { }
-    }
-  </script>
+<!-- Personal Info Modal -->
+<div class="modal fade" id="personalModal" tabindex="-1" aria-labelledby="personalModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post">
+        <div class="modal-header">
+          <h5 class="modal-title" id="personalModalLabel">Edit Personal Info</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-control" name="fullName" value="<?php echo htmlspecialchars($applicant['fullName']); ?>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Contact Number</label>
+            <input type="text" class="form-control" name="contact_number" value="<?php echo htmlspecialchars($applicant['contact_number']); ?>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" name="email_address" value="<?php echo htmlspecialchars($applicant['email_address']); ?>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Home Address</label>
+            <input type="text" class="form-control" name="home_address" value="<?php echo htmlspecialchars($applicant['home_address']); ?>">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="save_personal" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
+<!-- Job / Experience Modal -->
+<div class="modal fade" id="jobModal" tabindex="-1" aria-labelledby="jobModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post">
+        <div class="modal-header">
+          <h5 class="modal-title" id="jobModalLabel">Edit Job / Experience</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Job Title</label>
+            <input type="text" class="form-control" name="job_title" value="<?php echo htmlspecialchars($applicant['job_title']); ?>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Company</label>
+            <input type="text" class="form-control" name="company_name" value="<?php echo htmlspecialchars($applicant['company_name']); ?>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Years Experience</label>
+            <input type="number" class="form-control" name="years_experience" value="<?php echo htmlspecialchars($applicant['years_experience']); ?>">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="save_job" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Education Modal -->
+<div class="modal fade" id="educationModal" tabindex="-1" aria-labelledby="educationModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post">
+        <div class="modal-header">
+          <h5 class="modal-title" id="educationModalLabel">Edit Education</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">University</label>
+            <input type="text" class="form-control" name="university" value="<?php echo htmlspecialchars($applicant['university']); ?>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Course</label>
+            <input type="text" class="form-control" name="course" value="<?php echo htmlspecialchars($applicant['course']); ?>">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Year Graduated</label>
+            <input type="number" class="form-control" name="year_graduated" value="<?php echo htmlspecialchars($applicant['year_graduated']); ?>">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="save_education" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Skills & Summary Modal -->
+<div class="modal fade" id="skillsModal" tabindex="-1" aria-labelledby="skillsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form method="post">
+        <div class="modal-header">
+          <h5 class="modal-title" id="skillsModalLabel">Edit Skills & Summary</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <?php
+            $existing_skills = array_filter(array_map('trim', explode(',', $applicant['skills'] ?? '')));
+            // Show up to 5 skill inputs
+            for ($i = 0; $i < 5; $i++) {
+                $value = $existing_skills[$i] ?? '';
+                echo '<label>Skill ' . ($i + 1) . ':</label>';
+                echo '<input type="text" name="skill[]" class="form-control mb-2" value="' . htmlspecialchars($value) . '">';
+            }
+            ?>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Summary</label>
+            <textarea class="form-control" name="summary" rows="3"><?php echo htmlspecialchars($applicant['summary']); ?></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" name="save_skills" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Profile Upload
+const fileInput = document.getElementById('profile-upload');
+const uploadBtn = document.getElementById('upload-btn');
+const submitBtn = document.getElementById('submit-btn');
+const imgPreview = document.getElementById('profile-preview');
+
+uploadBtn.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if(file){
+        const reader = new FileReader();
+        reader.onload = e => imgPreview.src = e.target.result;
+        reader.readAsDataURL(file);
+        submitBtn.click();
+    }
+});
+</script>
 </body>
-
 </html>

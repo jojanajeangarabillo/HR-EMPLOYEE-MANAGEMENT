@@ -2,19 +2,48 @@
 session_start();
 require 'admin/db.connect.php';
 
-$employees = 0;
-$applicants = 0;
-
-
+// Fetch employee name
 $employeenameQuery = $conn->query("
     SELECT fullname 
     FROM user 
     WHERE role = 'Employee' AND (sub_role IS NULL OR sub_role != 'HR Manager')
 ");
+$employeename = ($employeenameQuery && $row = $employeenameQuery->fetch_assoc()) ? $row['fullname'] : 'Employee';
 
-if ($employeenameQuery && $row = $employeenameQuery->fetch_assoc()) {
-    $employeename = $row['fullname'];
-    echo $employeename; 
+$employeeID = $_SESSION['applicant_employee_id'] ?? null;
+$employeename = "Employee";
+
+if ($employeeID) {
+    $stmt = $conn->prepare("SELECT fullname FROM user WHERE applicant_employee_id = ?");
+    $stmt->bind_param("s", $employeeID);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($row = $result->fetch_assoc()) {
+        $employeename = $row['fullname'];
+    }
+}
+
+// Fetch employee name and profile picture
+if ($employeeID) {
+    $stmt = $conn->prepare("SELECT fullname, profile_pic FROM employee WHERE empID = ?");
+    $stmt->bind_param("s", $employeeID);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $employeename = $row['fullname'];
+        $profile_picture = !empty($row['profile_pic']) 
+                           ? "uploads/employees/" . $row['profile_pic'] 
+                           : "uploads/employees/default.png";
+    } else {
+        $employeename = $_SESSION['fullname'] ?? "Employee";
+        $profile_picture = "uploads/employees/default.png";
+    }
+} else {
+    $employeename = $_SESSION['fullname'] ?? "Employee";
+    $profile_picture = "uploads/employees/default.png";
 }
 
 ?>
@@ -460,21 +489,34 @@ if ($employeenameQuery && $row = $employeenameQuery->fetch_assoc()) {
         width: 100%;
       }
     }
+
+     .sidebar-profile-img {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-profile-img:hover {
+            transform: scale(1.05);
+        }
   </style>
 </head>
 
 <body>
   <!-- Sidebar -->
-   <div class="sidebar">
-    <div class="sidebar-logo">
-       
-        <a href="Employee_Profile.php">
-            <img src="Images/profile.png" alt="Hospital Logo">
-        </a>
-        <div class="sidebar-name">
-            <p><?php echo "Welcome, $employeename"; ?></p>
-        </div>
-    </div>
+  <div class="sidebar">
+            <div class="sidebar-logo">
+            <a href="Employee_Profile.php" class="profile">
+             <img src="<?php echo htmlspecialchars($profile_picture); ?>" 
+             alt="Profile" class="sidebar-profile-img">
+            </a>
+
+            <div class="sidebar-name"><p><?php echo "Welcome, $employeename"; ?></p></div>
+      </div>
+
 
     <ul class="nav">
         <h4 class="menu-board-title">Menu Board</h4>
