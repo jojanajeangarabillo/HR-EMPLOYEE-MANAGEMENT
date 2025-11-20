@@ -1,9 +1,169 @@
+<?php
+session_start();
+require 'admin/db.connect.php';
+
+// Fetch employee name
+$employeenameQuery = $conn->query("
+    SELECT fullname 
+    FROM user 
+    WHERE role = 'Employee' AND (sub_role IS NULL OR sub_role != 'HR Manager')
+");
+$employeename = ($employeenameQuery && $row = $employeenameQuery->fetch_assoc()) ? $row['fullname'] : 'Employee';
+
+$employeeID = $_SESSION['applicant_employee_id'] ?? null;
+$employeename = "Employee";
+
+if ($employeeID) {
+    $stmt = $conn->prepare("SELECT fullname FROM user WHERE applicant_employee_id = ?");
+    $stmt->bind_param("s", $employeeID);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($row = $result->fetch_assoc()) {
+        $employeename = $row['fullname'];
+    }
+}
+
+// Get employee data FROM employee table
+$stmt = $conn->prepare("SELECT fullname, position, department, type_name, empID, profile_pic 
+                        FROM employee 
+                        WHERE empID = ?");
+$stmt->bind_param("s", $employeeID);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows === 0) {
+    die("Employee not found.");
+}
+
+$employee = $result->fetch_assoc();
+
+// Name
+$employeename = $employee["fullname"];
+
+// Profile Picture
+$profile_image = (!empty($employee["profile_pic"]))
+    ? "uploads/" . $employee["profile_pic"]
+    : "Images/default_profile.png";
+
+
+$stmt = $conn->prepare("
+    SELECT fullname, position, department, type_name, empID, profile_pic,
+           contact_number, emergency_contact, date_of_birth, gender,
+           email_address, home_address, pagibig_number, phil_health_number,
+           SSS_number, TIN_number
+    FROM employee 
+    WHERE empID = ?
+");
+$stmt->bind_param("s", $employeeID);
+$stmt->execute();
+$result = $stmt->get_result();
+$employee = $result->fetch_assoc();
+
+
+function displayOrEmpty($value) {
+    return !empty($value) ? htmlspecialchars($value) : "<span style='color:#888;'>Not set</span>";
+}
+
+
+if(isset($_POST['update_personal'])) {
+    $stmt = $conn->prepare("
+        UPDATE employee SET contact_number=?, emergency_contact=?, date_of_birth=?, gender=?, email_address=?, home_address=? 
+        WHERE empID=?
+    ");
+    $stmt->bind_param("sssssss",
+        $_POST['contact_number'],
+        $_POST['emergency_contact'],
+        $_POST['date_of_birth'],
+        $_POST['gender'],
+        $_POST['email_address'],
+        $_POST['home_address'],
+        $_POST['empID']
+    );
+    $stmt->execute();
+    header("Location: Employee_Profile.php");
+}
+
+if(isset($_POST['update_gov'])) {
+    $stmt = $conn->prepare("
+        UPDATE employee SET pagibig_number=?, phil_health_number=?, SSS_number=?, TIN_number=? 
+        WHERE empID=?
+    ");
+    $stmt->bind_param("sssss",
+        $_POST['pagibig_number'],
+        $_POST['phil_health_number'],
+        $_POST['SSS_number'],
+        $_POST['TIN_number'],
+        $_POST['empID']
+    );
+    $stmt->execute();
+    header("Location: Employee_Profile.php");
+}
+
+// Handle profile picture upload
+if (isset($_POST['upload'])) {
+    if (isset($_FILES['profile_pic']) && $_FILES['profile_pic']['error'] === 0) {
+        $file_name = $_FILES['profile_pic']['name'];
+        $file_tmp = $_FILES['profile_pic']['tmp_name'];
+        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+        $allowed_extensions = ['jpg', 'jpeg', 'png'];
+        if (in_array($file_ext, $allowed_extensions)) {
+            $upload_dir = "uploads/employees/";
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+
+            $new_filename = "employee_" . $employeeID . "." . $file_ext;
+            $upload_path = $upload_dir . $new_filename;
+
+            if (move_uploaded_file($file_tmp, $upload_path)) {
+                $update = $conn->prepare("UPDATE employee SET profile_pic = ? WHERE empID = ?");
+                $update->bind_param("ss", $new_filename, $employeeID);
+                if ($update->execute()) {
+                    $_SESSION['flash_success'] = 'Profile picture updated successfully.';
+                } else {
+                    $_SESSION['flash_error'] = 'Failed to update profile picture in database.';
+                }
+                $update->close();
+            } else {
+                $_SESSION['flash_error'] = 'Error uploading the file.';
+            }
+        } else {
+            $_SESSION['flash_error'] = 'Invalid file type. Only JPG, JPEG, or PNG allowed.';
+        }
+    } else {
+        $_SESSION['flash_error'] = 'No file selected or upload error.';
+    }
+
+    header("Location: Employee_Profile.php");
+    exit();
+}
+
+// Fetch employee info
+$stmt = $conn->prepare("SELECT fullname, profile_pic FROM employee WHERE empID = ?");
+$stmt->bind_param("s", $employeeID);
+$stmt->execute();
+$result = $stmt->get_result();
+
+if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $employeename = $row['fullname'];
+    $profile_picture = !empty($row['profile_pic']) ? "uploads/employees/" . $row['profile_pic'] : 'Images/default_profile.png';
+} else {
+    $employeename = $_SESSION['fullname'] ?? "Employee";
+    $profile_picture = 'Images/default_profile.png';
+}
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Employee Profile</title>
   <link rel="stylesheet" href="manager-sidebar.css">
+  <!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto:wght@400;500;700&display=swap">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
   
@@ -194,16 +354,53 @@ section h2 {
   section { padding: 15px 12px; }
 }
 
+.edit-btn {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 1.5em;
+    color: #224288;
+    transition: color 0.2s;
+}
+
+.edit-btn:hover {
+    color: #274ea0;
+}
+.section-container {
+    position: relative;
+}
+
+.sidebar-profile-img {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-profile-img:hover {
+            transform: scale(1.05);
+        }
+
+
   </style>
 </head>
 
 <body> 
 
-  <div class="sidebar">
-     <div class="sidebar-logo">
-      <h1>Welcome</h1>
-      <img src="Images/profile.png" alt="Hospital Logo">
-    </div>
+       <div class="sidebar">
+            <div class="sidebar-logo">
+            <a href="Employee_Profile.php" class="profile">
+             <img src="<?php echo htmlspecialchars($profile_picture); ?>" 
+             alt="Profile" class="sidebar-profile-img">
+            </a>
+
+            <div class="sidebar-name"><p><?php echo "Welcome, $employeename"; ?></p></div>
+      </div>
 
   <ul class="nav">
     <li class="active" style="display: flex; justify-content: center;">
@@ -227,82 +424,192 @@ section h2 {
   <!-- Profile Header -->
   <div class="profile-header">
     <div class="profile-photo-upload">
-      <img id="profile-preview" src="image.jpg" alt="Profile">
-      <label for="profile-upload" class="upload-btn">Upload Profile</label>
-      <input type="file" id="profile-upload" accept="image/*">
-    </div>
+  <img id="profile-preview" src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile">
+
+  <form action="" method="post" enctype="multipart/form-data">
+      <input type="file" name="profile_pic" id="profile-upload" accept="image/*">
+      <button type="button" class="upload-btn" id="upload-btn">Upload Photo</button>
+      <button type="submit" name="upload" id="submit-btn" style="display:none;"></button>
+  </form>
+</div>
+
 
     <div class="profile-info">
-      <div class="employee-name">RIVER FUENTABELLA</div>
-      <span>Position: <span class="label">Cardiologist Doctor</span></span>
-      <span>Department: <span class="label">Medical</span></span>
-      <span>Employment Status: <span class="label">Regular</span></span>
-      <span>Employee ID: <span class="label">25-0001</span></span>
+      <div class="employee-name"><p><?php echo "$employeename"; ?></div>
+        <span>Position: <span class="label"><?php echo $employee["position"]; ?></span></span>
+        <span>Department: <span class="label"><?php echo $employee["department"]; ?></span></span>
+        <span>Employment Status: <span class="label"><?php echo $employee["type_name"]; ?></span></span>
+        <span>Employee ID: <span class="label"><?php echo $employee["empID"]; ?></span></span>
     </div>
   </div>
 
   <!-- Personal Information Section -->
+<div class="section-container">
   <section>
     <h2>Personal Information</h2>
     <div class="info-flex">
       <div class="info-block">
-        <strong>FULL NAME</strong><br>RIVER FUENTABELLA<br>
-        <strong>CONTACT NUMBER</strong><br>09981654387<br>
-        <strong>EMERGENCY CONTACT NUMBER</strong><br>0994856718
+        <strong>CONTACT NUMBER</strong><br>
+        <?php echo displayOrEmpty($employee["contact_number"]); ?><br><br>
+
+        <strong>EMERGENCY CONTACT NUMBER</strong><br>
+        <?php echo displayOrEmpty($employee["emergency_contact"]); ?>
       </div>
+
       <div class="info-block">
-        <strong>DATE OF BIRTH</strong><br>MARCH 5, 1990<br>
-        <strong>GENDER</strong><br>MALE<br>
-        <strong>EMAIL ADDRESS</strong><br>funtabella_river@gmail.com
+        <strong>DATE OF BIRTH</strong><br>
+        <?php echo displayOrEmpty($employee["date_of_birth"]); ?><br><br>
+
+        <strong>GENDER</strong><br>
+        <?php echo displayOrEmpty($employee["gender"]); ?><br><br>
+
+        <strong>EMAIL ADDRESS</strong><br>
+        <?php echo displayOrEmpty($employee["email_address"]); ?>
       </div>
+
       <div class="info-block" style="flex:2;">
         <strong>HOME ADDRESS</strong><br>
-        123 Mabini Street, Barangay Kapitolyo, Pasig City, Metro Manila, 1603
+        <?php echo displayOrEmpty($employee["home_address"]); ?>
       </div>
     </div>
+    <button class="edit-btn" data-bs-toggle="modal" data-bs-target="#personalInfoModal">
+        <i class="fa-solid fa-pen-to-square"></i>
+    </button>
   </section>
+</div>
+
+
 
   <!-- Government IDs Section -->
+ <div class="section-container">
   <section>
     <h2>Government Identification Numbers</h2>
     <div class="gov-ids-flex">
       <div class="gov-id-block">
-        <strong>PAG-IBIG</strong><br>1234-5678-9012
+        <strong>PAG-IBIG</strong><br>
+        <?php echo displayOrEmpty($employee["pagibig_number"]); ?>
       </div>
+
       <div class="gov-id-block">
-        <strong>PHILHEALTH</strong><br>12-345678901-2
+        <strong>PHILHEALTH</strong><br>
+        <?php echo displayOrEmpty($employee["phil_health_number"]); ?>
       </div>
+
       <div class="gov-id-block">
-        <strong>SSS</strong><br>09-1234567-8
+        <strong>SSS</strong><br>
+        <?php echo displayOrEmpty($employee["SSS_number"]); ?>
       </div>
+
       <div class="gov-id-block">
-        <strong>TIN</strong><br>123-456-789-000
+        <strong>TIN</strong><br>
+        <?php echo displayOrEmpty($employee["TIN_number"]); ?>
       </div>
     </div>
+    <button class="edit-btn" data-bs-toggle="modal" data-bs-target="#govIdModal">
+        <i class="fa-solid fa-pen-to-square"></i>
+    </button>
   </section>
+</div>
+
+
 </main>
 
+<!-- Personal Info Modal -->
+<div class="modal fade" id="personalInfoModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="Employee_Profile.php" method="post">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Personal Information</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="empID" value="<?php echo $employeeID; ?>">
+          <label>Contact Number</label>
+          <input type="text" name="contact_number" class="form-control" value="<?php echo htmlspecialchars($employee['contact_number']); ?>">
+          <label>Emergency Contact</label>
+          <input type="text" name="emergency_contact" class="form-control" value="<?php echo htmlspecialchars($employee['emergency_contact']); ?>">
+          <label>Date of Birth</label>
+          <input type="date" name="date_of_birth" class="form-control" value="<?php echo $employee['date_of_birth']; ?>">
+          <label>Gender</label>
+          <select name="gender" class="form-control">
+            <option value="">Select</option>
+            <option value="Male" <?php if($employee['gender']=='Male') echo 'selected'; ?>>Male</option>
+            <option value="Female" <?php if($employee['gender']=='Female') echo 'selected'; ?>>Female</option>
+          </select>
+          <label>Email Address</label>
+          <input type="email" name="email_address" class="form-control" value="<?php echo htmlspecialchars($employee['email_address']); ?>">
+          <label>Home Address</label>
+          <textarea name="home_address" class="form-control"><?php echo htmlspecialchars($employee['home_address']); ?></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="update_personal" class="btn btn-primary">Save Changes</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Government IDs Modal -->
+<div class="modal fade" id="govIdModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="Employee_Profile.php" method="post">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Government IDs</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="empID" value="<?php echo $employeeID; ?>">
+          <label>PAG-IBIG</label>
+          <input type="text" name="pagibig_number" class="form-control" value="<?php echo htmlspecialchars($employee['pagibig_number']); ?>">
+          <label>PHILHEALTH</label>
+          <input type="text" name="phil_health_number" class="form-control" value="<?php echo htmlspecialchars($employee['phil_health_number']); ?>">
+          <label>SSS</label>
+          <input type="text" name="SSS_number" class="form-control" value="<?php echo htmlspecialchars($employee['SSS_number']); ?>">
+          <label>TIN</label>
+          <input type="text" name="TIN_number" class="form-control" value="<?php echo htmlspecialchars($employee['TIN_number']); ?>">
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="update_gov" class="btn btn-primary">Save Changes</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS Bundle (includes Popper.js) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+ 
 <script>
   // Profile Upload
-  const fileInput = document.getElementById('profile-upload');
-  const imgPreview = document.getElementById('profile-preview');
-  fileInput.addEventListener('change', function(e){
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        imgPreview.src = evt.target.result;
-      }
-      reader.readAsDataURL(file);
-    }
-  });
-  // Highlight active sidebar link
-const currentPage = window.location.pathname.split("/").pop();
-document.querySelectorAll(".sidebar .nav li a").forEach(link => {
-  if (link.getAttribute("href") === currentPage) {
-    link.parentElement.classList.add("active");
-  }
+ // Correct elements
+const fileInput = document.getElementById('profile-upload'); // input element
+const uploadBtn = document.getElementById('upload-btn'); // your button
+const submitBtn = document.getElementById('submit-btn'); // hidden submit button
+const imgPreview = document.getElementById('profile-preview');
+
+// When upload button is clicked, open file explorer
+uploadBtn.addEventListener('click', () => {
+    fileInput.click();
 });
+
+// When a file is selected, preview it and auto-submit form
+fileInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imgPreview.src = e.target.result; // show preview
+        }
+        reader.readAsDataURL(file);
+
+        submitBtn.click(); // auto-submit form
+    }
+});
+
 </script>
 
 

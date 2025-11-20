@@ -2,46 +2,110 @@
 session_start();
 require 'admin/db.connect.php';
 
-// Make sure user is logged in and is an applicant
-if (!isset($_SESSION['email']) || $_SESSION['role'] !== 'Applicant') {
-    header("Location: Login.php");
-    exit;
+// -------------------------------
+// 1. Get Applicant ID from Session
+// -------------------------------
+$applicantID = $_SESSION['applicant_employee_id'] ?? null;
+
+if (!$applicantID) {
+    die("Applicant ID not found in session.");
 }
 
-$applicant_id = $_SESSION['applicant_employee_id'];
-$applicantname = "";
-
-// Fetch the applicant name dynamically from `applicant` table using applicantID
-$stmt = $conn->prepare("SELECT fullName FROM applicant WHERE applicantID = ?");
-$stmt->bind_param("s", $applicant_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
-    $applicantname = $row['fullName'];
-} else {
-    $applicantname = $_SESSION['fullname']; // fallback from `user` table
-}
-
+// -------------------------------
+// 2. Fetch Applicant Basic Info (Full Name + Picture)
+// -------------------------------
 $stmt = $conn->prepare("SELECT fullName, profile_pic FROM applicant WHERE applicantID = ?");
-$stmt->bind_param("s", $applicant_id);
+$stmt->bind_param("s", $applicantID);
 $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
     $applicantname = $row['fullName'];
-
-    // ✅ Check if a profile picture exists
-    if (!empty($row['profile_pic'])) {
-        $profile_picture = $row['profile_pic'];
-    }
+    $profile_picture = !empty($row['profile_pic'])
+        ? "uploads/applicants/" . $row['profile_pic']
+        : "uploads/employees/default.png";
 } else {
-    // fallback if not found in applicant table
-    $applicantname = $_SESSION['fullname'] ?? "Applicant";
+    $applicantname = "Applicant";
+    $profile_picture = "uploads/employees/default.png";
 }
+
+
+// Fetch application counts by status
+$status_counts = [
+    'Pending' => 0,
+    'Initial Interview' => 0,
+    'Final Interview' => 0,
+    'Rejected' => 0
+];
+
+// Get counts from applications table
+$stmt = $conn->prepare("
+    SELECT status, COUNT(*) as count 
+    FROM applications 
+    WHERE applicantID = ? 
+    GROUP BY status
+");
+$stmt->bind_param("s", $applicantID);
+$stmt->execute();
+$result = $stmt->get_result();
+
+while ($row = $result->fetch_assoc()) {
+    if (isset($status_counts[$row['status']])) {
+        $status_counts[$row['status']] = $row['count'];
+    }
+}
+
+
+// Rejected count from rejected_applications table
+$stmt = $conn->prepare("
+    SELECT COUNT(*) as count 
+    FROM rejected_applications 
+    WHERE applicantID = ?
+");
+$stmt->bind_param("s", $applicantID);
+$stmt->execute();
+$result = $stmt->get_result();
+if ($row = $result->fetch_assoc()) {
+    $status_counts['Rejected'] = $row['count'];
+}
+
+
+// Fetch total number of positions for Hirings (status = 'On-Going' or 'To Post')
+$hiringsQuery = $conn->query("
+    SELECT SUM(vacancy_count) AS count 
+    FROM vacancies 
+    WHERE status IN ('On-Going', 'To Post')
+");
+if ($hiringsQuery && $row = $hiringsQuery->fetch_assoc()) {
+    $hirings = $row['count'] ?? 0; 
+}
+
+// Pagination Setup
+$limit = 5; // rows per page
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$start = ($page > 1) ? ($page * $limit) - $limit : 0;
+
+// Count total rows
+$totalQuery = $conn->query("SELECT COUNT(*) AS total FROM vacancies WHERE status = 'On-Going'");
+$total = ($totalQuery && $row = $totalQuery->fetch_assoc()) ? $row['total'] : 0;
+
+$pages = ceil($total / $limit);
+
+
+// Fetch paginated vacancies
+$recentVacanciesQuery = $conn->query("
+    SELECT v.id, v.vacancy_count, v.status, d.deptName, p.position_title, e.typeName AS employment_type
+    FROM vacancies v
+    JOIN department d ON v.department_id = d.deptID
+    JOIN position p ON v.position_id = p.positionID
+    JOIN employment_type e ON v.employment_type_id = e.emtypeID
+    WHERE v.status = 'On-Going'
+    ORDER BY v.id DESC
+    LIMIT $start, $limit
+");
 ?>
+
 
 
 
@@ -199,6 +263,14 @@ if ($result->num_rows > 0) {
         font-size: 18px; 
         flex-direction: column; 
         }
+
+       
+        .stats { display:flex; gap:40px; flex-wrap:wrap; margin-left:0; }
+        .section { padding:25px 30px; border-radius:15px; border-top:4px solid #1E3A8A; width:350px; height:120px; background:white; box-shadow:0 2px 6px rgba(0,0,0,0.1); transition: transform 0.2s ease; }
+        .section label { font-size:20px; }
+        .section h3 { color:#1E3A8A; margin-top:15px; font-size:25px; }
+        .job-posts h2 { margin-top:60px; margin-bottom:20px; color:#1E3A8A; }
+
     </style>
 
 
@@ -207,15 +279,15 @@ if ($result->num_rows > 0) {
 <body>
     <!-- Sidebar -->
     <!-- Sidebar -->
-    <div class="sidebar">
-        <a href="Applicant_Profile.php" class="profile">
-             <img src="uploads/applicants/<?php echo htmlspecialchars($profile_picture); ?>" 
-             alt="Profile" class="sidebar-profile-img">
-        </a>
+   <div class="sidebar">
+    <a href="Applicant_Profile.php" class="profile">
+     <img src="<?php echo !empty($profile_picture) ? htmlspecialchars($profile_picture) : 'uploads/employees/default.png'; ?>" 
+     alt="Profile" class="sidebar-profile-img">
+    </a>
 
-        <div class="sidebar-name">
-            <p><?php echo "Welcome, $applicantname"; ?></p>
-        </div>
+    <div class="sidebar-name">
+      <p><?php echo "Welcome, $applicantname"; ?></p>
+    </div>
 
         <ul class="nav">
             <li class="active"><a href="Applicant_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
@@ -230,9 +302,9 @@ if ($result->num_rows > 0) {
 
 
     <!-- Main Content -->
-    <div class="main-content">
+    <main class="main-content">
         <div class="welcome-box">
-            Welcome back, User!
+            <p><?php echo "Welcome back, $applicantname"; ?></p>
         </div>
 
         <div class="status-section">
@@ -240,15 +312,19 @@ if ($result->num_rows > 0) {
             <div class="status-cards">
                 <div class="status-card">
                     <p>Pending</p>
-                    <h2>test</h2>
+                     <h2><?php echo $status_counts['Pending']; ?></h2>
                 </div>
                 <div class="status-card">
-                    <p>Interview</p>
-                    <h2>0</h2>
+                    <p>Initial Interview</p>
+                    <h2><?php echo $status_counts['Initial Interview']; ?></h2>
+                </div>
+                <div class="status-card">
+                    <p>Final Interview</p>
+                    <h2><?php echo $status_counts['Final Interview']; ?></h2>
                 </div>
                 <div class="status-card">
                     <p>Rejected</p>
-                    <h2>0</h2>
+                     <h2><?php echo $status_counts['Rejected']; ?></h2>
                 </div>
             </div>
         </div>
@@ -257,7 +333,11 @@ if ($result->num_rows > 0) {
             <h3>Notifications</h3>
             <div class="notification-box"></div>
         </div>
-    </div>
+    </div>  
+
+    
+
+    </main>   
 </body>
 
 </html>
