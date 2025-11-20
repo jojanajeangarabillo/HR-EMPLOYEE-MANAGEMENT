@@ -56,22 +56,7 @@ $menus = [
     "Logout" => "Login.php"
   ],
 
-  "HR Assistant" => [
-    "Dashboard" => "Manager_Dashboard.php",
-    "Applicants" => "Manager_Applicants.php",
-    "Pending Applicants" => "Manager_PendingApplicants.php",
-    "Newly Hired" => "Newly-Hired.php",
-    "Employees" => "Manager_Employees.php",
-    "Logout" => "Login.php"
-  ],
 
-  "Training and Development Coordinator" => [
-    "Dashboard" => "Manager_Dashboard.php",
-    "Employees" => "Manager_Employees.php",
-    "Calendar" => "Manager_Calendar.php",
-    "Requests" => "Manager_Request.php",
-    "Logout" => "Login.php"
-  ]
 ];
 
 $role = $_SESSION['sub_role'] ?? "HR Manager";

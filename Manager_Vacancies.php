@@ -57,22 +57,6 @@ $menus = [
         "Logout" => "Login.php"
     ],
 
-    "HR Assistant" => [
-        "Dashboard" => "Manager_Dashboard.php",
-        "Applicants" => "Manager_Applicants.php",
-        "Pending Applicants" => "Manager_PendingApplicants.php",
-        "Newly Hired" => "Newly-Hired.php",
-        "Employees" => "Manager_Employees.php",
-        "Logout" => "Login.php"
-    ],
-
-    "Training and Development Coordinator" => [
-        "Dashboard" => "Manager_Dashboard.php",
-        "Employees" => "Manager_Employees.php",
-        "Calendar" => "Manager_Calendar.php",
-        "Requests" => "Manager_Request.php",
-        "Logout" => "Login.php"
-    ]
 ];
 
 $role = $_SESSION['sub_role'] ?? "HR Manager";
@@ -130,7 +114,21 @@ while ($row = $posQuery->fetch_assoc()) {
 
 // Fetch 10 Recently Uploaded Vacancies 
 $recentQuery = $conn->query("
-    SELECT v.id, v.vacancy_count, v.status, d.deptName, p.position_title, e.typeName AS employment_type
+    SELECT 
+        v.id,
+        v.vacancy_count,
+        v.status,
+        d.deptName,
+        p.position_title,
+        e.typeName AS employment_type,
+
+        (
+            SELECT COUNT(*) 
+            FROM applications a
+            WHERE a.jobID = v.position_id
+              AND a.status = 'Hired'
+        ) AS hired_count
+
     FROM vacancies v
     JOIN department d ON v.department_id = d.deptID
     JOIN position p ON v.position_id = p.positionID
@@ -139,12 +137,15 @@ $recentQuery = $conn->query("
     LIMIT 10
 ");
 
+
 // Fetch Employment Types
 $etypeQuery = $conn->query("SELECT emtypeID, typeName FROM employment_type ORDER BY typeName ASC");
 $employmentTypes = [];
 while ($row = $etypeQuery->fetch_assoc()) {
     $employmentTypes[] = $row;
 }
+
+
 
 
 
@@ -476,9 +477,17 @@ while ($row = $etypeQuery->fetch_assoc()) {
                                     <?php endif; ?>
                                 </td>
                                 <td>
-
-                                    <a href="archive_vacancy.php?id=<?= $row['id'] ?>"
-                                        class="btn btn-sm btn-warning">Archive</a>
+                                    <?php if ($row['hired_count'] >= $row['vacancy_count']): ?>
+                                        <!-- Vacancy is fully filled — allow delete -->
+                                        <a href="delete_vacancy.php?id=<?= $row['id'] ?>" class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Are you sure you want to delete this vacancy? This action cannot be undone.');">
+                                            Delete
+                                        </a>
+                                    <?php else: ?>
+                                        <!-- Still open — show archive only -->
+                                        <a href="archive_vacancy.php?id=<?= $row['id'] ?>"
+                                            class="btn btn-sm btn-warning">Archive</a>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
