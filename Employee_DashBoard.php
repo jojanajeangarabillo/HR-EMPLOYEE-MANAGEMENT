@@ -25,6 +25,7 @@ if ($employeeID) {
 }
 
 
+
 // Fetch employee name and profile picture
 if ($employeeID) {
     $stmt = $conn->prepare("SELECT fullname, profile_pic FROM employee WHERE empID = ?");
@@ -37,14 +38,14 @@ if ($employeeID) {
         $employeename = $row['fullname'];
         $profile_picture = !empty($row['profile_pic']) 
                            ? "uploads/employees/" . $row['profile_pic'] 
-                           : "Images/default_profile.png";
+                           : "uploads/employees/default.png";
     } else {
         $employeename = $_SESSION['fullname'] ?? "Employee";
-        $profile_picture = "Images/default_profile.png";
+        $profile_picture = "uploads/employees/default";
     }
 } else {
     $employeename = $_SESSION['fullname'] ?? "Employee";
-    $profile_picture = "Images/default_profile.png";
+    $profile_picture = "uploads/employees/default";
 }
 
 // Fetch announcements

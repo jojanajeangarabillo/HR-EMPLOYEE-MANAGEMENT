@@ -24,6 +24,8 @@ if ($employeeID) {
     }
 }
 
+
+
 // Get employee data FROM employee table
 $stmt = $conn->prepare("SELECT fullname, position, department, type_name, empID, profile_pic 
                         FROM employee 
@@ -43,8 +45,8 @@ $employeename = $employee["fullname"];
 
 // Profile Picture
 $profile_image = (!empty($employee["profile_pic"]))
-    ? "uploads/" . $employee["profile_pic"]
-    : "Images/default_profile.png";
+    ? "uploads/employees" . $employee["profile_pic"]
+    : "uploads/employees/default.png";
 
 
 $stmt = $conn->prepare("
@@ -149,7 +151,7 @@ $result = $stmt->get_result();
 if ($result->num_rows > 0) {
     $row = $result->fetch_assoc();
     $employeename = $row['fullname'];
-    $profile_picture = !empty($row['profile_pic']) ? "uploads/employees/" . $row['profile_pic'] : 'Images/default_profile.png';
+    $profile_picture = !empty($row['profile_pic']) ? "uploads/employees/" . $row['profile_pic'] : 'uploads/employees/default.png';
 } else {
     $employeename = $_SESSION['fullname'] ?? "Employee";
     $profile_picture = 'Images/default_profile.png';
@@ -373,7 +375,7 @@ section h2 {
     position: relative;
 }
 
-.sidebar-profile-img {
+        .sidebar-profile-img {
             width: 130px;
             height: 130px;
             border-radius: 50%;
