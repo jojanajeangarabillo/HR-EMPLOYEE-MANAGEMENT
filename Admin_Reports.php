@@ -224,13 +224,13 @@ if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
     </div>
 
     <div class="sidebar-name">
-      <p><?php echo "Welcome, $adminname"; ?></p>
+      <p><?php echo "Welcome Admin, $adminname"; ?></p>
     </div>
 
     <ul class="nav flex-column">
         <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i> Dashboard</a></li>
             <li><a href="Admin_UserManagement.php"><i class="fa-solid fa-users"></i> User Management</a></li>
-             <li><a href="Admin_Departments.php"><i class="fa-building-columns"></i> Departments</a></li>
+             <li><a href="Admin_Departments.php"><i class="fa-solid fa-building-columns"></i> Departments</a></li>
             <li><a href="Admin_Vacancies.php"><i class="fa-solid fa-briefcase"></i> Vacancies</a></li>
             <li><a href="Admin-Applicants.php"><i class="fa-solid fa-user-check"></i> Applicants</a></li>
             <li  class="active"><a href="Admin_Reports.php"><i class="fa-solid fa-chart-simple"></i> Reports</a></li>
