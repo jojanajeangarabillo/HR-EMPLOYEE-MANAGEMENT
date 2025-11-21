@@ -1,6 +1,17 @@
 <?php
 session_start();
 require 'admin/db.connect.php';
+// PHPMailer includes (adjust path if needed)
+require 'PHPMailer-master/src/Exception.php';
+require 'PHPMailer-master/src/PHPMailer.php';
+require 'PHPMailer-master/src/SMTP.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+// load mailer config
+$config = require 'mailer-config.php';
+
 
 // Manager name
 $managername = $_SESSION['fullname'] ?? "Manager";
@@ -77,24 +88,6 @@ $menus = [
 
 $role = $_SESSION['sub_role'] ?? "HR Manager";
 
-// --- Handle Approve/Reject Actions ---
-if (isset($_GET['action'], $_GET['id'])) {
-  $request_id = intval($_GET['id']);
-  $action = $_GET['action'];
-
-  $status = ($action === 'accept') ? 'Approved' : (($action === 'reject') ? 'Rejected' : null);
-
-  if ($status) {
-    // Update status and action_by
-        $stmt = $conn->prepare("UPDATE employee_request SET status = ?, action_by = ? WHERE request_id = ?");
-        $stmt->bind_param("ssi", $status, $action_by, $request_id);
-        $stmt->execute();
-        $stmt->close();
-    }
-  // Redirect to prevent resubmission
-  header("Location: Manager_Approvals.php");
-  exit;
-}
 
 $requests = [];
 
@@ -133,6 +126,93 @@ while ($row = $res->fetch_assoc()) {
 $stmt->close();
 
 
+
+// --- Handle Approve/Reject Actions ---
+if (isset($_GET['action'], $_GET['id'])) {
+    $request_id = intval($_GET['id']);
+    $action = $_GET['action'];
+
+    $status = ($action === 'accept') ? 'Approved' : (($action === 'reject') ? 'Rejected' : null);
+
+    if ($status) {
+
+        // (1) Get request details for email
+        $stmt = $conn->prepare("SELECT fullname, email_address, request_type_name, leave_type_name 
+                                FROM employee_request 
+                                WHERE request_id = ?");
+        $stmt->bind_param("i", $request_id);
+        $stmt->execute();
+        $req = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        $emp_name = $req['fullname'];
+        $email = $req['email_address'];
+        $requestType = $req['request_type_name'];
+        $leaveType = $req['leave_type_name'];
+
+        // (2) Prepare email message
+        if ($status == "Approved") {
+            if ($requestType == "Leave") {
+                $messageBody = "Greetings $emp_name,<br><br>
+                Your request for <b>$leaveType</b> has been <b>approved</b>.<br>
+                Kindly coordinate with the HR Team onsite regarding your schedule.<br><br>
+                Thank you!";
+            } else {
+                $messageBody = "Greetings $emp_name,<br><br>
+                Your request for <b>$requestType</b> has been <b>approved</b>.<br>
+                You may coordinate with HR onsite for further instructions.<br><br>
+                Thank you!";
+            }
+        } else {
+            $messageBody = "Greetings $emp_name,<br><br>
+            Your request for <b>$requestType</b> has been <b>rejected</b>.<br>
+            For more details, kindly coordinate with the HR Team.<br><br>
+            Thank you!";
+        }
+
+        // (3) Update database
+        $action_by = $managername;
+
+        $stmt = $conn->prepare("UPDATE employee_request 
+                                SET status = ?, action_by = ? 
+                                WHERE request_id = ?");
+        $stmt->bind_param("ssi", $status, $action_by, $request_id);
+        $stmt->execute();
+        $stmt->close();
+
+        // (4) SEND EMAIL
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = $config['host'];
+            $mail->SMTPAuth = true;
+            $mail->Username = $config['username'];
+            $mail->Password = $config['password'];
+            $mail->SMTPSecure = $config['encryption'];
+            $mail->Port = $config['port'];
+
+            $mail->setFrom($config['from_email'], $config['from_name']);
+            $mail->addAddress($email, $emp_name);
+
+            $mail->isHTML(true);
+            $mail->Subject = "Your Request Update - Employee Management System";
+            $mail->Body = $messageBody;
+
+            $mail->send();
+
+            // ✔ Set flash message
+            $_SESSION['flash_success'] = "Email sent successfully and request has been $status.";
+
+        } catch (Exception $e) {
+            error_log("Email failed: " . $mail->ErrorInfo);
+            $_SESSION['flash_error'] = "Request updated but email failed to send.";
+        }
+    }
+
+    header("Location: Manager_Approvals.php");
+    exit;
+}
+
 ?>
 
 
@@ -149,6 +229,9 @@ $stmt->close();
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
     crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 
   <style>
     body {
@@ -176,9 +259,10 @@ $stmt->close();
 
     /* --- TABLE & FILTER STYLING --- */
     .table-container {
-      max-width: 1200px;
+      max-width: 1220px;
       margin: 0 auto;
-      margin-left: 200px;
+    
+    
     }
 
     .controls-bar {
@@ -230,14 +314,17 @@ $stmt->close();
       box-shadow: 0 4px 8px rgba(30, 58, 138, 0.3);
     }
 
-    table {
+    .table {
       border-collapse: collapse;
-      width: 100%;
+      width: 90%;
       background-color: #ffffff;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       border-radius: 8px;
       overflow: hidden;
+
     }
+    
+    
 
     th,
     td {
@@ -340,6 +427,25 @@ $stmt->close();
       <h1>Employee Requests</h1>
     </div>
 
+
+    <?php if (isset($_SESSION['flash_success'])): ?>
+  <div class="alert alert-success alert-dismissible fade show" role="alert" 
+       style="max-width: 700px; margin: 0 auto 20px auto;">
+    <?= $_SESSION['flash_success']; ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  <?php unset($_SESSION['flash_success']); ?>
+<?php endif; ?>
+
+<?php if (isset($_SESSION['flash_error'])): ?>
+  <div class="alert alert-danger alert-dismissible fade show" role="alert" 
+       style="max-width: 700px; margin: 0 auto 20px auto;">
+    <?= $_SESSION['flash_error']; ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+  <?php unset($_SESSION['flash_error']); ?>
+<?php endif; ?>
+
     <div class="table-container">
       <div class="controls-bar">
         <div class="search-box">
@@ -370,7 +476,7 @@ $stmt->close();
                   <td><?= htmlspecialchars($req['department'] ?? 'N/A') ?></td>
                   <td><?= htmlspecialchars($req['request_type_name']) ?></td>
                   <td><?= htmlspecialchars($req['reason']) ?></td>
-                  <td><?= date('Y-m-d', strtotime($req['requested_at'])) ?></td>
+                  <td><?= date('Y-m-d h:i A', strtotime($req['requested_at'])) ?></td>
                   <td class="action-icons">
                     <?php if ($req['status'] === 'Approved'): ?>
                       <span style="color:green;font-weight:bold;">Approved</span>

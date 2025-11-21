@@ -37,13 +37,15 @@ if ($pending_applicantQuery && $row = $pending_applicantQuery->fetch_assoc()) {
 
 // Fetch total number of positions for Hirings (status = 'On-Going' or 'To Post')
 $hiringsQuery = $conn->query("
-    SELECT SUM(vacancy_count) AS count 
-    FROM vacancies 
-    WHERE status IN ('On-Going', 'To Post')
+    SELECT COUNT(*) AS count
+    FROM (
+        SELECT DISTINCT department_id, position_id 
+        FROM vacancies 
+        WHERE status = 'On-Going'
+    ) AS uniqueVacancies
 ");
-if ($hiringsQuery && $row = $hiringsQuery->fetch_assoc()) {
-    $hirings = $row['count'] ?? 0; 
-}
+$hirings = ($hiringsQuery && $row = $hiringsQuery->fetch_assoc()) ? $row['count'] : 0;
+
 
 // Pagination Setup
 $limit = 5; // rows per page
