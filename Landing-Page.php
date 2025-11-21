@@ -1,427 +1,428 @@
+<?php
+// Start session and connect to database
+session_start();
+require 'admin/db.connect.php';
+
+// Fetch system settings
+$sql = "SELECT * FROM system_settings LIMIT 1";
+$result = $conn->query($sql);
+$settings = $result->fetch_assoc();
+
+// Fallback in case no record is found
+$logo = $settings['logo'] ?? 'images/default-logo.png';
+$system_name = $settings['system_name'] ?? 'Hospital';
+$cover_image = $settings['cover_image'] ?? 'images/default-cover.jpg';
+$about_text = $settings['about'] ?? 'Welcome to our organization!';
+$email = $settings['email'] ?? '';
+$contact = $settings['contact'] ?? '';
+
+
+// Fetch Work With Us features
+$workWithUsJson = $settings['work_with_us'] ?? '[]';
+$workWithUsFeatures = json_decode($workWithUsJson, true);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Landing Page</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title><?php echo htmlspecialchars($system_name); ?></title>
 
-  <!-- Font Awesome for hamburger icon -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <style>
-    :root{
-      --accent:#1E3A8A;
-      --accent-dark:#163273;
-      --gold:#FFD700;
-      --white:#fff;
-      --bg:#f8fafc;
-      --radius:8px;
-    }
+<style>
+  :root {
+    --primary:#1E3A8A;
+    --primary-dark:#163273;
+    --white:#fff;
+    --font:'Poppins', sans-serif;
+    --radius:8px;
+  }
+  body {font-family:'Poppins','Roboto',sans-serif; background:#f9fafc; margin:0; padding:0; color:#111827; }
+  .top-bar { background-color: var(--primary); padding: 10px 20px; position: sticky; top: 0; z-index: 50; display:flex; justify-content:space-between; align-items:center; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
+  .logo-left { display:flex; align-items:center; gap:15px; }
+  .logo-left img { height:60px; width:60px; border-radius:50%; }
+  .logo-left h1 { color:white; font-size:1.4rem; letter-spacing:2px; margin:0; }
+  .menu-wrap { position:relative; }
+  .hamburger-btn { background:none; border:none; color:white; font-size:1.4rem; cursor:pointer; padding:8px; }
+  .dropdown { position:absolute; right:0; top:calc(100% + 10px); background:white; min-width:160px; border-radius:var(--radius); box-shadow:0 6px 18px rgba(15,23,42,0.12); transform: scale(0.95); opacity: 0; visibility: hidden; transition: 150ms ease; overflow:hidden; }
+  .dropdown.open { transform: scale(1); opacity: 1; visibility: visible; }
+  .dropdown a { display:block; padding:12px 14px; text-decoration:none; color:#0f172a; font-weight:600; transition:0.2s; }
+  .dropdown a:hover { background:#f1f5f9; color:var(--primary); }
+  .learn-section { text-align:center; padding:40px 20px; }
+  .learn-section h2 { color: var(--primary-dark); margin-bottom:16px; }
+  .learn-section p { font-size:1.1rem; margin-bottom:20px; line-height:1.6; }
+  .btn-primary { background: var(--primary); border:none; padding:12px 24px; border-radius:8px; }
+  .btn-primary:hover { background: var(--primary-dark); }
+  .accordion { max-width:700px; margin:24px auto; }
+  @media (max-width:768px) { .logo-left h1 { font-size:1rem; } }
+  .cover-wrapper { position: relative; width: 100%; height: 420px; overflow: hidden; }
+  .cover-blur { background-image: url('<?php echo $cover_image; ?>'); background-size: cover; background-position: center; width: 100%; height: 100%; position: absolute; top: 0; left: 0; transform: scale(1.2); }
+  .cover-clear { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 2; }
+  .footer {
+  background-color: #1E3A8A; /* Same as --primary but slightly transparent */
+  backdrop-filter: blur(8px); /* Adds the blur effect */
+  -webkit-backdrop-filter: blur(8px); /* Safari support */
+  color: white;
+}
+.footer a:hover {
+  color: #d1d5db;
+}
 
-    body, h1, p {
-      margin: 0;
-      padding: 0;
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg);
-      color: #111827;
-    }
 
-    /* Header bar */
-    .top-bar {
-      background-color: var(--accent);
-      padding: 10px 20px;
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    }
 
-    .logo-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-    }
+/* Overlay with primary shade */
+.cover-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background-color: rgba(0, 47, 108, 0.6); /* color overlay to make text readable */
+  z-index: 2;
+}
 
-    .logo-left {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
+/* Cover Text Container - impactful welcome text */
+.cover-text-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  padding: 30px 40px;
+  border-radius: 16px;
+  text-align: center;
+  color: #fff;
+  max-width: 750px;
+  
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  animation: fadeInUp 1s ease-out;
+}
 
-    .logo-left img {
-      height: 75px;
-      width: 75px;
-      padding: 10px;
-      border-radius: 50%;
-    }
+.cover-text-container h2 {
+  font-size: 2.8rem;
+  font-weight: 800;
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.7);
+  margin-bottom: 15px;
+}
 
-    .logo-left h1 {
-      padding: 5px;
-      color: white; 
-      background: transparent;
-    }
+.cover-text-container p {
+  font-size: 1.2rem;
+  font-weight: 400;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
 
-    /* Hamburger button */
-    .menu-wrap {
-      position: relative;
-      display: flex;
-      align-items: center;
-    }
+/* About Us Container */
+/* About / Learn Section */
+.learn-section {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+  padding: 50px 30px;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+.learn-section:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+}
+.learn-section h2 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--primary-dark);
+}
+.learn-section p.lead {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: #374151;
+}
 
-    .hamburger-btn {
-      background: transparent;
-      border: none;
-      color: var(--white);
-      font-size: 1.4rem;
-      padding: 8px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      border-radius: 6px;
-    }
+/* Why Work With Us Features */
+.why-work .feature-card {
+  border-radius: 16px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: #f9fafc;
+}
+.why-work .feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.12);
+}
+.why-work .icon-wrap i {
+  transition: transform 0.3s ease, color 0.3s ease;
+}
+.why-work .feature-card:hover .icon-wrap i {
+  transform: scale(1.2);
+  color: #2563eb; /* hover accent color */
+}
+.why-work .card-title {
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
+}
+.why-work .card-text {
+  font-size: 1rem;
+  color: #4b5563;
+}
 
-    .hamburger-btn:focus {
-      outline: 2px solid rgba(255,255,255,0.25);
-      outline-offset: 2px;
-    }
 
-    /* Dropdown menu */
-    .dropdown {
-      position: absolute;
-      right: 0;
-      top: calc(100% + 10px);
-      background: var(--white);
-      min-width: 160px;
-      border-radius: var(--radius);
-      box-shadow: 0 6px 18px rgba(15,23,42,0.12);
-      transform-origin: top right;
-      overflow: hidden;
-      transition: transform 150ms ease, opacity 150ms ease, visibility 150ms;
-      transform: scale(0.95);
-      opacity: 0;
-      visibility: hidden;
-    }
+/* Animations */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 20%);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
 
-    .dropdown.open {
-      transform: scale(1);
-      opacity: 1;
-      visibility: visible;
-    }
+ .why-work .card-body {
+    padding: 2rem 1.5rem;
+  }
+  .why-work .card-title {
+    margin-bottom: 0.75rem;
+    font-family: 'Poppins', sans-serif;
+  }
+  .why-work .card-text {
+    font-size: 0.95rem;
+    color: #4b5563; /* Gray text */
+  }
 
-    .dropdown a {
-      display: block;
-      padding: 12px 14px;
-      text-decoration: none;
-      color: #0f172a;
-      font-weight: 600;
-      background: transparent;
-      transition: background 120ms ease, color 120ms ease;
-    }
+  /* Hidden content for Learn More */
+.learn-more-details {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.6s ease, opacity 0.6s ease;
+}
 
-    .dropdown a:hover,
-    .dropdown a:focus {
-      background: #f1f5f9;
-      color: var(--accent);
-      outline: none;
-    }
+/* When active */
+.learn-more-details.active {
+  max-height: 500px; /* adjust based on content */
+  opacity: 1;
+}
 
-    .dropdown a + a {
-      border-top: 1px solid #eef2f7;
-    }
+/* Make sure image doesn't move */
+.fixed-img {
+  max-height: 320px;
+  object-fit: cover;
+}
 
-    /* Main content */
-    .main-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 64px 24px;
-      margin: 20px;
-      border-radius: 12px;
-      gap: 24px;
-    }
+/* Ensure row columns align at top */
+.row.align-items-start {
+  align-items: flex-start;
+}
 
-    .hero-text {
-      flex: 1 1 60%;
-    }
+/* Hidden content for Learn More */
+.learn-more-details {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.6s ease, opacity 0.6s ease, padding 0.6s ease;
+  background: #f3f4f6; /* light gray */
+  border-radius: 12px;
+  padding: 0 20px; /* no padding until expanded */
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
 
-    .hero-text h2 {
-      font-size: 8rem;
-      color: #0b1220;
-      margin-bottom: 18px;
-      line-height: 1.03;
-    }
+/* Active state */
+.learn-more-details.active {
+  max-height: 1000px; /* adjust if needed */
+  opacity: 1;
+  padding: 20px;
+}
 
-    .hero-text p {
-      font-size: 1.05rem;
-      line-height: 1.6;
-      margin-bottom: 20px;
-    }
+/* List styling */
+.learn-more-details ol {
+  padding-left: 20px;
+  margin: 15px 0;
+  color: #374151;
+  font-size: 1rem;
+  line-height: 1.6;
+}
 
-    .hero-text .btn {
-      background-color: var(--accent);
-      color: var(--white);
-      padding: 12px 22px;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
+/* Optional: fade+slide animation for each li */
+.learn-more-details li {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.learn-more-details.active li {
+  opacity: 1;
+  transform: translateX(0);
+}
 
-    .hero-text .btn:hover {
-      background-color: var(--accent-dark);
-    }
+/* Ensure hidden list is left-aligned */
+.about-text-wrapper .learn-more-details {
+  text-align: left;       /* left-align text */
+}
 
-    .hero-image {
-      flex: 1 1 35%;
-      text-align: center;
-    }
+.about-text-wrapper .learn-more-details ol {
+  list-style-position: inside;  /* numbers inside the container */
+  padding-left: 20px;           /* spacing from the left */
+  margin: 0;
+  color: #374151;
+  font-size: 1rem;
+  line-height: 1.6;
+}
 
-    .hero-image i {
-      font-size: 8rem;
-      color: var(--accent);
-    }
+.about-text-wrapper .learn-more-details li {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
 
-    /* Modal styles */
-    .modal {
-      display: none; 
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.5);
-      justify-content: center;
-      align-items: center;
-    }
+.about-text-wrapper .learn-more-details.active li {
+  opacity: 1;
+  transform: translateX(0);
+}
 
-    .modal.show {
-      display: flex;
-      animation: fadeIn 0.8s ease forwards;
 
-    }
-
-    .modal-content {
-      background-color: #fff;
-      padding: 30px 25px;
-      border-radius: 12px;
-      width: 90%;
-      max-width: 500px;
-      position: relative;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-      font-size: 1rem;
-      line-height: 1.6;
-      text-align: left;
-      margin: auto;
-    }
-
-    .modal-content h3 {
-      margin-top: 0;
-      margin-bottom: 20px;
-      font-size: 1.5rem;
-    }
-
-    .modal-content ol {
-      padding-left: 20px;
-      margin: 0;
-    }
-
-    .modal-content li {
-      margin-bottom: 12px;
-    }
-
-    .close {
-      color: #aaa;
-      position: absolute;
-      top: 15px;
-      right: 20px;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-
-    .close:hover {
-      color: #000;
-    }
-        @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    @keyframes slideUp {
-      from { transform: translateY(40px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-
-    /* Small screens */
-    @media (max-width: 768px) {
-      .main-content {
-        flex-direction: column;
-        text-align: center;
-        padding: 36px 16px;
-      }
-      .hero-text h2 {
-        font-size: 2rem;
-      }
-      .hero-image i {
-        font-size: 5.5rem;
-      }
-      .logo-left h1 {
-        font-size: 1rem;
-        letter-spacing: 2px;
-      }
-    }
-    
-  </style>
+</style>
 </head>
-<body class="login-body">
+<body>
 
-  <!-- Header -->
-  <header class="top-bar">
-    <div class="logo-header">
-      <div class="logo-left">
-        <img src="Images/hospitallogo.png" alt="Hospital Logo" />
-        <h1>H O S P I T A L</h1>
-      </div>
-
-      <!-- Hamburger menu wrapper -->
-      <div class="menu-wrap">
-        <button
-          id="hamburger"
-          class="hamburger-btn"
-          aria-expanded="false"
-          aria-controls="primary-menu"
-          aria-label="Open menu"
-        >
-          <i class="fa-solid fa-bars" aria-hidden="true"></i>
-          <span style="display:none">Menu</span>
-        </button>
-
-        <nav id="primary-menu" class="dropdown" role="menu" aria-labelledby="hamburger">
-          <a href="Login.php" role="menuitem" tabindex="-1">Log In</a>
-          <a href="Applicant_Registration.php" role="menuitem" tabindex="-1">Sign Up</a>
-        </nav>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <main class="main-content">
-    <div class="hero-text">
-      <h2>Welcome</h2>
-      <p>Start your career journey with us. We value passion, growth, and teamwork — and we're excited to meet dedicated individuals like you.</p>
-      <button id="learnBtn" class="btn">Learn More</button>
-    </div>
-  </main>
-
-  <!-- Modal -->
-  <div id="myModal" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <h3>How to Access Your Applicant Account</h3>
-      <ol>
-        <li>Click <strong>Menu Button</strong> at the top-right corner.</li>
-        <li>Click <strong>Sign Up.</strong></li>
-        <li>Register using your <strong>Email Address.</strong></li>
-        <li>Check your Email for a <strong>Temporary Password</strong></li>
-        <li>Log in using the Temporary Password.</li>
-        <li>Set a <strong>New Password</strong>.</li>
-        <li>Log in again using your <strong> New Password</strong> and <strong>Registered Email Address.</strong></li>
-      </ol>
-    </div>
+<!-- HEADER -->
+<header class="top-bar">
+  <div class="logo-left">
+    <img src="<?php echo $logo; ?>" alt="Logo">
+    <h1><?php echo htmlspecialchars($system_name); ?></h1>
   </div>
 
+  <div class="menu-wrap">
+    <button id="hamburger" class="hamburger-btn" aria-expanded="false">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <nav id="primary-menu" class="dropdown">
+      <a href="Login.php">Log In</a>
+      <a href="Applicant_Registration.php">Sign Up</a>
+    </nav>
+  </div>
+</header>
+
+<!-- COVER IMAGE WITH OVERLAY AND TEXT -->
+<div class="cover-wrapper">
+  <div class="cover-blur"></div>
+  <div class="cover-overlay"></div>
+
+  <!-- Text container -->
+  <div class="cover-text-container">
+    <h2>Welcome to <?php echo htmlspecialchars($system_name); ?></h2>
+    
+  </div>
+</div>
+<section class="learn-section container mt-5" id="learn-more">
+  <div class="row align-items-start g-4">
+    <!-- About Text + Hidden Details -->
+    <div class="col-md-6">
+      <div class="about-text-wrapper">
+        <h2>About Us</h2>
+        <p class="lead"><?php echo htmlspecialchars($about_text); ?></p>
+        <button class="btn btn-primary mt-3" id="learnMoreBtn">How to create an Account?</button>
+
+        <!-- Hidden details container -->
+        <div id="learnMoreContent" class="learn-more-details mt-3">
+          <ol>
+            <li>Click <strong>Menu Button</strong> at the top-right corner.</li>
+            <li>Click <strong>Sign Up</strong>.</li>
+            <li>Register using your <strong>Email Address</strong>.</li>
+            <li>Check your Email for a <strong>Temporary Password</strong>.</li>
+            <li><strong>Log in </strong> using the Temporary Password.</li>
+            <li>Set a <strong>New Password</strong>.</li>
+            <li>Log in again using the <strong>New Password</strong> and <strong>Registered Email</strong>.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <!-- Image Column -->
+    <div class="col-md-6 text-center">
+      <img src="<?php echo $cover_image; ?>" alt="About Image" class="img-fluid rounded shadow fixed-img">
+    </div>
+  </div>
+</section>
+
+
+<!-- WHY WORK WITH US -->
+<section class="why-work container py-5">
+  <div class="text-center mb-5">
+    <h2 style="color:#1E3A8A; font-weight:800; font-size:2.2rem;">Why Work With Us</h2>
+    <p class="lead" style="max-width:700px; margin:auto;">
+      Join our team and experience a supportive, innovative, and rewarding work environment. At <?php echo htmlspecialchars($system_name); ?>, we value our employees and empower them to grow in their careers.
+    </p>
+  </div>
+  
+  <div class="row g-4">
+    <?php foreach($workWithUsFeatures as $feature): ?>
+      <div class="col-md-4">
+        <div class="card h-100 shadow-lg border-0 feature-card text-center p-3">
+          <div class="icon-wrap mb-3">
+            <i class="fa-solid <?= htmlspecialchars($feature['icon'] ?? 'fa-circle-info') ?> fa-3x" style="color:#1E3A8A;"></i>
+          </div>
+          <div class="card-body">
+            <h5 class="card-title fw-bold"><?= htmlspecialchars($feature['title'] ?? 'Feature') ?></h5>
+            <p class="card-text"><?= htmlspecialchars($feature['description'] ?? '') ?></p>
+          </div>
+        </div>
+      </div>
+    <?php endforeach; ?>
+  </div>
+</section>
+
+
+
+
+<!-- FOOTER -->
+<footer class="footer mt-5 py-4">
+  <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center">
+    <div class="mb-2 mb-md-0">
+      &copy; 2025 <?php echo htmlspecialchars($system_name); ?>. All rights reserved.
+    </div>
+    <div class="footer-links">
+      <a href="#" class="text-white text-decoration-none">Contact: <?php echo htmlspecialchars($email); ?> | <?php echo htmlspecialchars($contact); ?></a>
+    </div>
+  </div>
+</footer>
+
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
-(function(){
   const hamburgerBtn = document.getElementById('hamburger');
   const menu = document.getElementById('primary-menu');
 
-  // Toggle function
-  function toggleMenu(openFromKeyboard = false){
-    const isOpen = menu.classList.contains('open');
-    if(isOpen){
-      menu.classList.remove('open');
-      hamburgerBtn.setAttribute('aria-expanded','false');
-      hamburgerBtn.setAttribute('aria-label','Open menu');
-    } else {
-      menu.classList.add('open');
-      hamburgerBtn.setAttribute('aria-expanded','true');
-      hamburgerBtn.setAttribute('aria-label','Close menu');
-      if(openFromKeyboard){
-        const first = menu.querySelector('a');
-        if(first) first.focus();
-      }
-    }
-  }
-
-  // Click toggles menu
-  hamburgerBtn.addEventListener('click', function(e){
-    toggleMenu();
+  hamburgerBtn.addEventListener('click', () => {
+    menu.classList.toggle('open');
+    const expanded = hamburgerBtn.getAttribute('aria-expanded') === 'true';
+    hamburgerBtn.setAttribute('aria-expanded', !expanded);
   });
 
-  // Close when clicking outside
-  document.addEventListener('click', function(e){
+  document.addEventListener('click', (e) => {
     if(!menu.contains(e.target) && !hamburgerBtn.contains(e.target)){
-      if(menu.classList.contains('open')){
-        menu.classList.remove('open');
-        hamburgerBtn.setAttribute('aria-expanded','false');
-        hamburgerBtn.setAttribute('aria-label','Open menu');
-      }
-    }
-  });
-
-  // Keyboard support
-  hamburgerBtn.addEventListener('keydown', function(e){
-    if(e.key === 'Enter' || e.key === ' '){
-      e.preventDefault();
-      toggleMenu(true);
-    } else if(e.key === 'Escape'){
-      if(menu.classList.contains('open')){
-        menu.classList.remove('open');
-        hamburgerBtn.setAttribute('aria-expanded','false');
-        hamburgerBtn.setAttribute('aria-label','Open menu');
-        hamburgerBtn.focus();
-      }
-    }
-  });
-
-  menu.addEventListener('keydown', function(e){
-    if(e.key === 'Escape'){
       menu.classList.remove('open');
       hamburgerBtn.setAttribute('aria-expanded','false');
-      hamburgerBtn.setAttribute('aria-label','Open menu');
-      hamburgerBtn.focus();
     }
   });
 
-  const links = menu.querySelectorAll('a');
-  function updateTabIndex(){
-    const open = menu.classList.contains('open');
-    links.forEach(a => a.tabIndex = open ? 0 : -1);
+  const learnBtn = document.getElementById('learnMoreBtn');
+const learnContent = document.getElementById('learnMoreContent');
+
+learnBtn.addEventListener('click', () => {
+  learnContent.classList.toggle('active');
+
+  // Optional: Change button text
+  if(learnContent.classList.contains('active')){
+    learnBtn.textContent = "Show Less";
+  } else {
+    learnBtn.textContent = "Learn More";
   }
-  const obs = new MutationObserver(updateTabIndex);
-  obs.observe(menu, { attributes: true, attributeFilter: ['class'] });
-  updateTabIndex();
-})();
-
-// ---- Modal code ----
-const learnBtn = document.getElementById("learnBtn");
-const modal = document.getElementById("myModal");
-const closeSpan = document.querySelector(".close");
-
-// Open modal
-learnBtn.onclick = () => modal.classList.add("show");
-
-// Close modal
-closeSpan.onclick = () => modal.classList.remove("show");
-
-// Close modal if clicked outside content
-window.onclick = (e) => {
-  if(e.target === modal) modal.classList.remove("show");
-};
+});
 </script>
 
 </body>

@@ -97,6 +97,7 @@ if (isset($_POST['login'])) {
     <title>Login</title>
     <link rel="stylesheet" href="stylesheet.css">
 
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -125,6 +126,7 @@ if (isset($_POST['login'])) {
             border-radius: 10px;
             text-align: center;
             max-width: 400px;
+            margin-bottom: 10px;
         }
 
         .modal-content h2 {
@@ -140,6 +142,72 @@ if (isset($_POST['login'])) {
             border-radius: 5px;
             cursor: pointer;
         }
+
+      /*  Eye icon styling */
+  .input-container {
+    position: relative;
+}
+
+.input-container input {
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+    font-style: normal;
+    width:500px;
+    height: 2px;
+    padding: 16px;
+    padding-left: 50px;
+    border-radius: 10px;
+    border-color: #D9D9D9;
+}
+
+.show-pass {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    cursor: pointer;
+    color: #555;
+}
+
+.login-email .fa-solid, .login-password .fa-solid {
+    position:absolute;
+    padding: 10px;
+    min-width: 30px;
+    color: #1E3A8A;
+}
+
+.main-content .login-section{
+    margin-top: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #F5F8FF;
+    width: 824px;
+    height: 450px;
+    border-radius: 35px;
+}
+
+.top-bar-text h1{
+    font-family: "Poppins", sans-serif;
+    font-weight: 700;
+    font-style: normal;
+    display: block;
+    padding: 5px;
+    color: white;
+}
+.top-bar-text h2{
+    font-family: "Poppins", sans-serif;
+    font-weight: 200;
+    font-style: normal;
+    display: block;
+    padding: 1px;
+    color: white;
+    font-size: 15px;
+}
+
+
+        
     </style>
 </head>
 
@@ -150,6 +218,7 @@ if (isset($_POST['login'])) {
             <img src="Images/hospitallogo.png" alt="Happy Picture">
             <div class="top-bar-text">
                 <h1>H O S P I T A L</h1>
+                <h2>This is where your journey starts!</h2>
             </div>
         </div>
     </nav>
@@ -164,14 +233,27 @@ if (isset($_POST['login'])) {
                     <i class="fa-solid fa-envelope"></i>
                     <input type="email" name="email" id="email" placeholder="Enter your Email" required>
                 </div>
-                <div class="login-password">
-                    <label>Password</label>
+              <div class="login-password">
+                <label>Password</label>
+                <div class="input-container">
+                    <!-- Lock icon -->
                     <i class="fa-solid fa-lock"></i>
-                    <input type="password" name="password" id="password" placeholder="Enter your Password" required>
+
+                    <!-- Password input -->
+                    <input type="password" name="password" id="password"
+                        placeholder="Enter your Password" required>
+
+                    <!-- Eye toggle icon -->
+                    <i class="fa-solid fa-eye-slash show-pass" id="togglePassword"></i>
                 </div>
-                <div class="show-password">
-                    <input type="checkbox" name="Show-password" id="show"> Show password
+            </div>
+
+
                 </div>
+
+
+                </div>
+
                 <div class="login-button">
                     <button type="submit" name="login" class="login-btn"><i
                             class="fa-solid fa-right-from-bracket"></i>Sign In</button>
@@ -235,11 +317,19 @@ if (isset($_POST['login'])) {
             <?php endif; ?>
         };
 
-        // Show/hide password functionality
-        document.getElementById('show').addEventListener('change', function () {
-            var passwordField = document.getElementById('password');
-            passwordField.type = this.checked ? 'text' : 'password';
-        });
+const toggleIcon = document.getElementById('togglePassword');
+const passwordInput = document.getElementById('password');
+
+toggleIcon.addEventListener('click', () => {
+    const type = passwordInput.type === 'password' ? 'text' : 'password';
+    passwordInput.type = type;
+
+    // Toggle eye icon
+    toggleIcon.classList.toggle('fa-eye');
+    toggleIcon.classList.toggle('fa-eye-slash');
+});
+
+
     </script>
 
 </body>

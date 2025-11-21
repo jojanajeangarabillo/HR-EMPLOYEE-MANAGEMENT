@@ -13,6 +13,7 @@
 /*Login*/
 .login-body{
     background-color: #CEE3F5;
+    
 }
 
 .top-bar{
@@ -24,13 +25,22 @@
     padding: 10px;
 }
 
-.top-bar-text{
+.top-bar-text .h1{
     font-family: "Poppins", sans-serif;
     font-weight: 700;
     font-style: normal;
     display: block;
     padding: 5px;
     color: white;
+}
+.top-bar-text .h2{
+    font-family: "Poppins", sans-serif;
+    font-weight: 200;
+    font-style: normal;
+    display: block;
+    padding: 5px;
+    color: white;
+    font-size: 15px;
 }
 
 img{
@@ -45,14 +55,13 @@ img{
     
 }
 
-.login-section{
-    margin-top: 150px;
+.main-content .login-section{
     display: flex;
     justify-content: center;
     align-items: center;
     background-color: #F5F8FF;
     width: 824px;
-    height: 486px;
+    height: 400px;
     border-radius: 35px;
 }
 

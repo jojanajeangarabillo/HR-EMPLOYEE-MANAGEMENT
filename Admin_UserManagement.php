@@ -17,6 +17,24 @@ $success_msg = "";
 $adminnameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin' LIMIT 1");
 $adminname = ($adminnameQuery && $row = $adminnameQuery->fetch_assoc()) ? $row['fullname'] : 'Admin';
 
+// --- AJAX: Return Positions based on Department --- //
+if (isset($_GET['ajax']) && $_GET['ajax'] === 'positions' && isset($_GET['deptID'])) {
+    require 'admin/db.connect.php';
+    $deptID = intval($_GET['deptID']);
+
+    $query = $conn->prepare("SELECT positionID, position_title FROM position WHERE departmentID = ?");
+    $query->bind_param("i", $deptID);
+    $query->execute();
+    $result = $query->get_result();
+
+    $positions = [];
+    while ($row = $result->fetch_assoc()) {
+        $positions[] = $row;
+    }
+
+    echo json_encode($positions);
+    exit; // STOP normal page load
+}
 // Handle Add User Form Submission
 if (isset($_POST['action']) && $_POST['action'] === 'add_user') {
     $fullname = $_POST['fullname'];
@@ -38,6 +56,20 @@ if (isset($_POST['action']) && $_POST['action'] === 'add_user') {
                 $type_name = $etypeRow['typeName'];
             }
         }
+
+        // Fetch Department Name
+$deptQuery = $conn->prepare("SELECT deptName FROM department WHERE deptID = ?");
+$deptQuery->bind_param("i", $department);
+$deptQuery->execute();
+$deptResult = $deptQuery->get_result();
+$departmentName = ($deptResult->num_rows > 0) ? $deptResult->fetch_assoc()['deptName'] : "Unknown Department";
+
+// Fetch Sub-role (Position Title)
+$posQuery = $conn->prepare("SELECT position_title FROM position WHERE positionID = ?");
+$posQuery->bind_param("i", $sub_role);
+$posQuery->execute();
+$posResult = $posQuery->get_result();
+$subRoleName = ($posResult->num_rows > 0) ? $posResult->fetch_assoc()['position_title'] : "Employee";
 
 
     // Generate temp password and hash
@@ -62,28 +94,44 @@ if ($row) {
 
 $empID = "EMP-" . str_pad($num, 3, '0', STR_PAD_LEFT);
 
-   // Generate EMP ID
-$result = $conn->query("SELECT applicant_employee_id FROM user WHERE applicant_employee_id LIKE 'EMP-%' ORDER BY applicant_employee_id DESC LIMIT 1");
+   // Generate Unique EMP ID from BOTH user and employee tables
+$query = "
+    SELECT applicant_employee_id AS emp 
+    FROM user 
+    WHERE applicant_employee_id LIKE 'EMP-%'
+    
+    UNION ALL
+    
+    SELECT empID AS emp 
+    FROM employee 
+    WHERE empID LIKE 'EMP-%'
+    
+    ORDER BY emp DESC
+    LIMIT 1
+";
+
+$result = $conn->query($query);
 $row = $result->fetch_assoc();
 
 if ($row) {
-    $lastID = $row['applicant_employee_id']; 
-    $num = (int) str_replace('EMP-', '', $lastID); 
+    $lastID = $row['emp']; // Example: EMP-040
+    $num = (int) str_replace('EMP-', '', $lastID); // Extract 40
     $num++;
 } else {
-    $num = 1; 
+    $num = 1;
 }
 
 $empID = "EMP-" . str_pad($num, 3, '0', STR_PAD_LEFT);
 
+
     // Insert into user table
     $userStmt = $conn->prepare("INSERT INTO user (applicant_employee_id, fullname, email, password, role, sub_role, status, reset_token, token_expiry, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
-    $userStmt->bind_param("sssssssss", $empID, $fullname, $email, $hashedPass, $role, $sub_role, $status, $token, $token_expiry);
+    $userStmt->bind_param("sssssssss", $empID, $fullname, $email, $hashedPass, $role, $subRoleName, $status, $token, $token_expiry);
 
     if ($userStmt->execute()) {
         // Insert into employee table
         $empStmt = $conn->prepare("INSERT INTO employee (empID, fullname, email_address, department, position, type_name, hired_at) VALUES (?, ?, ?, ?, ?,?, NOW())");
-        $empStmt->bind_param("ssssss", $empID, $fullname, $email, $department,$role, $type_name);
+        $empStmt->bind_param("ssssss", $empID, $fullname, $email,  $departmentName, $subRoleName, $type_name);
         $empStmt->execute();
 
         // Send email
@@ -114,12 +162,24 @@ $empID = "EMP-" . str_pad($num, 3, '0', STR_PAD_LEFT);
 
             $mail->isHTML(true);
             $mail->Subject = "Welcome to the Employee Management System";
-            $mail->Body = "
-                <h3>Welcome, $fullname!</h3>
-                <p>Your temporary password is: <b>$tempPass</b></p>
-                <p>Please change your password within 24 hours using this link:</p>
-                <a href='$link'>$link</a>
-            ";
+          $mail->Body = "
+          <h3>Welcome, $fullname!</h3>
+
+          <p>We are pleased to inform you that you are now part of our team with special system permissions 
+          at the <b>$departmentName</b> as <b>$subRoleName</b>.</p>
+
+          <p>Your Employee ID is: <b>$empID</b></p>
+
+          <p>Your temporary password is: <b>$tempPass</b></p>
+
+          <p>Please change your password within 24 hours using the link below:</p>
+          <p><a href='$link'>$link</a></p>
+
+          <br>
+          <p>We’re excited to have you onboard!</p>
+      ";
+
+
 
             $mail->send();
             $_SESSION['success_msg'] = "User added successfully! Email sent.";
@@ -141,6 +201,16 @@ while ($etype = $etypeQuery->fetch_assoc()) {
     $employmentTypes[] = $etype;
 }
 
+// Fetch HR positions
+$hrDeptID = 10; // HR Department ID
+$hrPositionsQuery = $conn->query("SELECT positionID, position_title FROM position WHERE departmentID = $hrDeptID");
+
+$hrPositions = [];
+if ($hrPositionsQuery) {
+    while ($row = $hrPositionsQuery->fetch_assoc()) {
+        $hrPositions[] = $row;
+    }
+}
 
 // Handle Edit User
 if (isset($_POST['action']) && $_POST['action'] === 'edit_user') {
@@ -157,7 +227,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'edit_user') {
     if ($updateStmt->execute()) {
         // Update employee table as well
         $empUpdateStmt = $conn->prepare("UPDATE employee SET fullname=?, email_address=?, department=?, position=? WHERE empID=(SELECT applicant_employee_id FROM user WHERE user_id=?)");
-        $empUpdateStmt->bind_param("sssss", $fullname, $email, $department, $role, $user_id);
+        $empUpdateStmt->bind_param("sssss", $fullname, $email, $department, $sub_role, $user_id);
         $empUpdateStmt->execute();
 
         $_SESSION['success_msg'] = "User updated successfully!";
@@ -323,38 +393,32 @@ body { font-family: 'Poppins', sans-serif; margin:0; display:flex; background-co
               </select>
             </div>
             <div class="col-12 col-md-4">
-              <label>Sub-role</label>
-              <select name="sub_role" class="form-select">
-                <option value="">-- Select Sub-role --</option>
-                <option value="HR Director">HR Director</option>
-                <option value="HR Manager">HR Manager</option>
-                <option value="HR Officer">HR Officer</option>
-                <option value="HR Assistant">HR Assistant</option>
-                <option value="Recruitment Manager">Recruitment Manager</option>
-                <option value="Training Coordinator">Training Coordinator</option>
+                <label>Subrole</label>
+              <select name="sub_role" id="sub_role" class="form-select" required>
+                  <option value="">-- Select Position --</option>
               </select>
-            </div>
+              </div>
             <div class="col-12 col-md-4">
               <label>Department</label>
-              <select name="department" class="form-select" required>
+             <select name="department" id="department" class="form-select" required>
                 <option value="">-- Select Department --</option>
-                <option value="HR">HR</option>
-                <option value="Finance">Finance</option>
-                <option value="IT">IT</option>
-                <option value="Operations">Operations</option>
+                <?php
+                $deptQuery = $conn->query("SELECT deptID, deptName FROM department ORDER BY deptName ASC");
+                while ($dept = $deptQuery->fetch_assoc()) {
+                    echo "<option value='{$dept['deptID']}'>{$dept['deptName']}</option>";
+                }
+                ?>
               </select>
             </div>
-
             <div class="col-12 col-md-4">
-  <label>Employment Type</label>
-  <select name="employment_type" class="form-select" required>
-    <option value="">-- Select Employment Type --</option>
-    <?php foreach ($employmentTypes as $etype): ?>
-        <option value="<?= $etype['emtypeID'] ?>"><?= $etype['typeName'] ?></option>
-    <?php endforeach; ?>
-  </select>
-</div>
-
+              <label>Employment Type</label>
+              <select name="employment_type" class="form-select" required>
+                <option value="">-- Select Employment Type --</option>
+                <?php foreach ($employmentTypes as $etype): ?>
+                  <option value="<?= $etype['emtypeID'] ?>"><?= $etype['typeName'] ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
             <div class="col-12 col-md-4">
               <label>Status</label>
               <select name="status" class="form-select">
@@ -372,6 +436,7 @@ body { font-family: 'Poppins', sans-serif; margin:0; display:flex; background-co
     </div>
   </div>
 </div>
+
 
 <!-- EDIT USER MODAL -->
 <div class="modal fade" id="editUserModal" tabindex="-1">
@@ -417,9 +482,6 @@ body { font-family: 'Poppins', sans-serif; margin:0; display:flex; background-co
               <select name="department" id="edit_department" class="form-select" required>
                 <option value="">-- Select Department --</option>
                 <option value="HR">HR</option>
-                <option value="Finance">Finance</option>
-                <option value="IT">IT</option>
-                <option value="Operations">Operations</option>
               </select>
             </div>
             <div class="col-12 col-md-4">
@@ -466,6 +528,28 @@ editButtons.forEach(btn => {
         document.getElementById("edit_user_id").value = btn.dataset.id;
         modal.show();
     });
+});
+
+document.getElementById('department').addEventListener('change', function () {
+    let deptID = this.value;
+    let subRoleDropdown = document.getElementById('sub_role');
+
+    if (!deptID) {
+        subRoleDropdown.innerHTML = "<option value=''>-- Select Position --</option>";
+        return;
+    }
+
+    subRoleDropdown.innerHTML = "<option>Loading...</option>";
+
+    fetch("?ajax=positions&deptID=" + deptID)
+        .then(res => res.json())
+        .then(data => {
+            subRoleDropdown.innerHTML = "<option value=''>-- Select Position --</option>";
+            data.forEach(pos => {
+                subRoleDropdown.innerHTML += 
+                    `<option value="${pos.positionID}">${pos.position_title}</option>`;
+            });
+        });
 });
 </script>
 
