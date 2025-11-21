@@ -2,26 +2,76 @@
 session_start();
 require 'admin/db.connect.php';
 
-// Manager name
+// Enable error reporting for debugging
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Handle Vacancy Archiving via AJAX
+if (isset($_POST['archive_vacancy_id'])) {
+    $vacancyID = intval($_POST['archive_vacancy_id']);
+    try {
+        $conn->begin_transaction();
+
+        // Fetch the vacancy
+        $stmt = $conn->prepare("SELECT department_id, position_id, employment_type_id, vacancy_count, posted_by, status, created_at FROM vacancies WHERE id = ?");
+        $stmt->bind_param("i", $vacancyID);
+        $stmt->execute();
+        $vacancy = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (!$vacancy)
+            throw new Exception("Vacancy not found.");
+
+        // Insert into archive table
+        $archiveStmt = $conn->prepare("
+            INSERT INTO vacancies_archive
+            (department_id, position_id, employement_type_id, vacancy_count, posted_by, status, archived_at)
+            VALUES (?, ?, ?, ?, ?, ?, NOW())
+        ");
+        $archiveStmt->bind_param(
+            "iiiiss",
+            $vacancy['department_id'],
+            $vacancy['position_id'],
+            $vacancy['employment_type_id'],
+            $vacancy['vacancy_count'],
+            $vacancy['posted_by'],
+            $vacancy['status']
+        );
+
+        if (!$archiveStmt->execute())
+            throw new Exception($archiveStmt->error);
+        $archiveStmt->close();
+
+        // Delete the vacancy
+        $delStmt = $conn->prepare("DELETE FROM vacancies WHERE id = ?");
+        $delStmt->bind_param("i", $vacancyID);
+        if (!$delStmt->execute())
+            throw new Exception($delStmt->error);
+        $delStmt->close();
+
+        $conn->commit();
+        echo json_encode(['success' => true, 'message' => 'Vacancy archived successfully.']);
+    } catch (Exception $e) {
+        $conn->rollback();
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    }
+    exit;
+}
+
+// Manager and profile info
 $managername = $_SESSION['fullname'] ?? "Manager";
-$employeeID = $_SESSION['applicant_employee_id'] ?? null; // Make sure empID is stored in session
+$employeeID = $_SESSION['applicant_employee_id'] ?? null;
+$profile_picture = "uploads/employees/default.png";
+
 if ($employeeID) {
     $stmt = $conn->prepare("SELECT profile_pic FROM employee WHERE empID = ?");
     $stmt->bind_param("s", $employeeID);
     $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $profile_picture = !empty($row['profile_pic'])
-            ? "uploads/employees/" . $row['profile_pic']
-            : "uploads/employees/default.png";
-    } else {
-
-        $profile_picture = "uploads/employees/default.png";
-    }
-} else {
-    $profile_picture = "uploads/employees/default.png";
+    $row = $stmt->get_result()->fetch_assoc();
+    if (!empty($row['profile_pic']))
+        $profile_picture = "uploads/employees/" . $row['profile_pic'];
+    $stmt->close();
 }
 
 // MENUS
@@ -74,12 +124,11 @@ $menus = [
 
 $role = $_SESSION['sub_role'] ?? "HR Manager";
 $posted_by = $_SESSION['fullname'] ?? "Manager";
-
 $message = '';
 $messageType = '';
 
 // Handle Form Submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['archive_vacancy_id'])) {
     $departmentID = $_POST['department'] ?? '';
     $positionID = $_POST['position'] ?? '';
     $vacancyCount = $_POST['vacancyCount'] ?? '';
@@ -88,20 +137,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($departmentID && $positionID && $employmentTypeID && $vacancyCount > 0) {
         $stmt = $conn->prepare("INSERT INTO vacancies (department_id, position_id, employment_type_id, vacancy_count, posted_by) VALUES (?, ?, ?, ?, ?)");
         $stmt->bind_param("iiiss", $departmentID, $positionID, $employmentTypeID, $vacancyCount, $posted_by);
-        if ($stmt->execute()) {
+        if ($stmt->execute())
             header("Location: " . $_SERVER['PHP_SELF'] . "?success=1");
-            exit;
-        } else {
+        else
             header("Location: " . $_SERVER['PHP_SELF'] . "?error=db");
-            exit;
-        }
+        exit;
     } else {
         header("Location: " . $_SERVER['PHP_SELF'] . "?error=fields");
         exit;
     }
 }
 
-// Handle Alerts
+// Alerts
 if (isset($_GET['success'])) {
     $message = "✅ Vacancy successfully added!";
     $messageType = "success";
@@ -113,62 +160,19 @@ if (isset($_GET['success'])) {
     $messageType = "danger";
 }
 
-// Fetch Departments
+// Fetch data
 $deptQuery = $conn->query("SELECT deptID, deptName FROM department");
-
-// Fetch Positions
 $posQuery = $conn->query("SELECT positionID, position_title, departmentID FROM position");
-$positions = [];
-while ($row = $posQuery->fetch_assoc())
-    $positions[] = $row;
+$positions = $posQuery->fetch_all(MYSQLI_ASSOC);
+$etypeQuery = $conn->query("SELECT emtypeID, typeName FROM employment_type ORDER BY typeName ASC");
+$employmentTypes = $etypeQuery->fetch_all(MYSQLI_ASSOC);
 
-// 1️⃣ Update vacancies that are fully hired
-$conn->query("
-    UPDATE vacancies v
-    JOIN position p ON v.position_id = p.positionID
-    SET v.status = 'Positions Filled'
-    WHERE v.status != 'Positions Filled'
-    AND (
-        SELECT COUNT(*) 
-        FROM applications a
-        JOIN job_posting j ON a.jobID = j.jobID
-        WHERE j.job_title = p.position_title
-        AND a.status = 'Hired'
-    ) >= v.vacancy_count
-");
-
-// 2️⃣ Delete associated job postings automatically
-$conn->query("
-    DELETE jp
-    FROM job_posting jp
-    JOIN position p ON jp.job_title = p.position_title
-    JOIN vacancies v ON v.position_id = p.positionID
-    WHERE v.status = 'Positions Filled'
-");
-
-// Fetch 10 Recently Uploaded Vacancies
+// Fetch recent vacancies
 $recentQuery = $conn->query("
     SELECT 
-        v.id,
-        v.vacancy_count,
-        v.status,
-        d.deptName,
-        p.position_title,
-        e.typeName AS employment_type,
-        (
-            SELECT COUNT(*) 
-            FROM applications a
-            JOIN job_posting j ON a.jobID = j.jobID
-            WHERE j.job_title = p.position_title
-              AND a.status = 'Hired'
-        ) AS hired_count,
-        (v.vacancy_count - (
-            SELECT COUNT(*) 
-            FROM applications a
-            JOIN job_posting j ON a.jobID = j.jobID
-            WHERE j.job_title = p.position_title
-              AND a.status = 'Hired'
-        )) AS remaining_vacancies
+        v.id, v.vacancy_count, v.status, d.deptName, p.position_title, e.typeName AS employment_type,
+        (SELECT COUNT(*) FROM applications a JOIN job_posting j ON a.jobID = j.jobID WHERE j.job_title = p.position_title AND a.status='Hired') AS hired_count,
+        (v.vacancy_count - (SELECT COUNT(*) FROM applications a JOIN job_posting j ON a.jobID = j.jobID WHERE j.job_title = p.position_title AND a.status='Hired')) AS remaining_vacancies
     FROM vacancies v
     JOIN department d ON v.department_id = d.deptID
     JOIN position p ON v.position_id = p.positionID
@@ -182,9 +186,7 @@ $etypeQuery = $conn->query("SELECT emtypeID, typeName FROM employment_type ORDER
 $employmentTypes = [];
 while ($row = $etypeQuery->fetch_assoc())
     $employmentTypes[] = $row;
-
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -202,7 +204,7 @@ while ($row = $etypeQuery->fetch_assoc())
             font-family: 'Poppins', 'Roboto', sans-serif;
             margin: 0;
             display: flex;
-            background-color: #f1f5fc;
+            background: #f1f5fc;
             color: #111827;
         }
 
@@ -223,7 +225,7 @@ while ($row = $etypeQuery->fetch_assoc())
         }
 
         .set-vacancies {
-            background-color: #1E3A8A;
+            background: #1E3A8A;
             display: flex;
             align-items: center;
             gap: 40px;
@@ -232,14 +234,11 @@ while ($row = $etypeQuery->fetch_assoc())
             padding: 30px 50px;
             width: fit-content;
             margin-left: 50px;
-            margin-top: 0;
             margin-bottom: 50px;
         }
 
-
         .recent-section {
             margin-left: 50px;
-            margin-top: 0;
             width: 90%;
             max-height: 400px;
             overflow-y: auto;
@@ -261,7 +260,6 @@ while ($row = $etypeQuery->fetch_assoc())
             border-radius: 10px;
         }
 
-
         .select-options {
             display: flex;
             flex-direction: column;
@@ -279,7 +277,7 @@ while ($row = $etypeQuery->fetch_assoc())
 
         button {
             border: 2px solid white;
-            background-color: #1E3A8A;
+            background: #1E3A8A;
             color: white;
             font-size: 18px;
             padding: 12px 30px;
@@ -288,7 +286,7 @@ while ($row = $etypeQuery->fetch_assoc())
         }
 
         button:hover {
-            background-color: white;
+            background: white;
             color: #1E3A8A;
         }
 
@@ -306,7 +304,7 @@ while ($row = $etypeQuery->fetch_assoc())
         }
 
         .modal-content {
-            background-color: white;
+            background: white;
             padding: 30px;
             border-radius: 15px;
             width: 400px;
@@ -343,72 +341,6 @@ while ($row = $etypeQuery->fetch_assoc())
             background: #8b0000;
         }
 
-
-        /* Reuse existing modal base styles */
-        #alertModal .modal-content {
-            text-align: center;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-        }
-
-        #alertModal h2 {
-            color: #1E3A8A;
-            margin-bottom: 10px;
-        }
-
-        #alertModal p {
-            color: #333;
-        }
-
-        #alertModal .confirm-btn {
-            background-color: #1E3A8A;
-            color: white;
-            padding: 10px 25px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        #alertModal .confirm-btn:hover {
-            background-color: #162c63;
-        }
-
-        .custom-alert {
-            animation: fadeInSlide 0.5s ease;
-        }
-
-        @keyframes fadeInSlide {
-            from {
-                opacity: 0;
-                transform: translateY(-5px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        #alertModal .confirm-btn {
-            background-color: #1E3A8A;
-            color: white;
-            font-size: 16px;
-            padding: 8px 20px;
-            border-radius: 8px;
-            border: none;
-            cursor: pointer;
-            transition: 0.2s;
-            width: auto;
-            min-width: 100px;
-            display: inline-block;
-        }
-
-        #alertModal .confirm-btn:hover {
-            background-color: #162c63;
-        }
-
         .sidebar-profile-img {
             width: 130px;
             height: 130px;
@@ -425,38 +357,33 @@ while ($row = $etypeQuery->fetch_assoc())
 </head>
 
 <body>
-    <!-- SIDEBAR -->
+
     <div class="sidebar">
         <div class="sidebar-logo">
             <a href="Manager_Profile.php" class="profile">
-                <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="sidebar-profile-img">
+                <img src="<?= htmlspecialchars($profile_picture); ?>" alt="Profile" class="sidebar-profile-img">
             </a>
         </div>
-
         <div class="sidebar-name">
-            <p><?php echo "Welcome, $managername"; ?></p>
+            <p><?= "Welcome, $managername"; ?></p>
         </div>
-
         <ul class="nav">
             <?php foreach ($menus[$role] as $label => $link): ?>
-                <li><a href="<?php echo $link; ?>"><?php echo $label; ?></a></li>
+                <li><a href="<?= $link; ?>"><?= $label; ?></a></li>
             <?php endforeach; ?>
         </ul>
     </div>
 
-
     <main class="main-content">
         <div class="main-content-header">
             <h1>Upload Vacancies</h1>
-
             <?php if ($message): ?>
-                <div class="alert alert-<?= $messageType ?> alert-dismissible fade show custom-alert" role="alert">
+                <div class="alert alert-<?= $messageType ?> alert-dismissible fade show" role="alert">
                     <?= htmlspecialchars($message) ?>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
         </div>
-
 
         <!-- Set Vacancy Form -->
         <form method="POST" id="vacancyForm">
@@ -468,15 +395,12 @@ while ($row = $etypeQuery->fetch_assoc())
                             <option value="<?= $dept['deptID'] ?>"><?= htmlspecialchars($dept['deptName']) ?></option>
                         <?php endwhile; ?>
                     </select>
-
                 </div>
-
                 <div class="select-options">
                     <select name="position" id="position" required>
                         <option value="" disabled selected>Select Position</option>
                     </select>
                 </div>
-
                 <div class="select-options">
                     <select name="employment_type" id="employment_type" required>
                         <option value="" disabled selected>Select Employment Type</option>
@@ -485,17 +409,12 @@ while ($row = $etypeQuery->fetch_assoc())
                         <?php endforeach; ?>
                     </select>
                 </div>
-
-
-
                 <button type="button" id="openModalBtn">Set</button>
             </div>
             <input type="hidden" name="vacancyCount" id="vacancyCountInput">
-
-
         </form>
 
-        <!-- ✅ Recently Uploaded Vacancies -->
+        <!-- Recently Uploaded Vacancies -->
         <div class="recent-section">
             <h2>Recently Uploaded</h2>
             <table class="table table-bordered table-striped w-75">
@@ -503,10 +422,10 @@ while ($row = $etypeQuery->fetch_assoc())
                     <tr>
                         <th>Department</th>
                         <th>Position</th>
-                        <th>Number of Vacancies</th>
+                        <th>Vacancies</th>
                         <th>Employment Type</th>
                         <th>Status</th>
-                        <th>Actions</th> <!-- New Column -->
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -518,23 +437,17 @@ while ($row = $etypeQuery->fetch_assoc())
                                 <td><?= max(0, htmlspecialchars($row['remaining_vacancies'])) ?></td>
                                 <td><?= htmlspecialchars($row['employment_type']) ?></td>
                                 <td>
-                                    <?php if ($row['status'] === 'On-Going'): ?>
-                                        <span class="badge bg-success">On-Going</span>
-                                    <?php elseif ($row['status'] === 'Closed'): ?>
-                                        <span class="badge bg-danger">Closed</span>
-                                    <?php elseif ($row['status'] === 'Positions Filled'): ?>
-                                        <span class="badge bg-primary">Positions Filled</span>
-                                    <?php else: ?>
-                                        <span class="badge bg-secondary"><?= htmlspecialchars($row['status']) ?></span>
-                                    <?php endif; ?>
+                                    <span
+                                        class="badge <?= $row['status'] === 'On-Going' ? 'bg-success' : ($row['status'] === 'Closed' ? 'bg-danger' : 'bg-primary') ?>">
+                                        <?= htmlspecialchars($row['status']) ?>
+                                    </span>
                                 </td>
                                 <td>
                                     <?php if ($row['hired_count'] >= $row['vacancy_count']): ?>
-                                        <!-- Remove manual Delete button -->
                                         <span class="text-muted">Filled</span>
                                     <?php else: ?>
-                                        <a href="archive_vacancy.php?id=<?= $row['id'] ?>"
-                                            class="btn btn-sm btn-warning">Archive</a>
+                                        <button class="btn btn-sm btn-warning archive-btn"
+                                            data-id="<?= $row['id'] ?>">Archive</button>
                                     <?php endif; ?>
                                 </td>
                             </tr>
@@ -544,13 +457,12 @@ while ($row = $etypeQuery->fetch_assoc())
                             <td colspan="6" class="text-center text-muted">No vacancies uploaded yet.</td>
                         </tr>
                     <?php endif; ?>
-
                 </tbody>
             </table>
         </div>
     </main>
 
-    <!-- Modal -->
+    <!-- Vacancy Count Modal -->
     <div id="vacancyModal" class="modal">
         <div class="modal-content">
             <h2>Set Number of Vacancies</h2>
@@ -559,89 +471,74 @@ while ($row = $etypeQuery->fetch_assoc())
                 <button class="confirm-btn" id="confirmBtn">Confirm</button>
                 <button class="cancel-btn" id="cancelBtn">Cancel</button>
             </div>
-
         </div>
     </div>
 
-    <div id="alertModal" class="modal">
-        <div class="modal-content" style="width: 350px;">
-            <h2 id="alertTitle">Notice</h2>
-            <p id="alertMessage" style="margin: 15px 0; font-size: 16px;"></p>
-            <button class="confirm-btn" id="alertOkBtn">OK</button>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const allPositions = <?= json_encode($positions); ?>;
+        const deptSelect = document.getElementById('department');
+        const posSelect = document.getElementById('position');
+        const modal = document.getElementById('vacancyModal');
+        const openModalBtn = document.getElementById('openModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const vacancyInput = document.getElementById('vacancyCount');
+        const vacancyHidden = document.getElementById('vacancyCountInput');
+        const form = document.getElementById('vacancyForm');
 
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-            <script>
-                const allPositions = <?= json_encode($positions); ?>;
-                const deptSelect = document.getElementById('department');
-                const posSelect = document.getElementById('position');
-                const modal = document.getElementById('vacancyModal');
-                const openModalBtn = document.getElementById('openModalBtn');
-                const cancelBtn = document.getElementById('cancelBtn');
-                const confirmBtn = document.getElementById('confirmBtn');
-                const vacancyInput = document.getElementById('vacancyCount');
-                const vacancyHidden = document.getElementById('vacancyCountInput');
-                const form = document.getElementById('vacancyForm');
-
-                deptSelect.addEventListener('change', function () {
-                    const deptID = this.value;
-                    posSelect.innerHTML = '<option value="" disabled selected>Select Position</option>';
-                    allPositions.forEach(pos => {
-                        if (pos.departmentID == deptID) {
-                            const opt = document.createElement('option');
-                            opt.value = pos.positionID;
-                            opt.textContent = pos.position_title;
-                            posSelect.appendChild(opt);
-                        }
-                    });
-                });
-
-                openModalBtn.onclick = () => {
-                    if (!deptSelect.value) {
-                        showAlert("Missing Field", "Please select a department first.");
-                        return;
-                    }
-                    if (!posSelect.value) {
-                        showAlert("Missing Field", "Please select a position first.");
-                        return;
-                    }
-                    modal.style.display = 'flex';
-                };
-
-                cancelBtn.onclick = () => { modal.style.display = 'none'; vacancyInput.value = ''; };
-                confirmBtn.onclick = () => {
-                    const count = vacancyInput.value.trim();
-                    if (!count || isNaN(count) || count <= 0) return alert("Please enter a valid number of vacancies.");
-                    vacancyHidden.value = count;
-                    modal.style.display = 'none';
-                    form.submit();
-                };
-                window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
-
-
-
-                const alertModal = document.getElementById('alertModal');
-                const alertTitle = document.getElementById('alertTitle');
-                const alertMessage = document.getElementById('alertMessage');
-                const alertOkBtn = document.getElementById('alertOkBtn');
-
-                function showAlert(title, message) {
-                    alertTitle.textContent = title;
-                    alertMessage.textContent = message;
-                    alertModal.style.display = 'flex';
+        // Filter positions by department
+        deptSelect.addEventListener('change', () => {
+            const deptID = deptSelect.value;
+            posSelect.innerHTML = '<option value="" disabled selected>Select Position</option>';
+            allPositions.forEach(pos => {
+                if (pos.departmentID == deptID) {
+                    const opt = document.createElement('option');
+                    opt.value = pos.positionID;
+                    opt.textContent = pos.position_title;
+                    posSelect.appendChild(opt);
                 }
+            });
+        });
 
-                alertOkBtn.onclick = () => {
-                    alertModal.style.display = 'none';
-                };
+        // Modal logic
+        openModalBtn.onclick = () => {
+            if (!deptSelect.value || !posSelect.value) return alert("Select department and position first.");
+            modal.style.display = 'flex';
+        };
+        cancelBtn.onclick = () => { modal.style.display = 'none'; vacancyInput.value = ''; };
+        confirmBtn.onclick = () => {
+            const count = vacancyInput.value.trim();
+            if (!count || isNaN(count) || count <= 0) return alert("Enter a valid number.");
+            vacancyHidden.value = count;
+            modal.style.display = 'none';
+            form.submit();
+        };
+        window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
 
-                // Allow clicking outside to close alert
-                window.addEventListener('click', (e) => {
-                    if (e.target === alertModal) alertModal.style.display = 'none';
+        // AJAX archive
+        $(document).ready(function () {
+            $('.archive-btn').on('click', function () {
+                const vacancyID = $(this).data('id');
+                if (!confirm("Archive this vacancy?")) return;
+                $.ajax({
+                    url: '', // same PHP file
+                    method: 'POST',
+                    data: { archive_vacancy_id: vacancyID },
+                    dataType: 'json',
+                    success: function (res) {
+                        if (res.success) {
+                            alert(res.message);
+                            $(`button[data-id="${vacancyID}"]`).closest('tr').remove();
+                        } else alert("Error: " + res.message);
+                    },
+                    error: function (xhr, status, error) {
+                        alert("AJAX error: " + error);
+                    }
                 });
-
-            </script>
-
-
+            });
+        });
+    </script>
 </body>
 
 </html>
