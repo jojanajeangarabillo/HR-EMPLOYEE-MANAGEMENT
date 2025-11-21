@@ -72,19 +72,14 @@ $stmt->close();
     }
 
     /* Main Content */
-    .main-content {
-      flex: 1;
-      margin-left: 230px;
-
-      padding: 50px 70px;
-      display: flex;
-      flex-direction: column;
-      gap: 30px;
-      min-height: 100vh;
-      overflow-y: auto;
-      /* Allows scrolling if content exceeds viewport height */
-    }
-
+     .main-content {
+            flex: 1;
+            padding: 30px 80px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            margin-left: 230px;
+        }
     /* Header */
     .header {
       display: flex;
@@ -96,7 +91,7 @@ $stmt->close();
       font-weight: 600;
       font-size: 22px;
       color: #1E3A8A;
-      margin-top: 20px;
+      
     }
 
     .search-box {

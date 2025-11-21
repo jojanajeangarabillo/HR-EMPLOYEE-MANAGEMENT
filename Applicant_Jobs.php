@@ -422,6 +422,7 @@ if ($search !== '') {
       margin-bottom: 20px;
       transition: transform 0.3s ease;
     }
+    
 
     .sidebar-profile-img:hover {
       transform: scale(1.05);
@@ -438,6 +439,7 @@ if ($search !== '') {
       font-size: 18px;
       flex-direction: column;
     }
+    
   </style>
 </head>
 
