@@ -142,7 +142,14 @@ $recentQuery = $conn->query("
             JOIN job_posting j ON a.jobID = j.jobID
             WHERE j.job_title = p.position_title
               AND a.status = 'Hired'
-        ) AS hired_count
+        ) AS hired_count,
+        (v.vacancy_count - (
+            SELECT COUNT(*) 
+            FROM applications a
+            JOIN job_posting j ON a.jobID = j.jobID
+            WHERE j.job_title = p.position_title
+              AND a.status = 'Hired'
+        )) AS remaining_vacancies
     FROM vacancies v
     JOIN department d ON v.department_id = d.deptID
     JOIN position p ON v.position_id = p.positionID
@@ -474,7 +481,7 @@ while ($row = $etypeQuery->fetch_assoc())
                             <tr>
                                 <td><?= htmlspecialchars($row['deptName']) ?></td>
                                 <td><?= htmlspecialchars($row['position_title']) ?></td>
-                                <td><?= htmlspecialchars($row['vacancy_count']) ?></td>
+                                <td><?= max(0, htmlspecialchars($row['remaining_vacancies'])) ?></td>
                                 <td><?= htmlspecialchars($row['employment_type']) ?></td>
                                 <td>
                                     <?php if ($row['status'] === 'On-Going'): ?>

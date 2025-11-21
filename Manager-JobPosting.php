@@ -9,7 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['new_post'])) {
     $expected_salary = trim($_POST['expected_salary'] ?? '');
     $experience_years = intval($_POST['experience_years'] ?? 0);
     $job_description = trim($_POST['job_description'] ?? '');
-    $vacancies = intval($_POST['vacancies'] ?? 0);
+    $vacancies = intval($vacRow['vacancy_count']);
     $closing_date = $_POST['closing_date'] ?? null;
     $skills = trim($_POST['skills'] ?? '');
     $vacancy_id = intval($_POST['vacancy_id'] ?? 0);
@@ -17,14 +17,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['new_post'])) {
 
     // Lookup department_id and employment_type_id
     $department_id = $employment_type_id = null;
-    $vacancyStmt = $conn->prepare("SELECT department_id, employment_type_id FROM vacancies WHERE id=? LIMIT 1");
+    $vacancyStmt = $conn->prepare("
+    SELECT department_id, employment_type_id, vacancy_count 
+    FROM vacancies WHERE id=? LIMIT 1
+");
     $vacancyStmt->bind_param("i", $vacancy_id);
     $vacancyStmt->execute();
     $vacRes = $vacancyStmt->get_result();
+
     if ($vacRes && $vacRes->num_rows > 0) {
         $vacRow = $vacRes->fetch_assoc();
         $department_id = intval($vacRow['department_id']);
         $employment_type_id = intval($vacRow['employment_type_id']);
+        $vacancies = intval($vacRow['vacancy_count']);  // <-- This is the correct vacancy value
     } else {
         echo "<script>alert('Invalid vacancy selected.'); window.location.href='Manager-JobPosting.php';</script>";
         exit;

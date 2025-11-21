@@ -5,6 +5,7 @@ require 'admin/db.connect.php';
 
 // Manager name
 $managername = $_SESSION['fullname'] ?? "Manager";
+$employeeID = $_SESSION['applicant_employee_id'] ?? null;
 
 
 // MENUS
@@ -60,6 +61,131 @@ $menus = [
 ];
 
 $role = $_SESSION['sub_role'] ?? "HR Manager";
+$employeeData = [
+  'fullname' => '',
+  'empID' => '',
+  'department' => '',
+  'position' => '',
+  'type_name' => '',
+  'email_address' => ''
+];
+
+if ($employeeID) {
+  $stmt = $conn->prepare("SELECT fullname, empID, department, position, type_name, email_address, profile_pic FROM employee WHERE empID = ?");
+  $stmt->bind_param("s", $employeeID);
+  $stmt->execute();
+  $result = $stmt->get_result();
+
+  if ($row = $result->fetch_assoc()) {
+    $employeeData = $row;
+    $employeename = $row['fullname'];
+    $profile_picture = !empty($row['profile_pic'])
+      ? "uploads/employees/" . $row['profile_pic']
+      : "uploads/employees/default.png";
+  }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+  $employeeID = $_SESSION['applicant_employee_id'] ?? null;
+  if (!$employeeID)
+    die("Employee not found or not logged in.");
+
+  // Check for existing pending request
+  $pendingStmt = $conn->prepare("SELECT COUNT(*) as pending_count FROM employee_request WHERE empID = ? AND status = 'Pending'");
+  $pendingStmt->bind_param("s", $employeeID);
+  $pendingStmt->execute();
+  $pendingResult = $pendingStmt->get_result()->fetch_assoc();
+
+  if ($pendingResult['pending_count'] > 0) {
+    $_SESSION['request_error'] = "You still have a pending request. Wait for further action before requesting again. Thank you!";
+    header("Location: Employee_Requests.php");
+    exit;
+  }
+
+  // Get submitted values
+  $requestTypeID = $_POST['request_type_id'] ?? null;
+  $leaveTypeID = $_POST['leave_type_id'] ?? null;
+  $reason = trim($_POST['reason'] ?? '');
+
+  // Handle file upload for e-signature
+  $signaturePath = '';
+  if (!empty($_FILES['e_signature']['name'])) {
+    $fileName = time() . '_' . basename($_FILES['e_signature']['name']);
+    $targetDir = 'uploads/signatures/';
+    if (!is_dir($targetDir))
+      mkdir($targetDir, 0777, true);
+    move_uploaded_file($_FILES['e_signature']['tmp_name'], $targetDir . $fileName);
+    $signaturePath = $targetDir . $fileName;
+  }
+
+  // Fetch employee info dynamically
+  $empStmt = $conn->prepare("SELECT fullname, department, position, type_name, email_address FROM employee WHERE empID = ?");
+  $empStmt->bind_param("s", $employeeID);
+  $empStmt->execute();
+  $empResult = $empStmt->get_result()->fetch_assoc();
+
+  $fullname = $empResult['fullname'] ?? '';
+  $department = $empResult['department'] ?? '';
+  $position = $empResult['position'] ?? '';
+  $type_name = $empResult['type_name'] ?? '';
+  $email_address = $empResult['email_address'] ?? '';
+
+  // Get request type name
+  $requestTypeName = null;
+  if ($requestTypeID) {
+    $typeStmt = $conn->prepare("SELECT request_type_name FROM types_of_requests WHERE id = ?");
+    $typeStmt->bind_param("i", $requestTypeID);
+    $typeStmt->execute();
+    $typeResult = $typeStmt->get_result()->fetch_assoc();
+    $requestTypeName = $typeResult['request_type_name'] ?? null;
+  }
+
+  // Get leave type name only if request is Leave
+  $leaveTypeName = null;
+  if ($requestTypeName === 'Leave' && $leaveTypeID) {
+    $leaveStmt = $conn->prepare("SELECT leave_type_name FROM leave_types WHERE id = ?");
+    $leaveStmt->bind_param("i", $leaveTypeID);
+    $leaveStmt->execute();
+    $leaveResult = $leaveStmt->get_result()->fetch_assoc();
+    $leaveTypeName = $leaveResult['leave_type_name'] ?? null;
+  } else {
+    $leaveTypeID = null;
+    $leaveTypeName = null;
+  }
+
+  // Insert employee request
+  $stmt = $conn->prepare("INSERT INTO employee_request 
+        (empID, fullname, department, position, type_name, email_address, e_signature, request_type_id, request_type_name, leave_type_id, leave_type_name, reason, status, requested_at) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', NOW())");
+
+  $stmt->bind_param(
+    "sssssssisiss",
+    $employeeID,
+    $fullname,
+    $department,
+    $position,
+    $type_name,
+    $email_address,
+    $signaturePath,
+    $requestTypeID,
+    $requestTypeName,
+    $leaveTypeID,
+    $leaveTypeName,
+    $reason
+  );
+
+  if ($stmt->execute()) {
+    $_SESSION['request_success'] = "Requested Successfully!";
+    header("Location: Employee_Requests.php");
+    exit;
+  } else {
+    $_SESSION['request_error'] = "Failed to submit request. Please try again.";
+  }
+}
+
+
+
+//check pending request
 
 ?>
 
@@ -76,161 +202,7 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-  <style>
-    body {
-      font-family: 'Poppins', 'Roboto', sans-serif;
-      margin: 0;
-      display: flex;
-      background-color: #f1f5fc;
-      color: #111827;
-    }
 
-
-    .main-content {
-      margin-left: 220px;
-      padding: 40px 30px;
-      background-color: #f1f5fc;
-      flex-grow: 1;
-      box-sizing: border-box;
-    }
-
-    .request-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 25px;
-    }
-
-    .request-header h1 {
-      font-size: 2rem;
-      color: #1E3A8A;
-      margin: 0;
-    }
-
-    .show-filter-btn {
-      padding: 8px 14px;
-      font-size: 14px;
-      background-color: #1E3A8A;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .show-filter-btn:hover {
-      background-color: #1e40af;
-    }
-
-    /* FILTER BOX */
-    .filter-box {
-      display: none;
-      margin-bottom: 20px;
-      padding: 20px;
-      background-color: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      align-items: flex-start;
-    }
-
-    .filter-box label {
-      font-weight: 500;
-    }
-
-    .filter-box select {
-      padding: 8px 10px;
-      border-radius: 6px;
-      border: 1px solid #e0e0e0;
-      font-size: 14px;
-    }
-
-    .filter-buttons {
-      width: 100%;
-      display: flex;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .filter-buttons button {
-      padding: 8px 14px;
-      font-size: 14px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .apply-btn {
-      background-color: #1E3A8A;
-      color: white;
-    }
-
-    .apply-btn:hover {
-      background-color: #1e40af;
-    }
-
-    .reset-btn {
-      background-color: #e5e7eb;
-      color: #111827;
-    }
-
-    .reset-btn:hover {
-      background-color: #d1d5db;
-    }
-
-    /* TABLE */
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background-color: #ffffff;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    th,
-    td {
-      padding: 20px 24px;
-      text-align: center;
-      border: 1px solid #e0e0e0;
-      min-width: 150px;
-    }
-
-    thead {
-      background-color: #1E3A8A;
-      color: white;
-      font-weight: 600;
-    }
-
-    tbody tr:nth-child(even) {
-      background-color: #fafafa;
-    }
-
-    tbody tr:hover {
-      background-color: #f8f9fa;
-    }
-
-    /* STATUS COLORS */
-    .status-approved {
-      color: #10b981;
-      font-weight: 600;
-    }
-
-    .status-pending {
-      color: #f59e0b;
-      font-weight: 600;
-    }
-
-    .status-rejected {
-      color: #ef4444;
-      font-weight: 600;
-    }
-  </style>
 </head>
 
 <body>
@@ -251,118 +223,204 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
     </ul>
   </div>
 
-  <!-- MAIN CONTENT -->
+  <!-- Toast Container Centered -->
+  <div class="position-fixed p-3" style="z-index: 1100; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    <div id="requestToast" class="toast align-items-center text-white bg-success border-0" role="alert"
+      aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="toast-message"></div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+          aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+
+  <?php if (isset($_SESSION['request_success'])): ?>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const toastEl = document.getElementById('requestToast');
+        if (toastEl) {
+          document.getElementById('toast-message').innerText = "<?php echo $_SESSION['request_success'];
+          unset($_SESSION['request_success']); ?>";
+          const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+          toast.show();
+        }
+      });
+    </script>
+  <?php endif; ?>
+
+  <?php if (isset($_SESSION['request_error'])): ?>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const toastEl = document.getElementById('requestToast');
+        if (toastEl) {
+          toastEl.classList.remove('bg-success');
+          toastEl.classList.add('bg-danger');
+          document.getElementById('toast-message').innerText = "<?php echo $_SESSION['request_error'];
+          unset($_SESSION['request_error']); ?>";
+          const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+          toast.show();
+        }
+      });
+    </script>
+  <?php endif; ?>
+
+
+
   <main class="main-content">
     <div class="main-box" id="blur-content">
       <div class="main-header">
         <div class="request-title">
-          <h2>Employee Request <i class="fa-solid fa-code-branch"></i></h2>
+          <h2 style="color:black;">Employee Request <i class="fa-solid fa-code-branch"></i></h2>
         </div>
         <button class="file-request-btn" id="open-modal"><i class="fa-solid fa-plus-circle"></i> File a Request</button>
       </div>
+
       <div class="request-table-container">
         <table class="request-table">
           <thead>
             <tr>
               <th>Request Type</th>
               <th>Reason</th>
-              <th>Date</th>
+              <th>Date and Time Requested</th>
               <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>Certification of Employment</td>
-              <td>For Credit Card</td>
-              <td>October 15, 2025</td>
-              <td class="approved">Approved</td>
-              <td><button class="view-btn">View</button></td>
-            </tr>
-            <tr>
-              <td>Certification of Employment</td>
-              <td>For Credit Card</td>
-              <td>October 15, 2025</td>
-              <td class="approved">Approved</td>
-              <td><button class="view-btn">View</button></td>
-            </tr>
-            <tr>
-              <td>Certification of Employment</td>
-              <td>For Credit Card</td>
-              <td>October 15, 2025</td>
-              <td class="approved">Approved</td>
-              <td><button class="view-btn">View</button></td>
-            </tr>
-            <tr>
-              <td>Certification of Employment</td>
-              <td>For Credit Card</td>
-              <td>October 15, 2025</td>
-              <td class="approved">Approved</td>
-              <td><button class="view-btn">View</button></td>
-            </tr>
+            <?php
+            if ($employeeID) {
+              $reqStmt = $conn->prepare("
+                  SELECT request_type_name, leave_type_name, reason, status, requested_at, action_by
+                  FROM employee_request 
+                  WHERE empID = ? 
+                  ORDER BY requested_at DESC
+              ");
+
+              $reqStmt->bind_param("s", $employeeID);
+              $reqStmt->execute();
+              $reqResult = $reqStmt->get_result();
+
+              if ($reqResult->num_rows > 0) {
+                while ($req = $reqResult->fetch_assoc()) {
+                  $displayType = $req['leave_type_name'] ? $req['leave_type_name'] : $req['request_type_name'];
+                  $date = date("F d, Y h:i A", strtotime($req['requested_at']));
+                  $statusClass = strtolower($req['status']) === 'approved' ? 'approved' : (strtolower($req['status']) === 'pending' ? 'pending' : 'rejected');
+                  $actionBy = $req['status'] === 'Pending' ? 'Pending' : htmlspecialchars($req['action_by'] ?? 'N/A');
+
+                  echo "<tr>
+            <td>" . htmlspecialchars($displayType) . "</td>
+            <td>" . htmlspecialchars($req['reason']) . "</td>
+            <td>$date</td>
+            <td class='$statusClass'>" . htmlspecialchars($req['status']) . "</td>
+            <td>
+              <button class='view-btn' 
+                data-type='" . htmlspecialchars($displayType) . "'
+                data-reason='" . htmlspecialchars($req['reason']) . "'
+                data-date='$date'
+                data-status='" . htmlspecialchars($req['status']) . "'
+                data-action='$actionBy'
+              >View</button>
+            </td>
+          </tr>";
+                }
+              } else {
+                echo "<tr><td colspan='5'>No requests found.</td></tr>";
+              }
+            } else {
+              echo "<tr><td colspan='5'>Employee not logged in.</td></tr>";
+            }
+            ?>
           </tbody>
         </table>
       </div>
+
     </div>
 
     <!-- Request Form -->
     <div id="request-modal" class="modal-overlay">
       <div class="modal-form">
-        <form>
+        <form method="POST" enctype="multipart/form-data">
           <div class="modal-header">
             <h2><i class="fa-solid fa-code-branch"></i> Employee Request</h2>
           </div>
+
           <div class="modal-content">
+            <!-- Employee Info -->
             <div class="modal-row">
               <div class="form-group">
                 <label>Full Name:</label>
-                <input type="text" placeholder="">
+                <input type="text" value="<?= htmlspecialchars($employeeData['fullname']); ?>" readonly>
               </div>
               <div class="form-group">
                 <label>Employee ID:</label>
-                <input type="text" placeholder="">
+                <input type="text" name="empID" value="<?= htmlspecialchars($employeeData['empID']); ?>" readonly>
               </div>
-            </div>
-            <div class="modal-row">
               <div class="form-group">
                 <label>Department:</label>
-                <input type="text" placeholder="">
+                <input type="text" value="<?= htmlspecialchars($employeeData['department']); ?>" readonly>
               </div>
               <div class="form-group">
                 <label>Position:</label>
-                <input type="text" placeholder="">
+                <input type="text" value="<?= htmlspecialchars($employeeData['position']); ?>" readonly>
+              </div>
+              <div class="form-group wide">
+                <label>Type of Employment:</label>
+                <input type="text" value="<?= htmlspecialchars($employeeData['type_name']); ?>" readonly>
+              </div>
+              <div class="form-group wide">
+                <label>Email Address:</label>
+                <input type="text" value="<?= htmlspecialchars($employeeData['email_address']); ?>" readonly>
               </div>
             </div>
 
+            <!-- Request Type -->
             <div class="modal-row">
               <div class="form-group wide">
                 <label>Type of Request</label>
-                <select id="request-type" name="request-type">
-                  <option>Leave Request<Sick,Vacation, Emergency, etc>
-                  </option>
-                  <option>Attendance<Under Time, Over Time>
-                  </option>
-                  <option>Resignation</option>
-                  <option>Certification</option>
-                  <option>Others</option>
+                <select id="request-type" name="request_type_id" required>
+                  <option value="">-- Select Request Type --</option>
+                  <?php
+                  $requestTypes = $conn->query("SELECT * FROM types_of_requests");
+                  while ($type = $requestTypes->fetch_assoc()):
+                    ?>
+                    <option value="<?= $type['id'] ?>"><?= htmlspecialchars($type['request_type_name']) ?></option>
+                  <?php endwhile; ?>
                 </select>
-                <input type="text" id="other-type" placeholder="Please specify" style="display:none; margin-top:7px;">
               </div>
 
-              <div class="form-group wide">
-                <label>Email Address:</label>
-                <input type="text" placeholder="">
+              <!-- Leave Type -->
+              <div class="form-group wide" id="leave-type-container" style="display:none;">
+                <label>Select Leave Type</label>
+                <select id="leave-type" name="leave_type_id">
+                  <option value="">-- Select Leave Type --</option>
+                  <?php
+                  $leaveTypes = $conn->query("SELECT * FROM leave_types");
+                  while ($leave = $leaveTypes->fetch_assoc()):
+                    ?>
+                    <option value="<?= $leave['id'] ?>" data-request="<?= $leave['request_type_id'] ?>">
+                      <?= htmlspecialchars($leave['leave_type_name']) ?>
+                    </option>
+                  <?php endwhile; ?>
+                </select>
               </div>
+
             </div>
+
             <div class="modal-row">
               <div class="form-group wide">
                 <label>Reason:</label>
-                <textarea placeholder="Enter your reason" rows="10"></textarea>
+                <textarea name="reason" placeholder="Enter your reason" rows="5" required></textarea>
               </div>
             </div>
 
-
+            <div class="form-group wide">
+              <label>Upload E-Signature:</label>
+              <input type="file" name="e_signature" accept="image/*">
+            </div>
           </div>
+
           <div class="modal-footer">
             <button type="button" class="cancel-btn" id="close-modal">Cancel</button>
             <button type="submit" class="send-btn">Send</button>
@@ -371,7 +429,71 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
       </div>
     </div>
 
+
+    <div id="view-request-modal" class="modal-overlay">
+      <div class="modal-form">
+        <div class="modal-header">
+          <h2><i class="fa-solid fa-eye"></i> Request Details</h2>
+        </div>
+        <div class="modal-content">
+          <div class="form-group">
+            <label>Request Type:</label>
+            <input type="text" id="view-type" readonly>
+          </div>
+          <div class="form-group">
+            <label>Reason:</label>
+            <textarea id="view-reason" readonly></textarea>
+          </div>
+          <div class="form-group">
+            <label>Date Requested:</label>
+            <input type="text" id="view-date" readonly>
+          </div>
+          <div class="form-group">
+            <label>Status:</label>
+            <input type="text" id="view-status" readonly>
+          </div>
+          <div class="form-group">
+            <label>Action By:</label>
+            <input type="text" id="view-action" readonly>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="cancel-btn" id="close-view-modal">Close</button>
+        </div>
+      </div>
+    </div>
+
+
+
     <style>
+      .sidebar-profile-img {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar-profile-img:hover {
+        transform: scale(1.05);
+      }
+
+      h1 {
+        font-family: 'Roboto', sans-serif;
+        font-size: 35px;
+        color: white;
+        text-align: center;
+      }
+
+      .menu-board-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin: 15px 0 5px 15px;
+        text-transform: uppercase;
+        color: white;
+      }
+
       /* --- Blur Effect --- */
       .blurred {
         filter: blur(5px);
@@ -389,10 +511,9 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
         top: 0;
         width: 100vw;
         height: 100vh;
-        background: rgba(28, 36, 80, 0.19);
+        background: rgba(0, 0, 0, 0.4);
         justify-content: center;
         align-items: center;
-        overflow: auto;
       }
 
       .modal-overlay.active {
@@ -400,129 +521,120 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
       }
 
       .modal-form {
-        background: #23439e;
+        background: #1E3A8A;
         color: #fff;
-        border-radius: 10px;
-        padding: 40px 50px 30px 50px;
-        box-shadow: 0 10px 40px rgba(30, 40, 120, 0.18);
-        min-width: 420px;
-        max-width: 540px;
-        width: 100%;
-        margin: 36px auto;
-        position: relative;
-        display: flex;
-        flex-direction: column;
+        border-radius: 12px;
+        padding: 30px 40px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        width: 650px;
+        max-width: 90%;
+        margin: auto;
       }
 
       .modal-header h2 {
-        font-size: 2rem;
-        margin-bottom: 24px;
+        font-size: 1.8rem;
         font-weight: bold;
-        letter-spacing: 0.02em;
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        color: #fff;
+        text-align: center;
+        margin-bottom: 25px;
       }
 
       .modal-content {
-        width: 100%;
-        margin-bottom: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
       }
 
       .modal-row {
         display: flex;
-        gap: 25px;
-        margin-bottom: 16px;
+        gap: 20px;
+        flex-wrap: wrap;
+        /* allow stacking on small screens */
       }
 
       .form-group {
-        flex: 1;
+        flex: 1 1 calc(50% - 10px);
+        /* two columns, with a gap accounted for */
         display: flex;
         flex-direction: column;
+        min-width: 250px;
+        /* prevents fields from shrinking too much */
       }
 
-      .form-group.wide {
-        flex: 2;
+
+      #leave-type-container,
+      #other-type {
+        min-height: 60px;
+        /* same height as a normal input */
+        transition: all 0.2s ease;
+      }
+
+      .modal-form {
+        max-height: 90vh;
+        overflow-y: auto;
       }
 
       .form-group label {
-        font-size: 1rem;
-        margin-bottom: 7px;
-        color: #fff;
-        font-weight: 500;
+        font-weight: 600;
+        margin-bottom: 5px;
+        font-size: 0.95rem;
       }
 
-      .form-group input[type="text"],
-      .form-group input[type="email"],
+      .form-group input,
       .form-group select,
-      .form-group input[type="file"] {
-        padding: 8px 12px;
+      .form-group textarea {
+        background: #fff;
         border: none;
-        border-radius: 7px;
-        font-size: 1rem;
+        border-radius: 6px;
+        padding: 10px 12px;
+        font-size: 0.95rem;
+        color: #000;
         outline: none;
-        margin-bottom: 4px;
-        background: #f3f5fb;
-        color: black;
       }
 
-      .form-group input[type="file"] {
-        background: #f3f5fb;
-        color: black;
-        cursor: pointer;
+      .form-group textarea {
+        resize: none;
+        height: 100px;
       }
 
       .modal-footer {
         display: flex;
-        justify-content: flex-end;
-        gap: 18px;
-        margin-top: 10px;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 25px;
       }
 
       .cancel-btn,
       .send-btn {
-        padding: 8px 22px;
+        padding: 10px 25px;
         border: none;
         border-radius: 8px;
-        font-size: 1rem;
         font-weight: 600;
         cursor: pointer;
-        margin-top: 14px;
-        box-shadow: 0 1.5px 6px rgba(28, 140, 64, 0.07);
+        font-size: 1rem;
       }
 
       .cancel-btn {
-        background: #e63939;
+        background: #E63946;
         color: white;
-        transition: background 0.18s;
       }
 
       .cancel-btn:hover {
-        background: #c52626;
+        background: #c9303c;
       }
 
       .send-btn {
-        background: #19bb4e;
+        background: #19BB4E;
         color: white;
-        transition: background 0.19s;
       }
 
       .send-btn:hover {
-        background: #0e9133;
+        background: #128c3a;
       }
 
-      /* Responsive for modal */
+      /* Responsive */
       @media (max-width: 700px) {
-        .modal-form {
-          max-width: 98vw;
-          min-width: unset;
-          padding: 25px 3vw;
-        }
-
         .modal-row {
           flex-direction: column;
-          gap: 10px;
         }
       }
 
@@ -576,6 +688,10 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
 
       .request-table-container {
         margin-top: 18px;
+      }
+
+      .request-title i {
+        color: #1E3A8A;
       }
 
       .request-table {
@@ -658,6 +774,21 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
         resize: vertical;
       }
 
+      .sidebar-logo {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+        margin-right: 10px;
+      }
+
+      .sidebar-logo img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 3px solid white;
+      }
+
       .sidebar-name {
         display: flex;
         justify-content: center;
@@ -668,6 +799,22 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
         margin-bottom: 30px;
         font-size: 18px;
         flex-direction: column;
+      }
+
+      body {
+        font-family: 'Poppins', 'Roboto', sans-serif;
+        margin: 0;
+        display: flex;
+        background-color: #f1f5fc;
+        color: #111827;
+      }
+
+      .main-content {
+        margin-left: 250px;
+        padding: 40px 30px;
+        background-color: #f1f5fc;
+        flex-grow: 1;
+        box-sizing: border-box;
       }
     </style>
 
@@ -696,13 +843,69 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
         blurBox.classList.remove('blurred');
       }
     });
-    requestType.addEventListener('change', function () {
-      if (requestType.value === 'Others') {
-        otherTypeInput.style.display = 'block';
-      } else {
-        otherTypeInput.style.display = 'none';
+
+
+    // Highlight active sidebar link
+    const currentPage = window.location.pathname.split("/").pop();
+    document.querySelectorAll(".sidebar .nav li a").forEach(link => {
+      if (link.getAttribute("href") === currentPage) {
+        link.parentElement.classList.add("active");
       }
     });
+
+
+    const requestTypeSelect = document.getElementById('request-type');
+    const leaveTypeContainer = document.getElementById('leave-type-container');
+    const leaveTypeSelect = document.getElementById('leave-type');
+
+    requestTypeSelect.addEventListener('change', () => {
+      const selected = requestTypeSelect.selectedOptions[0].text;
+
+      // Show leave types if "Leave" selected
+      if (selected === 'Leave') {
+        leaveTypeContainer.style.display = 'block';
+        Array.from(leaveTypeSelect.options).forEach(opt => {
+          opt.style.display = (opt.dataset.request == requestTypeSelect.value || opt.value === "") ? 'block' : 'none';
+        });
+      } else {
+        leaveTypeContainer.style.display = 'none';
+        leaveTypeSelect.value = "";
+      }
+
+    });
+
+
+    const viewButtons = document.querySelectorAll('.view-btn');
+    const viewModal = document.getElementById('view-request-modal');
+    const closeViewBtn = document.getElementById('close-view-modal');
+
+    viewButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('view-type').value = btn.dataset.type;
+        document.getElementById('view-reason').value = btn.dataset.reason;
+        document.getElementById('view-date').value = btn.dataset.date;
+        document.getElementById('view-status').value = btn.dataset.status;
+        document.getElementById('view-action').value = btn.dataset.action;
+
+        viewModal.classList.add('active');
+        blurBox.classList.add('blurred');
+      });
+    });
+
+    closeViewBtn.addEventListener('click', () => {
+      viewModal.classList.remove('active');
+      blurBox.classList.remove('blurred');
+    });
+
+    window.addEventListener('keydown', function (e) {
+      if (e.key === "Escape" && viewModal.classList.contains('active')) {
+        viewModal.classList.remove('active');
+        blurBox.classList.remove('blurred');
+      }
+    });
+
+
+
   </script>
 
 </body>

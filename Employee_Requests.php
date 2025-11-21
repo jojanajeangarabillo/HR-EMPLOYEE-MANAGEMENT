@@ -144,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   // Insert employee request
   $stmt = $conn->prepare("INSERT INTO employee_request 
-        (empID, fullname, department, position, type_name, email_address, e_signature, request_type_id, request_type, leave_type_id, leave_type_name, reason, status, requested_at) 
+        (empID, fullname, department, position, type_name, email_address, e_signature, request_type_id, request_type_name, leave_type_id, leave_type_name, reason, status, requested_at) 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', NOW())");
 
   $stmt->bind_param(
@@ -286,7 +286,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php
             if ($employeeID) {
               $reqStmt = $conn->prepare("
-                  SELECT request_type, leave_type_name, reason, status, requested_at, action_by
+                  SELECT request_type_name, leave_type_name, reason, status, requested_at, action_by
                   FROM employee_request 
                   WHERE empID = ? 
                   ORDER BY requested_at DESC
