@@ -2,6 +2,27 @@
 session_start();
 require 'admin/db.connect.php';
 
+$managername = $_SESSION['fullname'] ?? "Manager";
+$employeeID = $_SESSION['applicant_employee_id'] ?? null; // Make sure empID is stored in session
+if ($employeeID) {
+    $stmt = $conn->prepare("SELECT profile_pic FROM employee WHERE empID = ?");
+    $stmt->bind_param("s", $employeeID);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $profile_picture = !empty($row['profile_pic'])
+            ? "uploads/employees/" . $row['profile_pic']
+            : "uploads/employees/default.png";
+    } else {
+
+        $profile_picture = "uploads/employees/default.png";
+    }
+} else {
+    $profile_picture = "uploads/employees/default.png";
+}
+
 // Handle New Job Post Creation
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['new_post'])) {
     $job_title = trim($_POST['job_title'] ?? '');
@@ -139,7 +160,7 @@ if ($res && $res->num_rows > 0) {
 $conn->close();
 
 // Manager name
-$managername = $_SESSION['fullname'] ?? "Manager";
+
 
 
 // MENUS
@@ -217,6 +238,20 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
             color: #111827;
         }
 
+        .sidebar-profile-img {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-profile-img:hover {
+            transform: scale(1.05);
+        }
+
+
         .job-postings-container {
             flex-grow: 1;
             margin-left: 220px;
@@ -245,7 +280,10 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-logo">
-            <img src="Images/hospitallogo.png" alt="Hospital Logo">
+            <a href="Manager_Profile.php" class="profile">
+                <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="sidebar-profile-img">
+            </a>
+
         </div>
 
         <div class="sidebar-name">

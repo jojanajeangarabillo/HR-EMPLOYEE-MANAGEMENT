@@ -5,7 +5,25 @@ require 'admin/db.connect.php';
 
 // Manager name
 $managername = $_SESSION['fullname'] ?? "Manager";
-$employeeID = $_SESSION['applicant_employee_id'] ?? null;
+$employeeID = $_SESSION['applicant_employee_id'] ?? null; // Make sure empID is stored in session
+if ($employeeID) {
+  $stmt = $conn->prepare("SELECT profile_pic FROM employee WHERE empID = ?");
+  $stmt->bind_param("s", $employeeID);
+  $stmt->execute();
+  $result = $stmt->get_result();
+
+  if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $profile_picture = !empty($row['profile_pic'])
+      ? "uploads/employees/" . $row['profile_pic']
+      : "uploads/employees/default.png";
+  } else {
+
+    $profile_picture = "uploads/employees/default.png";
+  }
+} else {
+  $profile_picture = "uploads/employees/default.png";
+}
 
 
 // MENUS
@@ -85,6 +103,7 @@ if ($employeeID) {
   }
 }
 
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $employeeID = $_SESSION['applicant_employee_id'] ?? null;
   if (!$employeeID)
@@ -98,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if ($pendingResult['pending_count'] > 0) {
     $_SESSION['request_error'] = "You still have a pending request. Wait for further action before requesting again. Thank you!";
-    header("Location: Employee_Requests.php");
+    header("Location: Manager_Requests.php");
     exit;
   }
 
@@ -176,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   if ($stmt->execute()) {
     $_SESSION['request_success'] = "Requested Successfully!";
-    header("Location: Employee_Requests.php");
+    header("Location: Manager_Requests.php");
     exit;
   } else {
     $_SESSION['request_error'] = "Failed to submit request. Please try again.";
@@ -202,14 +221,367 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
+  <style>
+    .sidebar-profile-img {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 20px;
+      transition: transform 0.3s ease;
+    }
 
+    .sidebar-profile-img:hover {
+      transform: scale(1.05);
+    }
+
+    h1 {
+      font-family: 'Roboto', sans-serif;
+      font-size: 35px;
+      color: white;
+      text-align: center;
+    }
+
+    .menu-board-title {
+      font-size: 18px;
+      font-weight: bold;
+      margin: 15px 0 5px 15px;
+      text-transform: uppercase;
+      color: white;
+    }
+
+    /* --- Blur Effect --- */
+    .blurred {
+      filter: blur(5px);
+      pointer-events: none;
+      user-select: none;
+      transition: filter 0.2s;
+    }
+
+    /* --- Modal Styles --- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      z-index: 200;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.4);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-form {
+      background: #1E3A8A;
+      color: #fff;
+      border-radius: 12px;
+      padding: 30px 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      width: 650px;
+      max-width: 90%;
+      margin: auto;
+    }
+
+    .modal-header h2 {
+      font-size: 1.8rem;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .modal-content {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .modal-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      /* allow stacking on small screens */
+    }
+
+    .form-group {
+      flex: 1 1 calc(50% - 10px);
+      /* two columns, with a gap accounted for */
+      display: flex;
+      flex-direction: column;
+      min-width: 250px;
+      /* prevents fields from shrinking too much */
+    }
+
+
+    #leave-type-container,
+    #other-type {
+      min-height: 60px;
+      /* same height as a normal input */
+      transition: all 0.2s ease;
+    }
+
+    .modal-form {
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      margin-bottom: 5px;
+      font-size: 0.95rem;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      color: #000;
+      outline: none;
+    }
+
+    .form-group textarea {
+      resize: none;
+      height: 100px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    .cancel-btn,
+    .send-btn {
+      padding: 10px 25px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+
+    .cancel-btn {
+      background: #E63946;
+      color: white;
+    }
+
+    .cancel-btn:hover {
+      background: #c9303c;
+    }
+
+    .send-btn {
+      background: #19BB4E;
+      color: white;
+    }
+
+    .send-btn:hover {
+      background: #128c3a;
+    }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      .modal-row {
+        flex-direction: column;
+      }
+    }
+
+    .main-box {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 6px 30px rgba(30, 70, 140, 0.10), 0 1.5px 4px rgba(30, 70, 140, 0.07);
+      padding: 32px 24px 24px 24px;
+      margin-top: 20px;
+      margin-bottom: 32px;
+    }
+
+    .main-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #e2e7f1;
+      padding-bottom: 16px;
+    }
+
+    .main-header h2 {
+      font-size: 1.7rem;
+      color: #222e50;
+      margin: 0;
+      font-weight: bold;
+      letter-spacing: 0.03em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .file-request-btn {
+      background: #fff;
+      border: 2px solid #2540a8;
+      color: #2540a8;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: background 0.2s, color 0.2s;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(30, 70, 140, 0.04);
+      margin-left: 24px;
+    }
+
+    .file-request-btn:hover {
+      background: #2540a8;
+      color: #fff;
+    }
+
+    .request-table-container {
+      margin-top: 18px;
+    }
+
+    .request-title i {
+      color: #1E3A8A;
+    }
+
+    .request-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: #f3f7ff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(82, 100, 180, 0.06);
+    }
+
+    .request-table thead th {
+      background: #2949d0;
+      color: #fff;
+      font-weight: 600;
+      text-align: center;
+      padding: 16px 12px;
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+    }
+
+    .request-table tbody tr {
+      transition: background 0.2s, box-shadow 0.2s, transform .07s;
+      cursor: pointer;
+    }
+
+    .request-table tbody tr:hover {
+      background: #e4edff;
+      box-shadow: 0 2px 12px rgba(82, 120, 220, 0.09);
+      transform: scale(1.012);
+      z-index: 1;
+      position: relative;
+    }
+
+    .request-table td {
+      padding: 14px 12px;
+      font-size: 15px;
+      color: #213056;
+      border-bottom: 1px solid #e2e7f1;
+      background: none;
+      text-align: center;
+    }
+
+    .request-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .approved {
+      color: #18a140;
+      font-weight: bold;
+    }
+
+    .view-btn {
+      background: #18a140;
+      color: #fff;
+      border: none;
+      padding: 6px 18px;
+      border-radius: 12px;
+      font-size: 1rem;
+      cursor: pointer;
+      font-weight: 500;
+      box-shadow: 0 1.5px 6px rgba(24, 161, 64, 0.08);
+      transition: background 0.18s;
+    }
+
+    .view-btn:hover {
+      background: #17a13d;
+    }
+
+    .form-group textarea {
+      padding: 8px 12px;
+      border: none;
+      border-radius: 7px;
+      font-size: 1rem;
+      outline: none;
+      margin-bottom: 4px;
+      background: #f3f5fb;
+      color: black;
+      resize: vertical;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
+      margin-right: 10px;
+    }
+
+    .sidebar-logo img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      border: 3px solid white;
+    }
+
+    .sidebar-name {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 10px;
+      margin-bottom: 30px;
+      font-size: 18px;
+      flex-direction: column;
+    }
+
+    body {
+      font-family: 'Poppins', 'Roboto', sans-serif;
+      margin: 0;
+      display: flex;
+      background-color: #f1f5fc;
+      color: #111827;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      padding: 40px 30px;
+      background-color: #f1f5fc;
+      flex-grow: 1;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 
 <body>
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-logo">
-      <img src="Images/hospitallogo.png" alt="Hospital Logo">
+      <a href="Manager_Profile.php" class="profile">
+        <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="sidebar-profile-img">
+      </a>
     </div>
 
     <div class="sidebar-name">
@@ -462,361 +834,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
       </div>
     </div>
-
-
-
-    <style>
-      .sidebar-profile-img {
-        width: 130px;
-        height: 130px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-bottom: 20px;
-        transition: transform 0.3s ease;
-      }
-
-      .sidebar-profile-img:hover {
-        transform: scale(1.05);
-      }
-
-      h1 {
-        font-family: 'Roboto', sans-serif;
-        font-size: 35px;
-        color: white;
-        text-align: center;
-      }
-
-      .menu-board-title {
-        font-size: 18px;
-        font-weight: bold;
-        margin: 15px 0 5px 15px;
-        text-transform: uppercase;
-        color: white;
-      }
-
-      /* --- Blur Effect --- */
-      .blurred {
-        filter: blur(5px);
-        pointer-events: none;
-        user-select: none;
-        transition: filter 0.2s;
-      }
-
-      /* --- Modal Styles --- */
-      .modal-overlay {
-        display: none;
-        position: fixed;
-        z-index: 200;
-        left: 0;
-        top: 0;
-        width: 100vw;
-        height: 100vh;
-        background: rgba(0, 0, 0, 0.4);
-        justify-content: center;
-        align-items: center;
-      }
-
-      .modal-overlay.active {
-        display: flex;
-      }
-
-      .modal-form {
-        background: #1E3A8A;
-        color: #fff;
-        border-radius: 12px;
-        padding: 30px 40px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-        width: 650px;
-        max-width: 90%;
-        margin: auto;
-      }
-
-      .modal-header h2 {
-        font-size: 1.8rem;
-        font-weight: bold;
-        text-align: center;
-        margin-bottom: 25px;
-      }
-
-      .modal-content {
-        display: flex;
-        flex-direction: column;
-        gap: 18px;
-      }
-
-      .modal-row {
-        display: flex;
-        gap: 20px;
-        flex-wrap: wrap;
-        /* allow stacking on small screens */
-      }
-
-      .form-group {
-        flex: 1 1 calc(50% - 10px);
-        /* two columns, with a gap accounted for */
-        display: flex;
-        flex-direction: column;
-        min-width: 250px;
-        /* prevents fields from shrinking too much */
-      }
-
-
-      #leave-type-container,
-      #other-type {
-        min-height: 60px;
-        /* same height as a normal input */
-        transition: all 0.2s ease;
-      }
-
-      .modal-form {
-        max-height: 90vh;
-        overflow-y: auto;
-      }
-
-      .form-group label {
-        font-weight: 600;
-        margin-bottom: 5px;
-        font-size: 0.95rem;
-      }
-
-      .form-group input,
-      .form-group select,
-      .form-group textarea {
-        background: #fff;
-        border: none;
-        border-radius: 6px;
-        padding: 10px 12px;
-        font-size: 0.95rem;
-        color: #000;
-        outline: none;
-      }
-
-      .form-group textarea {
-        resize: none;
-        height: 100px;
-      }
-
-      .modal-footer {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        margin-top: 25px;
-      }
-
-      .cancel-btn,
-      .send-btn {
-        padding: 10px 25px;
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        cursor: pointer;
-        font-size: 1rem;
-      }
-
-      .cancel-btn {
-        background: #E63946;
-        color: white;
-      }
-
-      .cancel-btn:hover {
-        background: #c9303c;
-      }
-
-      .send-btn {
-        background: #19BB4E;
-        color: white;
-      }
-
-      .send-btn:hover {
-        background: #128c3a;
-      }
-
-      /* Responsive */
-      @media (max-width: 700px) {
-        .modal-row {
-          flex-direction: column;
-        }
-      }
-
-      .main-box {
-        background: #fff;
-        border-radius: 14px;
-        box-shadow: 0 6px 30px rgba(30, 70, 140, 0.10), 0 1.5px 4px rgba(30, 70, 140, 0.07);
-        padding: 32px 24px 24px 24px;
-        margin-top: 20px;
-        margin-bottom: 32px;
-      }
-
-      .main-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 24px;
-        border-bottom: 2px solid #e2e7f1;
-        padding-bottom: 16px;
-      }
-
-      .main-header h2 {
-        font-size: 1.7rem;
-        color: #222e50;
-        margin: 0;
-        font-weight: bold;
-        letter-spacing: 0.03em;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .file-request-btn {
-        background: #fff;
-        border: 2px solid #2540a8;
-        color: #2540a8;
-        padding: 8px 18px;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 1rem;
-        transition: background 0.2s, color 0.2s;
-        cursor: pointer;
-        box-shadow: 0 1px 3px rgba(30, 70, 140, 0.04);
-        margin-left: 24px;
-      }
-
-      .file-request-btn:hover {
-        background: #2540a8;
-        color: #fff;
-      }
-
-      .request-table-container {
-        margin-top: 18px;
-      }
-
-      .request-title i {
-        color: #1E3A8A;
-      }
-
-      .request-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        background: #f3f7ff;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 1px 4px rgba(82, 100, 180, 0.06);
-      }
-
-      .request-table thead th {
-        background: #2949d0;
-        color: #fff;
-        font-weight: 600;
-        text-align: center;
-        padding: 16px 12px;
-        font-size: 1rem;
-        letter-spacing: 0.02em;
-      }
-
-      .request-table tbody tr {
-        transition: background 0.2s, box-shadow 0.2s, transform .07s;
-        cursor: pointer;
-      }
-
-      .request-table tbody tr:hover {
-        background: #e4edff;
-        box-shadow: 0 2px 12px rgba(82, 120, 220, 0.09);
-        transform: scale(1.012);
-        z-index: 1;
-        position: relative;
-      }
-
-      .request-table td {
-        padding: 14px 12px;
-        font-size: 15px;
-        color: #213056;
-        border-bottom: 1px solid #e2e7f1;
-        background: none;
-        text-align: center;
-      }
-
-      .request-table tr:last-child td {
-        border-bottom: none;
-      }
-
-      .approved {
-        color: #18a140;
-        font-weight: bold;
-      }
-
-      .view-btn {
-        background: #18a140;
-        color: #fff;
-        border: none;
-        padding: 6px 18px;
-        border-radius: 12px;
-        font-size: 1rem;
-        cursor: pointer;
-        font-weight: 500;
-        box-shadow: 0 1.5px 6px rgba(24, 161, 64, 0.08);
-        transition: background 0.18s;
-      }
-
-      .view-btn:hover {
-        background: #17a13d;
-      }
-
-      .form-group textarea {
-        padding: 8px 12px;
-        border: none;
-        border-radius: 7px;
-        font-size: 1rem;
-        outline: none;
-        margin-bottom: 4px;
-        background: #f3f5fb;
-        color: black;
-        resize: vertical;
-      }
-
-      .sidebar-logo {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 30px;
-        margin-right: 10px;
-      }
-
-      .sidebar-logo img {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        border: 3px solid white;
-      }
-
-      .sidebar-name {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        color: white;
-        padding: 10px;
-        margin-bottom: 30px;
-        font-size: 18px;
-        flex-direction: column;
-      }
-
-      body {
-        font-family: 'Poppins', 'Roboto', sans-serif;
-        margin: 0;
-        display: flex;
-        background-color: #f1f5fc;
-        color: #111827;
-      }
-
-      .main-content {
-        margin-left: 250px;
-        padding: 40px 30px;
-        background-color: #f1f5fc;
-        flex-grow: 1;
-        box-sizing: border-box;
-      }
-    </style>
 
   </main>
 

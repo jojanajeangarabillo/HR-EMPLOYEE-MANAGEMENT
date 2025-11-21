@@ -4,8 +4,25 @@ require 'admin/db.connect.php';
 
 // Manager name
 $managername = $_SESSION['fullname'] ?? "Manager";
+$employeeID = $_SESSION['applicant_employee_id'] ?? null; // Make sure empID is stored in session
+if ($employeeID) {
+  $stmt = $conn->prepare("SELECT profile_pic FROM employee WHERE empID = ?");
+  $stmt->bind_param("s", $employeeID);
+  $stmt->execute();
+  $result = $stmt->get_result();
 
+  if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $profile_picture = !empty($row['profile_pic'])
+      ? "uploads/employees/" . $row['profile_pic']
+      : "uploads/employees/default.png";
+  } else {
 
+    $profile_picture = "uploads/employees/default.png";
+  }
+} else {
+  $profile_picture = "uploads/employees/default.png";
+}
 // MENUS
 $menus = [
   "HR Director" => [
@@ -80,17 +97,41 @@ if (isset($_GET['action'], $_GET['id'])) {
 }
 
 $requests = [];
-$stmt = $conn->prepare("SELECT r.request_id, e.empID, e.fullname, e.department, r.request_type_name, r.status, r.reason, r.requested_at 
-                        FROM employee_request r
-                        JOIN employee e ON r.empID = e.empID
-                        LEFT JOIN department d ON e.department = d.deptID
-                        ORDER BY r.requested_at DESC");
+
+if ($role === "HR Manager") {
+  // HR Manager should not see their own requests
+  $stmt = $conn->prepare("SELECT r.request_id, e.empID, e.fullname, e.department, r.request_type_name, r.status, r.reason, r.requested_at 
+                            FROM employee_request r
+                            JOIN employee e ON r.empID = e.empID
+                            LEFT JOIN department d ON e.department = d.deptID
+                            WHERE e.empID != ?
+                            ORDER BY r.requested_at DESC");
+  $stmt->bind_param("s", $employeeID);
+} elseif ($role === "HR Director") {
+  // HR Director should not see their own requests
+  $stmt = $conn->prepare("SELECT r.request_id, e.empID, e.fullname, e.department, r.request_type_name, r.status, r.reason, r.requested_at 
+                            FROM employee_request r
+                            JOIN employee e ON r.empID = e.empID
+                            LEFT JOIN department d ON e.department = d.deptID
+                            WHERE e.empID != ?
+                            ORDER BY r.requested_at DESC");
+  $stmt->bind_param("s", $employeeID);
+} else {
+  // Other roles see all requests
+  $stmt = $conn->prepare("SELECT r.request_id, e.empID, e.fullname, e.department, r.request_type_name, r.status, r.reason, r.requested_at 
+                            FROM employee_request r
+                            JOIN employee e ON r.empID = e.empID
+                            LEFT JOIN department d ON e.department = d.deptID
+                            ORDER BY r.requested_at DESC");
+}
+
 $stmt->execute();
 $res = $stmt->get_result();
 while ($row = $res->fetch_assoc()) {
   $requests[] = $row;
 }
 $stmt->close();
+
 
 ?>
 
@@ -257,6 +298,19 @@ $stmt->close();
       font-size: 18px;
       flex-direction: column;
     }
+
+    .sidebar-profile-img {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 20px;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-profile-img:hover {
+      transform: scale(1.05);
+    }
   </style>
 </head>
 
@@ -264,7 +318,9 @@ $stmt->close();
   <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-logo">
-      <img src="Images/hospitallogo.png" alt="Hospital Logo">
+      <a href="Manager_Profile.php" class="profile">
+        <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="sidebar-profile-img">
+      </a>
     </div>
 
     <div class="sidebar-name">

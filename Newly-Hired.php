@@ -18,6 +18,25 @@ $employees = $applicants = 0;
 
 // Manager name
 $managername = $_SESSION['fullname'] ?? "Manager";
+$employeeID = $_SESSION['applicant_employee_id'] ?? null; // Make sure empID is stored in session
+if ($employeeID) {
+    $stmt = $conn->prepare("SELECT profile_pic FROM employee WHERE empID = ?");
+    $stmt->bind_param("s", $employeeID);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $profile_picture = !empty($row['profile_pic'])
+            ? "uploads/employees/" . $row['profile_pic']
+            : "uploads/employees/default.png";
+    } else {
+
+        $profile_picture = "uploads/employees/default.png";
+    }
+} else {
+    $profile_picture = "uploads/employees/default.png";
+}
 
 
 // MENUS
@@ -287,6 +306,18 @@ if (isset($_POST['add_employee_id'])) {
             color: #111827;
         }
 
+        .sidebar-profile-img {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-profile-img:hover {
+            transform: scale(1.05);
+        }
 
         .main-content {
             padding: 40px 30px;
@@ -365,7 +396,10 @@ if (isset($_POST['add_employee_id'])) {
 <body>
     <div class="sidebar">
         <div class="sidebar-logo">
-            <img src="Images/hospitallogo.png" alt="Hospital Logo">
+            <a href="Manager_Profile.php" class="profile">
+                <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="sidebar-profile-img">
+            </a>
+
         </div>
 
         <div class="sidebar-name">
