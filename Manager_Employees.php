@@ -165,6 +165,8 @@ if (isset($_POST['send_message'])) {
   <title>Manager Employees</title>
 
   <link rel="stylesheet" href="manager-sidebar.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
 
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
@@ -327,7 +329,7 @@ if (isset($_POST['send_message'])) {
     }
 
     .table-container {
-      width: 100%;
+      width: 90%;
       padding: 0 30px;
       margin-top: 20px;
       box-sizing: border-box;
@@ -498,10 +500,33 @@ if (isset($_POST['send_message'])) {
     </ul>
   </div>
 
+
+
+
   <div class="main-content">
     <div class="main-content-header">
       <h1>Employee List</h1>
     </div>
+
+    <?php if(isset($_SESSION['flash_success'])): ?>
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <?php 
+      echo $_SESSION['flash_success']; 
+      unset($_SESSION['flash_success']); 
+    ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<?php endif; ?>
+
+<?php if(isset($_SESSION['flash_error'])): ?>
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <?php 
+      echo $_SESSION['flash_error']; 
+      unset($_SESSION['flash_error']); 
+    ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<?php endif; ?>
 
     <div class="table-container">
       <div class="controls-bar">
@@ -727,6 +752,9 @@ if (isset($_POST['send_message'])) {
       }
     }
   </script>
+  <!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 
 

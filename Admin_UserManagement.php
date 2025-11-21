@@ -481,7 +481,7 @@ body { font-family: 'Poppins', sans-serif; margin:0; display:flex; background-co
               <label>Department</label>
               <select name="department" id="edit_department" class="form-select" required>
                 <option value="">-- Select Department --</option>
-                <option value="HR">HR</option>
+                <option value="Human Resources (HR) Department">Human Resources (HR) Department</option>
               </select>
             </div>
             <div class="col-12 col-md-4">
