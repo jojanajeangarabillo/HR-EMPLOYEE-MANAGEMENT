@@ -107,7 +107,22 @@ $menus = [
     "Logout" => "Login.php"
   ],
 
+  "HR Assistant" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Applicants" => "Manager_Applicants.php",
+    "Pending Applicants" => "Manager_PendingApplicants.php",
+    "Newly Hired" => "Newly-Hired.php",
+    "Employees" => "Manager_Employees.php",
+    "Logout" => "Login.php"
+  ],
 
+  "Training and Development Coordinator" => [
+    "Dashboard" => "Manager_Dashboard.php",
+    "Employees" => "Manager_Employees.php",
+    "Calendar" => "Manager_Calendar.php",
+    "Requests" => "Manager_Request.php",
+    "Logout" => "Login.php"
+  ]
 ];
 
 $role = $_SESSION['sub_role'] ?? "HR Manager";
@@ -487,7 +502,6 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
   }
 }
 
-//applicant info in modal
 
 ?>
 <!DOCTYPE html>
@@ -751,24 +765,11 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
       border-radius: 6px;
       cursor: pointer;
     }
-
-    .sidebar-profile-img {
-      width: 130px;
-      height: 130px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-bottom: 20px;
-      transition: transform 0.3s ease;
-    }
-
-    .sidebar-profile-img:hover {
-      transform: scale(1.05);
-    }
   </style>
 </head>
 
 <body>
-  <!-- Sidebar -->
+ <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-logo">
       <a href="Manager_Profile.php" class="profile">
@@ -786,6 +787,7 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
       <?php endforeach; ?>
     </ul>
   </div>
+
 
   <div class="main-content">
     <div class="main-content-header">
@@ -911,274 +913,278 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
           <div class="row mb-3">
             <div class="col-md-6">
               <p><strong>Education:</strong> <span id="applicantEducation"></span></p>
-              <p><strong>Employment Experience:</strong> <span id="applicantExperience"></span></p>
+              <p><strong>Experience:</strong> <span id="applicantExperience"></span></p>
             </div>
-
+            <div class="col-md-6">
+              <p><strong>Skills:</strong> <span id="applicantSkills"></span></p>
+              <p><strong>Summary:</strong> <span id="applicantSummary"></span></p>
+            </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
+  </div>
 
 
 
-    <!-- Hidden quick form is no longer submitted directly; kept for fallback -->
-    <form id="quickForm" method="post" style="display:none;">
-      <input type="hidden" name="applicantID" id="q_applicantID" value="">
-      <input type="hidden" name="new_status" id="q_new_status" value="">
-      <input type="hidden" name="send_email" id="q_send_email" value="0">
-      <input type="hidden" name="ajax" value="1">
-    </form>
+  <!-- Hidden quick form is no longer submitted directly; kept for fallback -->
+  <form id="quickForm" method="post" style="display:none;">
+    <input type="hidden" name="applicantID" id="q_applicantID" value="">
+    <input type="hidden" name="new_status" id="q_new_status" value="">
+    <input type="hidden" name="send_email" id="q_send_email" value="0">
+    <input type="hidden" name="ajax" value="1">
+  </form>
 
-    <!-- Modal (custom but used with AJAX) -->
-    <div id="scheduleModal" class="modal-custom" role="dialog" aria-hidden="true">
-      <div class="modal-content-custom" role="document">
-        <h3 id="modalTitle">Schedule / Details</h3>
-        <p id="modalSub">Fill in the details below and click <strong>Send Email</strong>.</p>
+  <!-- Modal (custom but used with AJAX) -->
+  <div id="scheduleModal" class="modal-custom" role="dialog" aria-hidden="true">
+    <div class="modal-content-custom" role="document">
+      <h3 id="modalTitle">Schedule / Details</h3>
+      <p id="modalSub">Fill in the details below and click <strong>Send Email</strong>.</p>
 
-        <form id="modalForm" method="post">
-          <input type="hidden" name="applicantID" id="m_applicantID" value="">
-          <input type="hidden" name="new_status" id="m_new_status" value="">
-          <input type="hidden" name="send_email" value="1">
-          <div class="modal-row">
-            <div class="col">
-              <label for="sched_date">Date</label>
-              <input type="date" id="sched_date" name="sched_date" required>
-            </div>
-            <div class="col">
-              <label for="sched_time">Time</label>
-              <input type="time" id="sched_time" name="sched_time" required>
-            </div>
+      <form id="modalForm" method="post">
+        <input type="hidden" name="applicantID" id="m_applicantID" value="">
+        <input type="hidden" name="new_status" id="m_new_status" value="">
+        <input type="hidden" name="send_email" value="1">
+        <div class="modal-row">
+          <div class="col">
+            <label for="sched_date">Date</label>
+            <input type="date" id="sched_date" name="sched_date" required>
           </div>
-
-          <div style="margin-bottom:10px;">
-            <label for="meet_person">Person to meet</label>
-            <input type="text" id="meet_person" name="meet_person" placeholder="Person / Interviewer name" required>
+          <div class="col">
+            <label for="sched_time">Time</label>
+            <input type="time" id="sched_time" name="sched_time" required>
           </div>
+        </div>
 
-          <div style="margin-bottom:10px;">
-            <label for="reminder_info">Reminder (optional)</label>
-            <input type="text" id="reminder_info" name="reminder_info" placeholder="E.g., 1 day before 9:00 AM">
-          </div>
+        <div style="margin-bottom:10px;">
+          <label for="meet_person">Person to meet</label>
+          <input type="text" id="meet_person" name="meet_person" placeholder="Person / Interviewer name" required>
+        </div>
 
-          <div style="margin-bottom:6px;">
-            <label for="extra_notes">Additional notes (optional)</label>
-            <textarea id="extra_notes" name="extra_notes" rows="3" placeholder="Notes for the applicant"></textarea>
-          </div>
+        <div style="margin-bottom:10px;">
+          <label for="reminder_info">Reminder (optional)</label>
+          <input type="text" id="reminder_info" name="reminder_info" placeholder="E.g., 1 day before 9:00 AM">
+        </div>
 
-          <div class="modal-actions">
-            <button type="button" class="cancel-btn" id="modalCancelBtn">Cancel</button>
-            <button type="submit" class="send-btn">Send Email & Update</button>
-          </div>
-        </form>
-      </div>
+        <div style="margin-bottom:6px;">
+          <label for="extra_notes">Additional notes (optional)</label>
+          <textarea id="extra_notes" name="extra_notes" rows="3" placeholder="Notes for the applicant"></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="cancel-btn" id="modalCancelBtn">Cancel</button>
+          <button type="submit" class="send-btn">Send Email & Update</button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <!-- Bootstrap JS (bundle incl. Popper) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity=""
-      crossorigin="anonymous"></script>
+  <!-- Bootstrap JS (bundle incl. Popper) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity=""
+    crossorigin="anonymous"></script>
 
-    <script>
-      // Utility: show bootstrap alert dynamically in flashWrap
-      function showAlert(message, type = 'success', autoClose = true) {
-        const wrap = document.getElementById('flashWrap');
-        if (!wrap) return;
-        const alertId = 'alert-' + Date.now();
-        const div = document.createElement('div');
-        div.className = `alert alert-${type} alert-dismissible fade show`;
-        div.role = 'alert';
-        div.id = alertId;
-        div.innerHTML = `${message}
+  <script>
+    // Utility: show bootstrap alert dynamically in flashWrap
+    function showAlert(message, type = 'success', autoClose = true) {
+      const wrap = document.getElementById('flashWrap');
+      if (!wrap) return;
+      const alertId = 'alert-' + Date.now();
+      const div = document.createElement('div');
+      div.className = `alert alert-${type} alert-dismissible fade show`;
+      div.role = 'alert';
+      div.id = alertId;
+      div.innerHTML = `${message}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
-        // Insert at top
-        wrap.prepend(div);
-        if (autoClose) {
-          setTimeout(() => {
-            const bsAlert = bootstrap.Alert.getOrCreateInstance(div);
-            bsAlert.close();
-          }, 6000);
-        }
+      // Insert at top
+      wrap.prepend(div);
+      if (autoClose) {
+        setTimeout(() => {
+          const bsAlert = bootstrap.Alert.getOrCreateInstance(div);
+          bsAlert.close();
+        }, 6000);
       }
+    }
 
-      // All client-side behavior - use fetch for AJAX
-      document.addEventListener('DOMContentLoaded', function () {
-        const selects = document.querySelectorAll('.status-select');
+    // All client-side behavior - use fetch for AJAX
+    document.addEventListener('DOMContentLoaded', function () {
+      const selects = document.querySelectorAll('.status-select');
 
-        selects.forEach(sel => {
-          sel.addEventListener('change', async function (e) {
-            const newStatus = this.value;
-            const appid = this.dataset.appid;
-            const fullname = this.dataset.fullname;
+      selects.forEach(sel => {
+        sel.addEventListener('change', async function (e) {
+          const newStatus = this.value;
+          const appid = this.dataset.appid;
+          const fullname = this.dataset.fullname;
 
-            if (newStatus === 'Hired') {
-              if (!confirm(`Are you sure you want to hire ${fullname}?`)) {
-                this.value = 'Pending';
-                return;
-              }
-
-
-              await updateStatus(appid, newStatus, true, sel);
-            } else if (newStatus === 'Rejected') {
-              if (!confirm(`Are you sure you want to reject ${fullname}?`)) {
-                this.value = 'Pending';
-                return;
-              }
-              const reason = prompt("Enter reason for rejection (optional):", "");
-              await updateStatus(appid, newStatus, true, sel, reason);
-            } else {
-              const needsModal = ['Initial Interview', 'Assessment', 'Final Interview', 'Requirements'];
-              if (needsModal.includes(newStatus)) {
-                openModalFor(appid, newStatus, fullname);
-              } else {
-                await updateStatus(appid, newStatus, false, sel);
-              }
+          if (newStatus === 'Hired') {
+            if (!confirm(`Are you sure you want to hire ${fullname}?`)) {
+              this.value = 'Pending';
+              return;
             }
-          });
-        });
 
-        // <-- Add the helper function below -->
-        async function updateStatus(appid, status, sendEmail, selectEl, reason = '') {
-          const payload = new URLSearchParams();
-          payload.append('applicantID', appid);
-          payload.append('new_status', status);
-          payload.append('send_email', sendEmail ? '1' : '0');
-          payload.append('ajax', '1');
-          if (reason) payload.append('reason', reason);
 
-          try {
-            const resp = await fetch(window.location.href, {
-              method: 'POST',
-              headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
-              body: payload.toString()
-            });
-            const data = await resp.json();
-            if (data.success) {
-              showAlert(data.message, 'success');
-              if (status === 'Hired' || status === 'Rejected') {
-                selectEl.disabled = true;
-                selectEl.value = status;
-              }
-            } else {
-              showAlert(data.message, 'danger');
+            await updateStatus(appid, newStatus, true, sel);
+          } else if (newStatus === 'Rejected') {
+            if (!confirm(`Are you sure you want to reject ${fullname}?`)) {
+              this.value = 'Pending';
+              return;
             }
-          } catch (err) {
-            showAlert('Network error. Try again.', 'danger');
-          }
-        }
-        // modal cancel
-        document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
-
-        // modal form submission: AJAX post
-        const modalForm = document.getElementById('modalForm');
-        modalForm.addEventListener('submit', async function (evt) {
-          evt.preventDefault();
-          const formData = new FormData(modalForm);
-          formData.append('ajax', '1');
-
-          // Convert FormData to x-www-form-urlencoded
-          const params = new URLSearchParams();
-          for (const pair of formData.entries()) params.append(pair[0], pair[1]);
-
-          try {
-            const resp = await fetch(window.location.href, {
-              method: 'POST',
-              headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/x-www-form-urlencoded'
-              },
-              body: params.toString()
-            });
-            const data = await resp.json();
-            if (data.success) {
-              showAlert(data.message || 'Email sent and status updated', 'success');
-              // Update the select DOM to the new value for that applicant
-              const appid = document.getElementById('m_applicantID').value;
-              const newStatus = document.getElementById('m_new_status').value;
-              const sel = document.querySelector('.status-select[data-appid="' + appid + '"]');
-              if (sel) sel.value = newStatus;
-              closeModal();
+            const reason = prompt("Enter reason for rejection (optional):", "");
+            await updateStatus(appid, newStatus, true, sel, reason);
+          } else {
+            const needsModal = ['Initial Interview', 'Assessment', 'Final Interview', 'Requirements'];
+            if (needsModal.includes(newStatus)) {
+              openModalFor(appid, newStatus, fullname);
             } else {
-              showAlert(data.message || 'Failed to send email / update', 'danger');
+              await updateStatus(appid, newStatus, false, sel);
             }
-          } catch (err) {
-            showAlert('Network error. Try again.', 'danger');
           }
         });
-
-        // keep search filter auto-submit
-        const statusFilter = document.getElementById('statusFilter');
-        const filterForm = document.getElementById('filterForm');
-        if (statusFilter && filterForm) {
-          statusFilter.addEventListener('change', () => filterForm.submit());
-        }
       });
 
-      function openModalFor(appid, status, fullname, email) {
-        document.getElementById('m_applicantID').value = appid;
-        document.getElementById('m_new_status').value = status;
-        const title = `You will invite ${fullname} for ${status}`;
-        document.getElementById('modalTitle').textContent = title;
-        document.getElementById('modalSub').textContent = 'Kindly set the date, time, person to meet, and reminders.';
-        document.getElementById('sched_date').value = '';
-        document.getElementById('sched_time').value = '';
-        document.getElementById('meet_person').value = '';
-        document.getElementById('reminder_info').value = '';
-        document.getElementById('extra_notes').value = '';
-        const modal = document.getElementById('scheduleModal');
-        modal.classList.add('active');
-        modal.setAttribute('aria-hidden', 'false');
-      }
+      // <-- Add the helper function below -->
+      async function updateStatus(appid, status, sendEmail, selectEl, reason = '') {
+        const payload = new URLSearchParams();
+        payload.append('applicantID', appid);
+        payload.append('new_status', status);
+        payload.append('send_email', sendEmail ? '1' : '0');
+        payload.append('ajax', '1');
+        if (reason) payload.append('reason', reason);
 
-      function closeModal() {
-        const modal = document.getElementById('scheduleModal');
-        modal.classList.remove('active');
-        modal.setAttribute('aria-hidden', 'true');
-      }
-
-      // Show applicant modal with Bootstrap
-      async function showApplicantDetails(applicantID) {
         try {
-          const resp = await fetch(`?action=getApplicantDetails&applicantID=${encodeURIComponent(applicantID)}`, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+          const resp = await fetch(window.location.href, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: payload.toString()
           });
           const data = await resp.json();
-          if (!data.success) return alert(data.message || 'Applicant not found');
-
-          const d = data.data;
-          document.getElementById('applicantModalTitle').textContent = d.fullName;
-          document.getElementById('applicantPic').src = d.profile_pic || 'uploads/applicants/default.png';
-          document.getElementById('applicantName').textContent = d.fullName;
-          document.getElementById('applicantEmail').textContent = d.email_address;
-          document.getElementById('applicantContact').textContent = d.contact_number || '-';
-          document.getElementById('applicantPosition').textContent = d.job_title || d.position_applied || '-';
-          document.getElementById('applicantDepartment').textContent = d.department_name || '-';
-          document.getElementById('applicantDateApplied').textContent = d.date_applied || '-';
-          document.getElementById('applicantEducation').textContent = `${d.university || '-'} (${d.course || '-'}, Graduated: ${d.year_graduated || '-'})`;
-          document.getElementById('applicantExperience').innerHTML =
-            `${d.years_experience || 0} years<br>Previous Company: ${d.company_name || '-'}`;
-
-
-          const modal = new bootstrap.Modal(document.getElementById('applicantModal'));
-          modal.show();
+          if (data.success) {
+            showAlert(data.message, 'success');
+            if (status === 'Hired' || status === 'Rejected') {
+              selectEl.disabled = true;
+              selectEl.value = status;
+            }
+          } else {
+            showAlert(data.message, 'danger');
+          }
         } catch (err) {
-          alert('Network error. Try again.');
+          showAlert('Network error. Try again.', 'danger');
         }
       }
+      // modal cancel
+      document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
 
-      // Attach click handler for all view buttons
-      document.querySelectorAll('.view-btn').forEach(btn => {
-        btn.addEventListener('click', () => showApplicantDetails(btn.dataset.appid));
+      // modal form submission: AJAX post
+      const modalForm = document.getElementById('modalForm');
+      modalForm.addEventListener('submit', async function (evt) {
+        evt.preventDefault();
+        const formData = new FormData(modalForm);
+        formData.append('ajax', '1');
+
+        // Convert FormData to x-www-form-urlencoded
+        const params = new URLSearchParams();
+        for (const pair of formData.entries()) params.append(pair[0], pair[1]);
+
+        try {
+          const resp = await fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: params.toString()
+          });
+          const data = await resp.json();
+          if (data.success) {
+            showAlert(data.message || 'Email sent and status updated', 'success');
+            // Update the select DOM to the new value for that applicant
+            const appid = document.getElementById('m_applicantID').value;
+            const newStatus = document.getElementById('m_new_status').value;
+            const sel = document.querySelector('.status-select[data-appid="' + appid + '"]');
+            if (sel) sel.value = newStatus;
+            closeModal();
+          } else {
+            showAlert(data.message || 'Failed to send email / update', 'danger');
+          }
+        } catch (err) {
+          showAlert('Network error. Try again.', 'danger');
+        }
       });
 
-      function closeApplicantModal() {
-        const modal = document.getElementById('applicantModal');
-        modal.classList.remove('active');
-        modal.setAttribute('aria-hidden', 'true');
+      // keep search filter auto-submit
+      const statusFilter = document.getElementById('statusFilter');
+      const filterForm = document.getElementById('filterForm');
+      if (statusFilter && filterForm) {
+        statusFilter.addEventListener('change', () => filterForm.submit());
       }
+    });
 
-    </script>
+    function openModalFor(appid, status, fullname, email) {
+      document.getElementById('m_applicantID').value = appid;
+      document.getElementById('m_new_status').value = status;
+      const title = `You will invite ${fullname} for ${status}`;
+      document.getElementById('modalTitle').textContent = title;
+      document.getElementById('modalSub').textContent = 'Kindly set the date, time, person to meet, and reminders.';
+      document.getElementById('sched_date').value = '';
+      document.getElementById('sched_time').value = '';
+      document.getElementById('meet_person').value = '';
+      document.getElementById('reminder_info').value = '';
+      document.getElementById('extra_notes').value = '';
+      const modal = document.getElementById('scheduleModal');
+      modal.classList.add('active');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('scheduleModal');
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    // Show applicant modal with Bootstrap
+    async function showApplicantDetails(applicantID) {
+      try {
+        const resp = await fetch(`?action=getApplicantDetails&applicantID=${encodeURIComponent(applicantID)}`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const data = await resp.json();
+        if (!data.success) return alert(data.message || 'Applicant not found');
+
+        const d = data.data;
+        document.getElementById('applicantModalTitle').textContent = d.fullName;
+        document.getElementById('applicantPic').src = d.profile_pic || 'Images/default-profile.png';
+        document.getElementById('applicantName').textContent = d.fullName;
+        document.getElementById('applicantEmail').textContent = d.email_address;
+        document.getElementById('applicantContact').textContent = d.contact_number || '-';
+        document.getElementById('applicantPosition').textContent =  d.applied_job_title || '-';
+        document.getElementById('applicantDepartment').textContent = d.department_name || '-';
+        document.getElementById('applicantDateApplied').textContent = d.date_applied || '-';
+        document.getElementById('applicantEducation').textContent = `${d.university || '-'} (${d.course || '-'}, Graduated: ${d.year_graduated || '-'})`;
+        document.getElementById('applicantExperience').textContent = `${d.years_experience || 0} years`;
+        document.getElementById('applicantSkills').textContent = d.skills || '-';
+        document.getElementById('applicantSummary').textContent = d.summary || '-';
+
+        const modal = new bootstrap.Modal(document.getElementById('applicantModal'));
+        modal.show();
+      } catch (err) {
+        alert('Network error. Try again.');
+      }
+    }
+
+    // Attach click handler for all view buttons
+    document.querySelectorAll('.view-btn').forEach(btn => {
+      btn.addEventListener('click', () => showApplicantDetails(btn.dataset.appid));
+    });
+
+    function closeApplicantModal() {
+      const modal = document.getElementById('applicantModal');
+      modal.classList.remove('active');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+  </script>
 </body>
 
 </html>

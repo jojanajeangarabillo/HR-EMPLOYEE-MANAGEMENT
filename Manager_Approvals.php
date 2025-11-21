@@ -85,12 +85,12 @@ if (isset($_GET['action'], $_GET['id'])) {
   $status = ($action === 'accept') ? 'Approved' : (($action === 'reject') ? 'Rejected' : null);
 
   if ($status) {
-    $stmt = $conn->prepare("UPDATE employee_request SET status = ? WHERE request_id = ?");
-    $stmt->bind_param("si", $status, $request_id);
-    $stmt->execute();
-    $stmt->close();
-  }
-
+    // Update status and action_by
+        $stmt = $conn->prepare("UPDATE employee_request SET status = ?, action_by = ? WHERE request_id = ?");
+        $stmt->bind_param("ssi", $status, $action_by, $request_id);
+        $stmt->execute();
+        $stmt->close();
+    }
   // Redirect to prevent resubmission
   header("Location: Manager_Approvals.php");
   exit;

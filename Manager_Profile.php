@@ -59,7 +59,7 @@ if (isset($_POST['update_personal'])) {
         $employeeID
     );
     $stmt->execute();
-    header("Location: Employee_Profile.php");
+    header("Location:Manager_Profile.php");
     exit();
 }
 
@@ -79,7 +79,7 @@ if (isset($_POST['update_gov'])) {
         $employeeID
     );
     $stmt->execute();
-    header("Location: Employee_Profile.php");
+    header("Location: Manager_Profile.php");
     exit();
 }
 
@@ -118,7 +118,7 @@ if (isset($_POST['upload'])) {
         $_SESSION['flash_error'] = 'No file selected or upload error.';
     }
 
-    header("Location: Employee_Profile.php");
+    header("Location: Manager_Profile.php");
     exit();
 }
 
@@ -584,7 +584,7 @@ $employeename = $employee['fullname'];
     <div class="modal fade" id="personalInfoModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form action="Employee_Profile.php" method="post">
+                <form action="Manager_Profile.php" method="post">
                     <div class="modal-header">
                         <h5 class="modal-title">Edit Personal Information</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -629,7 +629,7 @@ $employeename = $employee['fullname'];
     <div class="modal fade" id="govIdModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form action="Employee_Profile.php" method="post">
+                <form action="Manager_Profile.php" method="post">
                     <div class="modal-header">
                         <h5 class="modal-title">Edit Government IDs</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
