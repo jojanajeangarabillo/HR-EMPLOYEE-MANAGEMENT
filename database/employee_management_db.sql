@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 20, 2025 at 03:32 PM
+-- Generation Time: Nov 21, 2025 at 04:48 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -244,7 +244,8 @@ CREATE TABLE `employee_request` (
 --
 
 INSERT INTO `employee_request` (`request_id`, `empID`, `fullname`, `department`, `position`, `type_name`, `email_address`, `e_signature`, `request_type_id`, `request_type_name`, `reason`, `status`, `action_by`, `requested_at`, `leave_type_id`, `leave_type_name`) VALUES
-(26, 'EMP-008', 'Joepat Lacerna', 'Gynecology Department', 'Consultant Gynecologist', 'Full Time', 'opat09252005@gmail.com', '', 1, 'Leave', 'SASASA', 'Pending', NULL, '2025-11-20 16:06:45', 2, 'Vacation Leave');
+(26, 'EMP-008', 'Joepat Lacerna', 'Gynecology Department', 'Consultant Gynecologist', 'Full Time', 'opat09252005@gmail.com', '', 1, 'Leave', 'SASASA', 'Rejected', NULL, '2025-11-20 16:06:45', 2, 'Vacation Leave'),
+(27, 'EMP-001', 'Rhoanne Nicole Antonio', 'Human Resources (HR) Department', 'HR Manager', 'Full Time', 'antonio_rhoannenicole@plpasig.edu.ph', 'uploads/signatures/1763735692_85a8de63-2a68-46e6-b899-2eeb29145031.jfif', 1, 'Leave', 'lasdmwasdwmasd', 'Pending', NULL, '2025-11-21 22:34:52', 1, 'Sick Leave');
 
 -- --------------------------------------------------------
 
@@ -640,11 +641,35 @@ INSERT INTO `vacancies` (`id`, `department_id`, `position_id`, `employment_type_
 (42, 8, 66, 1, 1, 'Positions Filled', '', '2025-11-10 12:04:51'),
 (43, 1, 2, 4, 1, 'On-Going', '', '2025-11-10 12:32:38'),
 (44, 2, 9, 4, 1, 'On-Going', '', '2025-11-10 12:34:52'),
-(45, 1, 1, 4, 1, 'On-Going', '', '2025-11-10 13:44:28'),
 (46, 2, 9, 4, 1, 'On-Going', '', '2025-11-10 13:55:14'),
-(47, 2, 12, 5, 1, 'On-Going', '', '2025-11-10 13:56:40'),
-(48, 9, 73, 1, 1, 'On-Going', '', '2025-11-10 14:04:01'),
-(49, 1, 1, 1, 2, 'On-Going', 'Rhoanne Nicole Antonio', '2025-11-20 14:22:20');
+(49, 1, 1, 1, 2, 'On-Going', 'Rhoanne Nicole Antonio', '2025-11-20 14:22:20'),
+(50, 9, 77, 5, 5, 'To Post', 'Jane Garabillo', '2025-11-21 15:32:32');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `vacancies_archive`
+--
+
+CREATE TABLE `vacancies_archive` (
+  `id` int(11) NOT NULL,
+  `department_id` int(11) NOT NULL,
+  `position_id` int(11) NOT NULL,
+  `employement_type_id` int(11) NOT NULL,
+  `vacancy_count` int(11) NOT NULL,
+  `status` varchar(255) NOT NULL,
+  `posted_by` varchar(255) NOT NULL,
+  `archived_at` date NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `vacancies_archive`
+--
+
+INSERT INTO `vacancies_archive` (`id`, `department_id`, `position_id`, `employement_type_id`, `vacancy_count`, `status`, `posted_by`, `archived_at`) VALUES
+(1, 9, 73, 1, 1, 'On-Going', '', '2025-11-21'),
+(2, 2, 12, 5, 1, 'On-Going', '', '2025-11-21'),
+(3, 1, 1, 4, 1, 'On-Going', '', '2025-11-21');
 
 --
 -- Indexes for dumped tables
@@ -791,6 +816,15 @@ ALTER TABLE `vacancies`
   ADD KEY `fk_vacancies_employment_type` (`employment_type_id`);
 
 --
+-- Indexes for table `vacancies_archive`
+--
+ALTER TABLE `vacancies_archive`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `deptID` (`department_id`),
+  ADD KEY `positionID` (`position_id`),
+  ADD KEY `emtypeID` (`employement_type_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -828,7 +862,7 @@ ALTER TABLE `department`
 -- AUTO_INCREMENT for table `employee_request`
 --
 ALTER TABLE `employee_request`
-  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `employment_type`
@@ -888,7 +922,13 @@ ALTER TABLE `types_of_requests`
 -- AUTO_INCREMENT for table `vacancies`
 --
 ALTER TABLE `vacancies`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
+
+--
+-- AUTO_INCREMENT for table `vacancies_archive`
+--
+ALTER TABLE `vacancies_archive`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables

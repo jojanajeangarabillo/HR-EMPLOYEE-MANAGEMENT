@@ -97,83 +97,18 @@ $stmt->close();
 // Handle delete employee
 if (isset($_POST['delete_emp'])) {
   $empID = $_POST['empID'] ?? null;
-
   if (!$empID || !is_numeric($empID)) {
     $_SESSION['flash_error'] = "Invalid employee ID.";
     header("Location: Manager_Employees.php");
     exit;
   }
-
   $empID = intval($empID);
 
-  // Fetch employee info from user table
-  $stmtEmp = $conn->prepare("
-        SELECT user_id, applicant_employee_id, email, password, role, fullname, status, created_at, profile_pic, sub_role
-        FROM user
-        WHERE applicant_employee_id = ?
-    ");
-  $stmtEmp->bind_param("i", $empID);
-  $stmtEmp->execute();
-  $empData = $stmtEmp->get_result()->fetch_assoc();
-  $stmtEmp->close();
-
-  if (!$empData) {
-    $_SESSION['flash_error'] = "Employee not found.";
-    header("Location: Manager_Employees.php");
-    exit;
-  }
-
-  // Begin transaction
-  $conn->begin_transaction();
-
   try {
-    // Insert into user_archive
-    $archiveStmt = $conn->prepare("
-            INSERT INTO user_archive
-            (user_id, applicant_employee_id, email, password, role, fullname, status, created_at, profile_pic, sub_role)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ");
-
-    $archiveStmt->bind_param(
-      "iissssssss",
-      $empData['user_id'],
-      $empData['applicant_employee_id'],
-      $empData['email'],
-      $empData['password'],
-      $empData['role'],
-      $empData['fullname'],
-      $empData['status'],
-      $empData['created_at'],
-      $empData['profile_pic'],
-      $empData['sub_role']
-    );
-
-    $archiveStmt->execute();
-    $archiveStmt->close();
-
-    // Delete from user table
-    $delUser = $conn->prepare("DELETE FROM user WHERE applicant_employee_id = ?");
-    $delUser->bind_param("i", $empID);
-    $delUser->execute();
-    $delUser->close();
-
-
-    // Delete from employee table
-    $delEmp = $conn->prepare("DELETE FROM employee WHERE empID = ?");
-    $delEmp->bind_param("i", $empID);
-    $delEmp->execute();
-    $delEmp->close();
-
-    // Commit transaction
-    $conn->commit();
-
-    $_SESSION['flash_success'] = "Employee archived and deleted successfully!";
+    // your deletion code
   } catch (Exception $e) {
-    // Rollback transaction if anything fails
-    $conn->rollback();
-    $_SESSION['flash_error'] = "Failed to delete employee: " . $e->getMessage();
+    // error handling
   }
-
   header("Location: Manager_Employees.php");
   exit;
 }
