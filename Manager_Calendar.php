@@ -61,6 +61,20 @@ $menus = [
 
 $role = $_SESSION['sub_role'] ?? "HR Manager";
 
+$requests = [];
+$stmt = $conn->prepare("SELECT r.request_id, e.empID, e.fullname, e.department, r.request_type_name, r.status, r.reason, r.requested_at 
+                        FROM employee_request r
+                        JOIN employee e ON r.empID = e.empID
+                        LEFT JOIN department d ON e.department = d.deptID
+                        ORDER BY r.requested_at DESC");
+$stmt->execute();
+$res = $stmt->get_result();
+while ($row = $res->fetch_assoc()) {
+  $requests[] = $row;
+}
+$stmt->close();
+
+
 ?>
 
 
@@ -180,33 +194,25 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <td>001</td>
-          <td>Jojana Garabillo</td>
-          <td>Gynecology</td>
-          <td>Leave</td>
-          <td>Vacation</td>
-          <td>10/18/2025–10/25/2025</td>
-          <td>Approved</td>
-        </tr>
-        <tr>
-          <td>002</td>
-          <td>Jhanna Jaroda</td>
-          <td>Nursing</td>
-          <td>Leave</td>
-          <td>Sick</td>
-          <td>11/18/2025–11/25/2025</td>
-          <td>Approved</td>
-        </tr>
-        <tr>
-          <td>003</td>
-          <td>Angela Sison</td>
-          <td>IT</td>
-          <td>Leave</td>
-          <td>Vacation</td>
-          <td>09/02/2025–09/04/2025</td>
-          <td>Rejected</td>
-        </tr>
+        <?php foreach ($requests as $req): ?>
+          <tr>
+            <td><?= htmlspecialchars($req['empID']) ?></td>
+            <td><?= htmlspecialchars($req['fullname']) ?></td>
+            <td><?= htmlspecialchars($req['department'] ?? 'N/A') ?></td>
+            <td><?= htmlspecialchars($req['request_type_name']) ?></td>
+            <td><?= htmlspecialchars($req['reason']) ?></td>
+            <td><?= date('Y-m-d', strtotime($req['requested_at'])) ?></td>
+            <td class="action-icons">
+              <?php if ($req['status'] === 'Approved'): ?>
+                <span style="color:green;font-weight:bold;">Approved</span>
+              <?php elseif ($req['status'] === 'Rejected'): ?>
+                <span style="color:red;font-weight:bold;">Rejected</span>
+              <?php else: ?>
+                <span style="color:orange;font-weight:bold;">Pending</span>
+              <?php endif; ?>
+            </td>
+          </tr>
+        <?php endforeach; ?>
       </tbody>
     </table>
   </div>

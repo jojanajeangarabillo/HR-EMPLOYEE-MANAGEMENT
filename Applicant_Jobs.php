@@ -8,7 +8,7 @@ require 'admin/db.connect.php';
 $applicantID = $_SESSION['applicant_employee_id'] ?? null;
 
 if (!$applicantID) {
-    die("Applicant ID not found in session.");
+  die("Applicant ID not found in session.");
 }
 
 // -------------------------------
@@ -20,14 +20,14 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
-    $applicantname = $row['fullName'];
-    $profile_picture = !empty($row['profile_pic'])
-        ? "uploads/applicants/" . $row['profile_pic']
-        : "uploads/employees/default.png";
+  $row = $result->fetch_assoc();
+  $applicantname = $row['fullName'];
+  $profile_picture = !empty($row['profile_pic'])
+    ? "uploads/applicants/" . $row['profile_pic']
+    : "uploads/employees/default.png";
 } else {
-    $applicantname = "Applicant";
-    $profile_picture = "uploads/employees/default.png";
+  $applicantname = "Applicant";
+  $profile_picture = "uploads/employees/default.png";
 }
 
 // Handle AJAX apply request
@@ -92,35 +92,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_apply_job'])) {
 
 
   // Fetch department name
-$department_name = '';
-if ($dept_id) {
+  $department_name = '';
+  if ($dept_id) {
     $stmt = $conn->prepare("SELECT deptName FROM department WHERE deptID=? LIMIT 1");
     $stmt->bind_param('i', $dept_id);
     $stmt->execute();
     $department_name = $stmt->get_result()->fetch_assoc()['deptName'] ?? '';
     $stmt->close();
-}
+  }
 
-// Fetch employment type name from job_posting + employment_type
-$stmt = $conn->prepare("
+  // Fetch employment type name from job_posting + employment_type
+  $stmt = $conn->prepare("
     SELECT et.typeName 
     FROM job_posting jp
     LEFT JOIN employment_type et ON jp.employment_type = et.emtypeID
     WHERE jp.jobID = ? 
     LIMIT 1
 ");
-$stmt->bind_param('i', $job_id);
-$stmt->execute();
-$applicant_type = $stmt->get_result()->fetch_assoc()['typeName'] ?? '';
-$stmt->close();
+  $stmt->bind_param('i', $job_id);
+  $stmt->execute();
+  $applicant_type = $stmt->get_result()->fetch_assoc()['typeName'] ?? '';
+  $stmt->close();
 
 
 
 
   // ✅ Immediate course match check and insert
   if (strcasecmp(trim($applicant_course), trim($required_level)) === 0) {
-     $app_status = 'Pending';
-    
+    $app_status = 'Pending';
+
 
     try {
       $conn->begin_transaction();
@@ -230,49 +230,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['apply_job'])) {
   $applicant_exp = (int) ($app_data->get_result()->fetch_assoc()['years_experience'] ?? 0);
   $app_data->close();
 
- // Fetch job info including title
-$job_data = $conn->prepare("SELECT job_title, experience_years FROM job_posting WHERE jobID = ? LIMIT 1");
-$job_data->bind_param('i', $job_id);
-$job_data->execute();
-$job_info = $job_data->get_result()->fetch_assoc();
-$job_data->close();
+  // Fetch job info including title
+  $job_data = $conn->prepare("SELECT job_title, experience_years FROM job_posting WHERE jobID = ? LIMIT 1");
+  $job_data->bind_param('i', $job_id);
+  $job_data->execute();
+  $job_info = $job_data->get_result()->fetch_assoc();
+  $job_data->close();
 
-$job_title = $job_info['job_title'] ?? 'this job';
-$required_exp = (int) ($job_info['experience_years'] ?? 0);
+  $job_title = $job_info['job_title'] ?? 'this job';
+  $required_exp = (int) ($job_info['experience_years'] ?? 0);
 
-$app_status = ($applicant_exp >= $required_exp) ? 'Pending' : 'Rejected';
+  $app_status = ($applicant_exp >= $required_exp) ? 'Pending' : 'Rejected';
 
-// Fetch job info
-$job_data = $conn->prepare("SELECT job_title, department FROM job_posting WHERE jobID = ? LIMIT 1");
-$job_data->bind_param('i', $job_id);
-$job_data->execute();
-$job_info = $job_data->get_result()->fetch_assoc();
-$job_data->close();
+  // Fetch job info
+  $job_data = $conn->prepare("SELECT job_title, department FROM job_posting WHERE jobID = ? LIMIT 1");
+  $job_data->bind_param('i', $job_id);
+  $job_data->execute();
+  $job_info = $job_data->get_result()->fetch_assoc();
+  $job_data->close();
 
-$job_title = $job_info['job_title'] ?? 'this job';
-$dept_id = $job_info['department'] ?? null;
-$department_name = '';
+  $job_title = $job_info['job_title'] ?? 'this job';
+  $dept_id = $job_info['department'] ?? null;
+  $department_name = '';
 
-if ($dept_id) {
+  if ($dept_id) {
     $stmt = $conn->prepare("SELECT deptName FROM department WHERE deptID = ? LIMIT 1");
     $stmt->bind_param('i', $dept_id);
     $stmt->execute();
     $department_name = $stmt->get_result()->fetch_assoc()['deptName'] ?? '';
     $stmt->close();
-}
+  }
 
-// Insert into applications
-$insert = $conn->prepare("
+  // Insert into applications
+  $insert = $conn->prepare("
     INSERT INTO applications (applicantID, jobID, job_title, department_name, type_name, status) 
     VALUES (?, ?, ?, ?, ?,?)
 ");
-$insert->bind_param('sissss', $applicantID, $job_id, $job_title, $department_name, $applicant_type, $app_status);
-$success = $insert->execute();
-$insert->close();
+  $insert->bind_param('sissss', $applicantID, $job_id, $job_title, $department_name, $applicant_type, $app_status);
+  $success = $insert->execute();
+  $insert->close();
 
-if (!$success) {
+  if (!$success) {
     $_SESSION['flash_error'] = 'Failed to submit application.';
-}
+  }
 }
 
 $all_statuses = $applications + $rejected_jobs;
@@ -289,11 +289,11 @@ $job_title = $job_info['job_title'] ?? 'this job';
 $dept_id = $job_info['department'] ?? null;
 $department_name = '';
 if ($dept_id) {
-    $stmt = $conn->prepare("SELECT deptName FROM department WHERE deptID = ? LIMIT 1");
-    $stmt->bind_param('i', $dept_id);
-    $stmt->execute();
-    $department_name = $stmt->get_result()->fetch_assoc()['deptName'] ?? '';
-    $stmt->close();
+  $stmt = $conn->prepare("SELECT deptName FROM department WHERE deptID = ? LIMIT 1");
+  $stmt->bind_param('i', $dept_id);
+  $stmt->execute();
+  $department_name = $stmt->get_result()->fetch_assoc()['deptName'] ?? '';
+  $stmt->close();
 }
 
 
@@ -339,38 +339,38 @@ $job_sql_base = "
 ";
 
 if ($search !== '') {
-    $job_sql = $job_sql_base . " WHERE (jp.job_title LIKE ? OR jp.job_description LIKE ? OR d.deptName LIKE ?) ORDER BY jp.date_posted DESC";
-    $job_stmt = $conn->prepare($job_sql);
-    $like = "%{$search}%";
-    $job_stmt->bind_param('sss', $like, $like, $like);
+  $job_sql = $job_sql_base . " WHERE (jp.job_title LIKE ? OR jp.job_description LIKE ? OR d.deptName LIKE ?) ORDER BY jp.date_posted DESC";
+  $job_stmt = $conn->prepare($job_sql);
+  $like = "%{$search}%";
+  $job_stmt->bind_param('sss', $like, $like, $like);
 } else {
-    $job_sql = $job_sql_base . " ORDER BY jp.date_posted DESC";
-    $job_stmt = $conn->prepare($job_sql);
+  $job_sql = $job_sql_base . " ORDER BY jp.date_posted DESC";
+  $job_stmt = $conn->prepare($job_sql);
 }
 
 $jobs = [];
 if ($job_stmt) {
-    $job_stmt->execute();
-    $jobs = $job_stmt->get_result()->fetch_all(MYSQLI_ASSOC); // ✅ Now closing_date is included
-    $job_stmt->close();
+  $job_stmt->execute();
+  $jobs = $job_stmt->get_result()->fetch_all(MYSQLI_ASSOC); // ✅ Now closing_date is included
+  $job_stmt->close();
 }
 
 $today = date('Y-m-d'); // current date
 
 if ($search !== '') {
-    $job_sql = $job_sql_base . " 
+  $job_sql = $job_sql_base . " 
         WHERE (jp.job_title LIKE ? OR jp.job_description LIKE ? OR d.deptName LIKE ?)
         AND (jp.closing_date IS NULL OR jp.closing_date >= ?)
         ORDER BY jp.date_posted DESC";
-    $job_stmt = $conn->prepare($job_sql);
-    $like = "%{$search}%";
-    $job_stmt->bind_param('ssss', $like, $like, $like, $today);
+  $job_stmt = $conn->prepare($job_sql);
+  $like = "%{$search}%";
+  $job_stmt->bind_param('ssss', $like, $like, $like, $today);
 } else {
-    $job_sql = $job_sql_base . " 
+  $job_sql = $job_sql_base . " 
         WHERE jp.closing_date IS NULL OR jp.closing_date >= ?
         ORDER BY jp.date_posted DESC";
-    $job_stmt = $conn->prepare($job_sql);
-    $job_stmt->bind_param('s', $today);
+  $job_stmt = $conn->prepare($job_sql);
+  $job_stmt->bind_param('s', $today);
 }
 
 
@@ -444,8 +444,9 @@ if ($search !== '') {
 <body>
   <div class="sidebar">
     <a href="Applicant_Profile.php" class="profile">
-    <img src="<?php echo !empty($profile_picture) ? htmlspecialchars($profile_picture) : 'uploads/employees/default.png'; ?>" 
-     alt="Profile" class="sidebar-profile-img">
+      <img
+        src="<?php echo !empty($profile_picture) ? htmlspecialchars($profile_picture) : 'uploads/employees/default.png'; ?>"
+        alt="Profile" class="sidebar-profile-img">
     </a>
     <div class="sidebar-name">
       <p><?= "Welcome, $applicantname" ?></p>

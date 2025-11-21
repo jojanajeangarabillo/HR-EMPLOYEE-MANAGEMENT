@@ -60,6 +60,38 @@ $menus = [
 
 $role = $_SESSION['sub_role'] ?? "HR Manager";
 
+// --- Handle Approve/Reject Actions ---
+if (isset($_GET['action'], $_GET['id'])) {
+  $request_id = intval($_GET['id']);
+  $action = $_GET['action'];
+
+  $status = ($action === 'accept') ? 'Approved' : (($action === 'reject') ? 'Rejected' : null);
+
+  if ($status) {
+    $stmt = $conn->prepare("UPDATE employee_request SET status = ? WHERE request_id = ?");
+    $stmt->bind_param("si", $status, $request_id);
+    $stmt->execute();
+    $stmt->close();
+  }
+
+  // Redirect to prevent resubmission
+  header("Location: Manager_Approvals.php");
+  exit;
+}
+
+$requests = [];
+$stmt = $conn->prepare("SELECT r.request_id, e.empID, e.fullname, e.department, r.request_type_name, r.status, r.reason, r.requested_at 
+                        FROM employee_request r
+                        JOIN employee e ON r.empID = e.empID
+                        LEFT JOIN department d ON e.department = d.deptID
+                        ORDER BY r.requested_at DESC");
+$stmt->execute();
+$res = $stmt->get_result();
+while ($row = $res->fetch_assoc()) {
+  $requests[] = $row;
+}
+$stmt->close();
+
 ?>
 
 
@@ -274,30 +306,34 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
             </tr>
           </thead>
           <tbody id="employeeTable">
-            <tr>
-              <td>EMP001</td>
-              <td>Juan Dela Cruz</td>
-              <td>HR</td>
-              <td>Leave</td>
-              <td>Vacation</td>
-              <td>2025-10-28</td>
-              <td class="action-icons">
-                <a href="#" class="accept"><i class="fa-solid fa-check"></i></a>
-                <a href="#" class="reject"><i class="fa-solid fa-xmark"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td>EMP002</td>
-              <td>Maria Santos</td>
-              <td>Finance</td>
-              <td>Resignation</td>
-              <td>Personal Reasons</td>
-              <td>2025-10-20</td>
-              <td class="action-icons">
-                <a href="#" class="accept"><i class="fa-solid fa-check"></i></a>
-                <a href="#" class="reject"><i class="fa-solid fa-xmark"></i></a>
-              </td>
-            </tr>
+            <?php if (!empty($requests)): ?>
+              <?php foreach ($requests as $req): ?>
+                <tr>
+                  <td><?= htmlspecialchars($req['empID']) ?></td>
+                  <td><?= htmlspecialchars($req['fullname']) ?></td>
+                  <td><?= htmlspecialchars($req['department'] ?? 'N/A') ?></td>
+                  <td><?= htmlspecialchars($req['request_type_name']) ?></td>
+                  <td><?= htmlspecialchars($req['reason']) ?></td>
+                  <td><?= date('Y-m-d', strtotime($req['requested_at'])) ?></td>
+                  <td class="action-icons">
+                    <?php if ($req['status'] === 'Approved'): ?>
+                      <span style="color:green;font-weight:bold;">Approved</span>
+                    <?php elseif ($req['status'] === 'Rejected'): ?>
+                      <span style="color:red;font-weight:bold;">Rejected</span>
+                    <?php else: ?>
+                      <a href="?id=<?= $req['request_id'] ?>&action=accept" class="accept"><i
+                          class="fa-solid fa-check"></i></a>
+                      <a href="?id=<?= $req['request_id'] ?>&action=reject" class="reject"><i
+                          class="fa-solid fa-xmark"></i></a>
+                    <?php endif; ?>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            <?php else: ?>
+              <tr>
+                <td colspan="7">No requests found.</td>
+              </tr>
+            <?php endif; ?>
           </tbody>
         </table>
       </div>

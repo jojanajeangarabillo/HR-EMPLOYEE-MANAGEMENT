@@ -9,7 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['new_post'])) {
     $expected_salary = trim($_POST['expected_salary'] ?? '');
     $experience_years = intval($_POST['experience_years'] ?? 0);
     $job_description = trim($_POST['job_description'] ?? '');
-    $vacancies = intval($vacRow['vacancy_count']);
+
     $closing_date = $_POST['closing_date'] ?? null;
     $skills = trim($_POST['skills'] ?? '');
     $vacancy_id = intval($_POST['vacancy_id'] ?? 0);
@@ -17,19 +17,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['new_post'])) {
 
     // Lookup department_id and employment_type_id
     $department_id = $employment_type_id = null;
-    $vacancyStmt = $conn->prepare("
-    SELECT department_id, employment_type_id, vacancy_count 
-    FROM vacancies WHERE id=? LIMIT 1
-");
+    $vacancyStmt = $conn->prepare("SELECT department_id, employment_type_id, vacancy_count 
+                               FROM vacancies WHERE id=? LIMIT 1");
+
     $vacancyStmt->bind_param("i", $vacancy_id);
     $vacancyStmt->execute();
     $vacRes = $vacancyStmt->get_result();
-
     if ($vacRes && $vacRes->num_rows > 0) {
         $vacRow = $vacRes->fetch_assoc();
         $department_id = intval($vacRow['department_id']);
         $employment_type_id = intval($vacRow['employment_type_id']);
-        $vacancies = intval($vacRow['vacancy_count']);  // <-- This is the correct vacancy value
+        $vacancies = intval($vacRow['vacancy_count']);
     } else {
         echo "<script>alert('Invalid vacancy selected.'); window.location.href='Manager-JobPosting.php';</script>";
         exit;
@@ -92,25 +90,53 @@ if ($res && $res->num_rows > 0) {
         $recentJobs[] = $row;
 }
 
-$today = date('Y-m-d'); // current date
+$today = date('Y-m-d');
 
 $recentQuery = "
-SELECT j.*, d.deptName, et.typeName AS employment_type
+SELECT 
+    j.jobID,
+    j.job_title,
+    j.vacancies AS original_vacancies,
+    d.deptName,
+    et.typeName AS employment_type,
+    j.date_posted,
+    j.closing_date,
+
+    -- count hired
+    (
+        SELECT COUNT(*) 
+        FROM applications a
+        WHERE a.jobID = j.jobID
+        AND a.status = 'Hired'
+    ) AS hired_count,
+
+    -- compute remaining vacancies
+    (
+        j.vacancies - (
+            SELECT COUNT(*) 
+            FROM applications a
+            WHERE a.jobID = j.jobID
+            AND a.status = 'Hired'
+        )
+    ) AS remaining_vacancies
+
 FROM job_posting j
 JOIN department d ON j.department=d.deptID
 JOIN employment_type et ON j.employment_type=et.emtypeID
-WHERE j.closing_date IS NULL OR j.closing_date >= ?
+WHERE j.closing_date IS NULL OR j.closing_date >= '$today'
 ORDER BY j.date_posted DESC
 ";
 
-$stmt = $conn->prepare($recentQuery);
-$stmt->bind_param('s', $today);
-$stmt->execute();
-$res = $stmt->get_result();
+$res = $conn->query($recentQuery);
 $recentJobs = [];
-while ($row = $res->fetch_assoc())
-    $recentJobs[] = $row;
-$stmt->close();
+
+if ($res && $res->num_rows > 0) {
+    while ($row = $res->fetch_assoc()) {
+        $recentJobs[] = $row;
+    }
+}
+
+$conn->close();
 
 // Manager name
 $managername = $_SESSION['fullname'] ?? "Manager";
@@ -283,7 +309,7 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
                         <div class="row bg-white p-2 rounded mb-1">
                             <div class="col-3"><?= htmlspecialchars($job['job_title']); ?></div>
                             <div class="col-2"><?= htmlspecialchars($job['deptName']); ?></div>
-                            <div class="col-2"><?= htmlspecialchars($job['vacancies']); ?></div>
+                            <div class="col-2"><?= htmlspecialchars($job['remaining_vacancies']); ?></div>
                             <div class="col-2"><?= htmlspecialchars($job['date_posted']); ?></div>
                             <div class="col-3"><?= htmlspecialchars($job['closing_date']); ?></div>
 
