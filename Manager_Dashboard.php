@@ -2,16 +2,28 @@
 session_start();
 require 'admin/db.connect.php';
 
-// Fetch counts
-$employees = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role='Employee'")->fetch_assoc()['count'] ?? 0;
-$applicants = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role='Applicant'")->fetch_assoc()['count'] ?? 0;
+// Count Employees
+$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
+$employees = ($employeeQuery && $row = $employeeQuery->fetch_assoc()) ? $row['count'] : 0;
 
-// Pending applicants
-$pendingApplicants = 0;
-$q = $conn->query("SELECT COUNT(*) AS count FROM applications WHERE id = 0");
-if ($q && $row = $q->fetch_assoc()) {
-    $pendingApplicants = $row['count'];
+// Count Applicants
+$applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Applicant'");
+$applicants = ($applicantQuery && $row = $applicantQuery->fetch_assoc()) ? $row['count'] : 0;
+
+// Count Pending Applicants
+$pendingQuery = $conn->query("SELECT COUNT(*) AS count FROM applications WHERE status = 'Pending'");
+$pendingApplicants = ($pendingQuery && $row = $pendingQuery->fetch_assoc()) ? $row['count'] : 0;
+
+// Count Requests
+$requestQuery = $conn->query("SELECT COUNT(*) AS count FROM employee_request");
+$requests = ($requestQuery && $row = $requestQuery->fetch_assoc()) ? $row['count'] : 0;
+
+//fetch pending applicants
+$pending_applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM applications WHERE id = '0'");
+if ($pending_applicantQuery && $row = $pending_applicantQuery->fetch_assoc()) {
+    $pending_applicantQuery = $row['count'];
 }
+
 
 // Requests
 $requests = 0;
@@ -20,12 +32,57 @@ if ($q1 && $row = $q1->fetch_assoc()) {
     $requests = $row['count'];
 }
 
-// Hirings
-$hirings = 0;
-$q2 = $conn->query("SELECT SUM(vacancy_count) AS count FROM vacancies WHERE status IN ('On-Going', 'To Post')");
-if ($q2 && $row = $q2->fetch_assoc()) {
-    $hirings = $row['count'] ?? 0;
-}
+// Fetch total number of positions for Hirings (status = 'On-Going' or 'To Post')
+$hiringsQuery = $conn->query("
+    SELECT COUNT(*) AS count
+    FROM (
+        SELECT DISTINCT department_id, position_id 
+        FROM vacancies 
+        WHERE status = 'On-Going'
+    ) AS uniqueVacancies
+");
+$hirings = ($hiringsQuery && $row = $hiringsQuery->fetch_assoc()) ? $row['count'] : 0;
+
+// Pagination Setup
+$limit = 5; // rows per page
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$start = ($page > 1) ? ($page * $limit) - $limit : 0;
+
+// Count total rows
+$totalQuery = $conn->query("
+    SELECT COUNT(*) AS count
+    FROM (
+        SELECT DISTINCT department_id, position_id 
+        FROM vacancies 
+        WHERE status = 'On-Going'
+    ) AS uniqueVacancies
+");
+$count = ($totalQuery && $row = $totalQuery->fetch_assoc()) ? $row['count'] : 0;
+
+$pages = ceil($count / $limit);
+
+// Fetch paginated vacancies
+$recentVacanciesQuery = $conn->query("
+    SELECT v.id, v.vacancy_count, v.status, d.deptName, p.position_title, e.typeName AS employment_type
+    FROM vacancies v
+    JOIN department d ON v.department_id = d.deptID
+    JOIN position p ON v.position_id = p.positionID
+    JOIN employment_type e ON v.employment_type_id = e.emtypeID
+    WHERE v.status = 'On-Going'
+    ORDER BY v.id DESC
+    LIMIT $start, $limit
+");
+
+
+// Fetch Newly Hired Applicants
+$newHiredQuery = $conn->query("
+    SELECT applicantID, fullName, position_applied, department, hired_at, profile_pic
+    FROM applicant
+    WHERE status = 'Hired'
+    ORDER BY hired_at DESC
+    LIMIT 6
+");
+
 
 // Manager name
 $managername = $_SESSION['fullname'] ?? "Manager";
@@ -120,6 +177,7 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
     <title>Manager Dashboard</title>
 
     <link rel="stylesheet" href="manager-sidebar.css">
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
@@ -127,100 +185,82 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
         crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <style>
-        body {
-            font-family: 'Poppins', 'Roboto', sans-serif;
-            margin: 0;
-            display: flex;
-            background-color: #f1f5fc;
-            color: #111827;
-        }
+         body { font-family: 'Poppins', sans-serif; margin:0; display:flex; background-color:#f1f5fc; color:#111827; }
+        .main-content { padding:40px 30px; margin-left:220px; display:flex; flex-direction:column; }
+        .main-content-header h1 { padding:25px 0; margin-bottom:40px; color:#1E3A8A; }
+        .stats { display:flex; gap:40px; flex-wrap:wrap; margin-left:0; }
+        .section { padding:25px 30px; border-radius:15px; border-top:4px solid #1E3A8A; width:350px; height:120px; background:white; box-shadow:0 2px 6px rgba(0,0,0,0.1); transition: transform 0.2s ease; }
+        .section label { font-size:20px; }
+        .section h3 { color:#1E3A8A; margin-top:15px; font-size:25px; }
+        .job-posts h2 { margin-top:60px; margin-bottom:20px; color:#1E3A8A; }
+        .hired-section h2 {
+    margin-top: 40px;
+    margin-bottom: 20px;
+    color: #1E3A8A;
+}
 
-        .sidebar-profile-img {
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 20px;
-            transition: transform 0.3s ease;
-        }
+.hired-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
 
-        .sidebar-profile-img:hover {
-            transform: scale(1.05);
-        }
+.hired-card {
+    width: 250px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 15px;
+    text-align: center;
+    transition: transform .2s;
+}
 
+.hired-card:hover {
+    transform: translateY(-5px);
+}
 
-        .main-content {
-            padding: 40px 30px;
-            margin-left: 220px;
-            display: flex;
-            flex-direction: column;
-        }
+.hired-card img {
+    width: 90px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    border: 3px solid #1E3A8A;
+}
 
-        .main-content-header h1 {
-            padding: 25px 30px;
-            margin: 0;
-            font-size: 2rem;
-            margin-bottom: 40px;
-            color: #1E3A8A;
-        }
+.hired-card h4 {
+    margin-bottom: 5px;
+    font-size: 20px;
+    color: #1E3A8A;
+}
 
-        .job-posts h2 {
-            padding: 25px 30px;
-            margin: 0;
-            font-size: 2rem;
-            margin-bottom: 40px;
-            color: #1E3A8A;
-        }
-
-        .stats {
-            display: flex;
-            gap: 40px;
-            flex-wrap: wrap;
-            margin-left: 40px;
-        }
-
-        .section {
-            padding: 25px 30px;
-            border-radius: 15px;
-            border-top-style: solid;
-            border-color: #1E3A8A;
-            width: 350px;
-            height: 120px;
-            background-color: white;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease;
-        }
-
-        .section label {
-            font-size: 20px;
-        }
-
-        .section h3 {
-            color: #1E3A8A;
-            margin-top: 15px;
-            font-size: 25px;
-        }
+.hired-card p {
+    margin: 0;
+    font-size: 14px;
+    color: #374151;
+}
     </style>
 </head>
 
 <body>
     <!-- SIDEBAR -->
-    <div class="sidebar">
-        <a href="Manager_Profile.php" class="profile">
-            <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="sidebar-profile-img">
-        </a>
-
-        <div class="sidebar-name">
-            <p><?php echo "Welcome, $managername"; ?></p>
-        </div>
-
-        <ul class="nav">
-            <?php foreach ($menus[$role] as $label => $link): ?>
-                <li><a href="<?php echo $link; ?>"><?php echo $label; ?></a></li>
-            <?php endforeach; ?>
-        </ul>
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <a href="Manager_Profile.php" class="profile">
+        <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="sidebar-profile-img">
+      </a>
     </div>
 
+    <div class="sidebar-name">
+      <p><?php echo "Welcome, $managername"; ?></p>
+    </div>
+
+    <ul class="nav">
+      <?php foreach ($menus[$role] as $label => $link): ?>
+        <li><a href="<?php echo $link; ?>"><?php echo $label; ?></a></li>
+      <?php endforeach; ?>
+    </ul>
+  </div>
     <!-- MAIN CONTENT -->
     <main class="main-content">
         <div class="main-content-header">
@@ -250,14 +290,111 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
 
             <div class="section">
                 <label>Pending Applicants</label>
-                <h3><?php echo $pendingApplicants; ?></h3>
+               <h3><?php echo $pendingApplicants; ?></h3>
             </div>
         </div>
 
 
-        <div class="job-posts">
-            <h2>Recent Job Posts</h2>
-        </div>
+        <div class="hired-section">
+    <h2>Newly Hired Employees</h2>
+
+    <div class="hired-cards">
+        <?php if ($newHiredQuery && $newHiredQuery->num_rows > 0): ?>
+            <?php while ($hired = $newHiredQuery->fetch_assoc()): ?>
+
+                <div class="hired-card">
+                  <?php
+$pic = (!empty($hired['profile_pic']) && file_exists("Uploads/" . $hired['profile_pic']))
+    ? $hired['profile_pic']
+    : "default.png";
+?>
+<img src="Uploads/<?php echo $pic; ?>" alt="Profile Picture">
+
+
+
+                    <h4><?php echo $hired['fullName']; ?></h4>
+
+                    <p><strong>Position:</strong> <?php echo $hired['position_applied']; ?></p>
+                    <p><strong>Department:</strong> <?php echo $hired['department']; ?></p>
+                    <p><strong>Hired Date:</strong> 
+                        <?php echo date("F d, Y", strtotime($hired['hired_at'])); ?>
+                    </p>
+                </div>
+
+            <?php endwhile; ?>
+        <?php else: ?>
+            <p>No newly hired employees yet.</p>
+        <?php endif; ?>
+    </div>
+</div>
+
+
+     <div class="job-posts">
+    <h2>Recent Job Posts</h2>
+
+    <table class="table table-striped table-bordered" style="background:white; border-radius:10px; overflow:hidden;">
+        <thead class="table-primary">
+            <tr>
+                <th>#</th>
+                <th>Position Title</th>
+                <th>Department</th>
+                <th>Employment Type</th>
+                <th>Vacancy Count</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php if($recentVacanciesQuery && $recentVacanciesQuery->num_rows > 0): ?>
+                <?php 
+                $i = $start + 1;
+                while($vacancy = $recentVacanciesQuery->fetch_assoc()): 
+                ?>
+                    <tr>
+                        <td><?php echo $i++; ?></td>
+                        <td><?php echo $vacancy['position_title']; ?></td>
+                        <td><?php echo $vacancy['deptName']; ?></td>
+                        <td><?php echo $vacancy['employment_type']; ?></td>
+                        <td><?php echo $vacancy['vacancy_count']; ?></td>
+                        <td>
+                            <span class="badge bg-success"><?php echo $vacancy['status']; ?></span>
+                        </td>
+                    </tr>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <tr>
+                    <td colspan="6" class="text-center">No recent job posts available.</td>
+                </tr>
+            <?php endif; ?>
+        </tbody>
+    </table>
+
+    <!-- PAGINATION -->
+    <nav>
+        <ul class="pagination justify-content-center">
+
+            <!-- Previous Button -->
+            <li class="page-item <?php echo ($page <= 1) ? 'disabled' : '' ?>">
+                <a class="page-link" href="?page=<?php echo $page - 1; ?>">Previous</a>
+            </li>
+
+            <!-- Page Numbers -->
+            <?php for($i = 1; $i <= $pages; $i++): ?>
+                <li class="page-item <?php echo ($i == $page) ? 'active' : '' ?>">
+                    <a class="page-link" href="?page=<?php echo $i; ?>">
+                        <?php echo $i; ?>
+                    </a>
+                </li>
+            <?php endfor; ?>
+
+            <!-- Next Button -->
+            <li class="page-item <?php echo ($page >= $pages) ? 'disabled' : '' ?>">
+                <a class="page-link" href="?page=<?php echo $page + 1; ?>">Next</a>
+            </li>
+
+        </ul>
+    </nav>
+
+</div>
     </main>
 
 </body>

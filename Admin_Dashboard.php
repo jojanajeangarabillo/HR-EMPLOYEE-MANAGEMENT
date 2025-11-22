@@ -53,10 +53,17 @@ $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $start = ($page > 1) ? ($page * $limit) - $limit : 0;
 
 // Count total rows
-$totalQuery = $conn->query("SELECT COUNT(*) AS total FROM vacancies WHERE status = 'On-Going'");
-$total = ($totalQuery && $row = $totalQuery->fetch_assoc()) ? $row['total'] : 0;
+$totalQuery = $conn->query("
+    SELECT COUNT(*) AS count
+    FROM (
+        SELECT DISTINCT department_id, position_id 
+        FROM vacancies 
+        WHERE status = 'On-Going'
+    ) AS uniqueVacancies
+");
+$count = ($totalQuery && $row = $totalQuery->fetch_assoc()) ? $row['count'] : 0;
 
-$pages = ceil($total / $limit);
+$pages = ceil($count / $limit);
 
 // Fetch paginated vacancies
 $recentVacanciesQuery = $conn->query("

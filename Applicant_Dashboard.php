@@ -329,13 +329,13 @@ $recentVacanciesQuery = $conn->query("
             </div>
         </div>
 
-        <div class="notifications-section">
-            <h3>Notifications</h3>
-            <div class="notification-box"></div>
-        </div>
-    </div>  
+ <!--
+<div class="notifications-section">
+    <h3>Notifications</h3>
+    <div class="notification-box"></div>
+</div>
+-->
 
-    
 
     </main>   
 </body>
