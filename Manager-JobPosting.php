@@ -176,6 +176,7 @@ $menus = [
         "Job Post" => "Manager-JobPosting.php",
         "Calendar" => "Manager_Calendar.php",
         "Approvals" => "Manager_Approvals.php",
+        "Reports" => "Manager_Reports.php",
         "Settings" => "Manager_LeaveSettings.php",
         "Logout" => "Login.php"
     ],
@@ -191,6 +192,7 @@ $menus = [
         "Job Post" => "Manager-JobPosting.php",
         "Calendar" => "Manager_Calendar.php",
         "Approvals" => "Manager_Approvals.php",
+        "Reports" => "Manager_Reports.php",
         "Settings" => "Manager_LeaveSettings.php",
         "Logout" => "Login.php"
     ],
@@ -240,6 +242,7 @@ $icons = [
     <title>Manager - Job Posting</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <link rel="stylesheet" href="manager-sidebar.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
@@ -295,18 +298,16 @@ $icons = [
     <div class="sidebar">
         <div class="sidebar-logo">
             <a href="Manager_Profile.php" class="profile">
-                <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="sidebar-profile-img">
+                <img src="<?= htmlspecialchars($profile_picture); ?>" alt="Profile" class="sidebar-profile-img">
             </a>
-
         </div>
-
         <div class="sidebar-name">
-            <p><?php echo "Welcome, $managername"; ?></p>
+            <p><?= "Welcome, $managername"; ?></p>
         </div>
-
         <ul class="nav">
             <?php foreach ($menus[$role] as $label => $link): ?>
-                <li><a href="<?php echo $link; ?>"><i class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
+                <li><a href="<?= $link; ?>"><i class="fa-solid <?= $icons[$label] ?? 'fa-circle'; ?>"></i><?= $label; ?></a>
+                </li>
             <?php endforeach; ?>
         </ul>
     </div>

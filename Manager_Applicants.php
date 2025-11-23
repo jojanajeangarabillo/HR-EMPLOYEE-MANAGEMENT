@@ -50,6 +50,7 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
+    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -65,6 +66,7 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
+    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -101,6 +103,7 @@ $icons = [
   "Job Post" => "fa-bullhorn",
   "Calendar" => "fa-calendar-days",
   "Approvals" => "fa-square-check",
+  "Reports" => "fa-chart-column",
   "Settings" => "fa-gear",
   "Logout" => "fa-right-from-bracket"
 ];
@@ -142,16 +145,18 @@ $icons = [
 
     .main-content {
       padding: 40px 30px;
-      margin-left: 250px;
-      color: #1e3a8a;
+      margin-left: 220px;
       display: flex;
       flex-direction: column;
     }
 
     .main-content-header h1 {
       margin: 0;
-      font-size: 2rem;
+      font-size: 26px;
+      font-weight: 700;
       margin-bottom: 40px;
+      color: #1E3A8A;
+      margin-left: 40px;
     }
 
     .table-container {
@@ -356,6 +361,151 @@ $icons = [
     .close-btn-footer:hover {
       background: #1e3a8a;
     }
+
+    body {
+      background-color: #f8fbff;
+    }
+
+    .main-content {
+      gap: 20px;
+    }
+
+    .main-content-header h1 {
+      color: #1E3A8A;
+      margin-bottom: 24px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .search-filter {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-left: 40px;
+      width: 100%;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 260px;
+      max-width: 420px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 40px;
+      border: 1px solid #d1d5db;
+      border-radius: 25px;
+      font-size: 14px;
+      background: #fff;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: #1e3a8a;
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6b7280;
+      font-size: 14px;
+    }
+
+    select {
+      border-radius: 25px;
+      padding: 10px 18px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .filter-box select {
+      padding: 12px 14px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      min-width: 200px;
+    }
+
+    .table-custom {
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+      border-radius: 10px;
+      margin-left: 40px;
+      width: 100%;
+      table-layout: fixed;
+    }
+
+    .table-custom th,
+    .table-custom td {
+      padding: 16px 20px;
+      border-bottom: 1px solid #e0e0e0;
+      word-break: break-word;
+      white-space: normal;
+    }
+
+    .table-custom thead {
+      background: #1E3A8A;
+      color: #fff;
+    }
+
+    .table-custom tbody tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .table-custom tbody tr:nth-child(even) {
+      background-color: #fbfdff;
+    }
+
+    .view-btn {
+      border-radius: 6px !important;
+      padding: 8px 12px !important;
+      font-size: 13px !important;
+      gap: 8px !important;
+    }
+
+    .view-btn:hover {
+      transform: translateY(-1px) !important;
+      box-shadow: 0 8px 16px rgba(30, 64, 175, 0.18) !important;
+    }
+
+    .status.pending {
+      background-color: #fbbf241a;
+      color: #f59e0b;
+      border: 1px solid #f59e0b;
+    }
+
+    .modal-header {
+      background: linear-gradient(90deg, #1E3A8A, #2743a6);
+    }
+
+    .modal-container {
+      width: 560px;
+      max-width: 92%;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    }
+
+    .modal-body {
+      padding: 24px 28px;
+    }
+
+    .modal-footer {
+      padding: 18px 20px;
+    }
+
+    .close-btn-footer {
+      border-radius: 8px;
+    }
   </style>
 </head>
 
@@ -374,34 +524,36 @@ $icons = [
 
     <ul class="nav">
       <?php foreach ($menus[$role] as $label => $link): ?>
-        <li><a href="<?php echo $link; ?>"><i class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
+        <li><a href="<?php echo $link; ?>"><i
+              class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
       <?php endforeach; ?>
     </ul>
   </div>
   <!-- MAIN CONTENT -->
   <main class="main-content">
     <div class="main-content-header">
-      <h1>Applicant List</h1>
+      <h1>Applicants</h1>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-3" style="max-width:1200px;">
-      <!-- SEARCH BAR -->
-      <input type="text" id="searchInput" class="form-control" placeholder="Search by Applicant ID or Full Name"
-        style="max-width: 350px;">
-
-      <!-- FILTER DROPDOWN -->
-      <select id="statusFilter" class="form-select" style="max-width: 200px;">
-        <option value="">All Status</option>
-        <option value="interviewed">Interviewed</option>
-        <option value="rejected">Rejected</option>
-        <option value="pending">Pending</option>
-      </select>
+    <div class="header">
+      <div class="search-filter">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input autocomplete="off" type="text" id="searchInput" placeholder="Search applicants...">
+        </div>
+        <select id="statusFilter">
+          <option value="">All Status</option>
+          <option value="interviewed">Interviewed</option>
+          <option value="rejected">Rejected</option>
+          <option value="pending">Pending</option>
+        </select>
+      </div>
     </div>
 
 
     <div class="table-container">
-      <div class="table-responsive">
-        <table id="applicantTable">
+      <div>
+        <table id="applicantTable" class="table table-custom">
           <thead>
             <tr>
               <th>Applicant ID</th>

@@ -15,6 +15,7 @@ $icons = [
     "Job Post" => "fa-bullhorn",
     "Calendar" => "fa-calendar-days",
     "Approvals" => "fa-square-check",
+    "Reports" => "fa-chart-column",
     "Settings" => "fa-gear",
     "Logout" => "fa-right-from-bracket"
 ];
@@ -149,6 +150,7 @@ $menus = [
         "Job Post" => "Manager-JobPosting.php",
         "Calendar" => "Manager_Calendar.php",
         "Approvals" => "Manager_Approvals.php",
+        "Reports" => "Manager_Reports.php",
         "Settings" => "Manager_LeaveSettings.php",
         "Logout" => "Login.php"
     ],
@@ -163,6 +165,7 @@ $menus = [
         "Job Post" => "Manager-JobPosting.php",
         "Calendar" => "Manager_Calendar.php",
         "Approvals" => "Manager_Approvals.php",
+        "Reports" => "Manager_Reports.php",
         "Settings" => "Manager_LeaveSettings.php",
         "Logout" => "Login.php"
     ],
@@ -488,7 +491,8 @@ $employeename = $employee['fullname'];
 
         <ul class="nav">
             <?php foreach ($menus[$role] as $label => $link): ?>
-                <li><a href="<?php echo $link; ?>"><i class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
+                <li><a href="<?php echo $link; ?>"><i
+                            class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
             <?php endforeach; ?>
         </ul>
     </div>

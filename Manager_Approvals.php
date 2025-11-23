@@ -47,6 +47,7 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
+    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -62,6 +63,7 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
+    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -98,6 +100,7 @@ $icons = [
   "Job Post" => "fa-bullhorn",
   "Calendar" => "fa-calendar-days",
   "Approvals" => "fa-square-check",
+  "Reports" => "fa-chart-column",
   "Settings" => "fa-gear",
   "Logout" => "fa-right-from-bracket"
 ];
@@ -144,7 +147,9 @@ if ($role === "HR Manager" || $role === "HR Director") {
 
 $stmt->execute();
 $res = $stmt->get_result();
-while ($row = $res->fetch_assoc()) { $requests[] = $row; }
+while ($row = $res->fetch_assoc()) {
+  $requests[] = $row;
+}
 $stmt->close();
 
 // Prepare monthly slots lookup for Leave
@@ -164,186 +169,299 @@ if ($leave_type_id_for_lookup) {
 
 // --- Handle Approve/Reject Actions ---
 if (isset($_GET['action'], $_GET['type'])) {
-    $action = $_GET['action'];
-    $source = $_GET['type'];
-    $request_id = isset($_GET['id']) ? intval($_GET['id']) : null;
-    $req_emp = isset($_GET['emp']) ? $_GET['emp'] : null;
-    $req_ts = isset($_GET['ts']) ? $_GET['ts'] : null;
+  $action = $_GET['action'];
+  $source = $_GET['type'];
+  $request_id = isset($_GET['id']) ? intval($_GET['id']) : null;
+  $req_emp = isset($_GET['emp']) ? $_GET['emp'] : null;
+  $req_ts = isset($_GET['ts']) ? $_GET['ts'] : null;
 
-    $status = ($action === 'accept') ? 'Approved' : (($action === 'reject') ? 'Rejected' : null);
+  $status = ($action === 'accept') ? 'Approved' : (($action === 'reject') ? 'Rejected' : null);
 
-    if ($status) {
+  if ($status) {
 
-        if ($source === 'general' && $status === 'Approved') {
-            $gi = $conn->prepare("SELECT gr.request_id, gr.empID, gr.fullname, gr.department, gr.position, gr.email, tor.request_type_name, e.type_name FROM general_request gr JOIN types_of_requests tor ON tor.id = gr.request_type_id LEFT JOIN employee e ON e.empID = gr.empID WHERE gr.request_id = ?");
-            $gi->bind_param("i", $request_id);
-            $gi->execute();
-            $pickupInfo = $gi->get_result()->fetch_assoc();
-            $gi->close();
-            $openPickupModal = $pickupInfo ? true : false;
-            if ($openPickupModal) {
-                goto render_page;
-            }
-        }
+    if ($source === 'general' && $status === 'Approved') {
+      $gi = $conn->prepare("SELECT gr.request_id, gr.empID, gr.fullname, gr.department, gr.position, gr.email, tor.request_type_name, e.type_name FROM general_request gr JOIN types_of_requests tor ON tor.id = gr.request_type_id LEFT JOIN employee e ON e.empID = gr.empID WHERE gr.request_id = ?");
+      $gi->bind_param("i", $request_id);
+      $gi->execute();
+      $pickupInfo = $gi->get_result()->fetch_assoc();
+      $gi->close();
+      $openPickupModal = $pickupInfo ? true : false;
+      if ($openPickupModal) {
+        goto render_page;
+      }
+    }
 
-        if ($source === 'leave') {
-            $stmt = $conn->prepare("SELECT fullname, email_address, 'Leave' AS request_type_name, leave_type_name, from_date FROM leave_request WHERE empID = ? AND requested_at = ?");
-            $stmt->bind_param("ss", $req_emp, $req_ts);
-            $stmt->execute();
-            $req = $stmt->get_result()->fetch_assoc();
-            $stmt->close();
-            $emp_name = $req['fullname'];
-            $email = $req['email_address'];
-            $requestType = $req['request_type_name'];
-            $leaveType = $req['leave_type_name'];
-            $leaveMonth = isset($req['from_date']) ? intval(date('n', strtotime($req['from_date']))) : intval(date('n'));
-        } elseif ($source === 'general') {
-            $stmt = $conn->prepare("SELECT fullname, email AS email_address, tor.request_type_name, NULL AS leave_type_name FROM general_request gr JOIN types_of_requests tor ON tor.id = gr.request_type_id WHERE gr.request_id = ?");
-            $stmt->bind_param("i", $request_id);
-            $stmt->execute();
-            $req = $stmt->get_result()->fetch_assoc();
-            $stmt->close();
-            $emp_name = $req['fullname'];
-            $email = $req['email_address'];
-            $requestType = $req['request_type_name'];
-            $leaveType = $req['leave_type_name'];
-        }
+    if ($source === 'leave') {
+      $stmt = $conn->prepare("SELECT fullname, email_address, 'Leave' AS request_type_name, leave_type_name, from_date FROM leave_request WHERE empID = ? AND requested_at = ?");
+      $stmt->bind_param("ss", $req_emp, $req_ts);
+      $stmt->execute();
+      $req = $stmt->get_result()->fetch_assoc();
+      $stmt->close();
+      $emp_name = $req['fullname'];
+      $email = $req['email_address'];
+      $requestType = $req['request_type_name'];
+      $leaveType = $req['leave_type_name'];
+      $leaveMonth = isset($req['from_date']) ? intval(date('n', strtotime($req['from_date']))) : intval(date('n'));
+    } elseif ($source === 'general') {
+      $stmt = $conn->prepare("SELECT fullname, email AS email_address, tor.request_type_name, NULL AS leave_type_name FROM general_request gr JOIN types_of_requests tor ON tor.id = gr.request_type_id WHERE gr.request_id = ?");
+      $stmt->bind_param("i", $request_id);
+      $stmt->execute();
+      $req = $stmt->get_result()->fetch_assoc();
+      $stmt->close();
+      $emp_name = $req['fullname'];
+      $email = $req['email_address'];
+      $requestType = $req['request_type_name'];
+      $leaveType = $req['leave_type_name'];
+    }
 
-        // (2) Prepare email message
-        if ($status == "Approved") {
-            if ($requestType == "Leave") {
-                $messageBody = "Greetings $emp_name,<br><br>
+    // (2) Prepare email message
+    if ($status == "Approved") {
+      if ($requestType == "Leave") {
+        $messageBody = "Greetings $emp_name,<br><br>
                 Your request for <b>$leaveType</b> has been <b>approved</b>.<br>
                 Kindly coordinate with the HR Team onsite regarding your schedule.<br><br>
                 Thank you!";
-            } else {
-                $messageBody = "Greetings $emp_name,<br><br>
+      } else {
+        $messageBody = "Greetings $emp_name,<br><br>
                 Your request for <b>$requestType</b> has been <b>approved</b>.<br>
                 You may coordinate with HR onsite for further instructions.<br><br>
                 Thank you!";
-            }
-        } else {
-            $messageBody = "Greetings $emp_name,<br><br>
+      }
+    } else {
+      $messageBody = "Greetings $emp_name,<br><br>
             Your request for <b>$requestType</b> has been <b>rejected</b>.<br>
             For more details, kindly coordinate with the HR Team.<br><br>
             Thank you!";
-        }
-
-        // (3) Update database
-        $action_by = $managername;
-
-        if ($source === 'leave') {
-            $stmt = $conn->prepare("UPDATE leave_request SET status = ?, action_by = ? WHERE empID = ? AND requested_at = ?");
-            $stmt->bind_param("ssss", $status, $action_by, $req_emp, $req_ts);
-            $stmt->execute();
-            $stmt->close();
-
-            if ($status === 'Approved') {
-                $typeStmt = $conn->prepare("SELECT id FROM types_of_requests WHERE request_type_name = ? LIMIT 1");
-                $typeName = 'Leave';
-                $typeStmt->bind_param("s", $typeName);
-                $typeStmt->execute();
-                $typeRes = $typeStmt->get_result()->fetch_assoc();
-                $leave_type_id = $typeRes['id'] ?? null;
-                $typeStmt->close();
-
-                if ($leave_type_id) {
-                    $upd = $conn->prepare("UPDATE leave_settings SET employee_limit = employee_limit - 1 WHERE request_type_id = ? AND month = ? AND employee_limit > 0 ORDER BY settingID DESC LIMIT 1");
-                    $upd->bind_param("ii", $leave_type_id, $leaveMonth);
-                    $upd->execute();
-                    if ($upd->affected_rows <= 0) {
-                        $_SESSION['flash_error'] = "No available slots to decrement for leave setting.";
-                    }
-                    $upd->close();
-                }
-            }
-        } else {
-            if ($status === 'Approved' && !$openPickupModal) {
-                $stmt = $conn->prepare("UPDATE general_request SET status = ?, action_by = ? WHERE request_id = ?");
-                $stmt->bind_param("ssi", $status, $action_by, $request_id);
-                $stmt->execute();
-                $stmt->close();
-            }
-        }
-
-        // (4) SEND EMAIL
-        $mail = new PHPMailer(true);
-        try {
-            $mail->isSMTP();
-            $mail->Host = $config['host'];
-            $mail->SMTPAuth = true;
-            $mail->Username = $config['username'];
-            $mail->Password = $config['password'];
-            $mail->SMTPSecure = $config['encryption'];
-            $mail->Port = $config['port'];
-
-            $mail->setFrom($config['from_email'], $config['from_name']);
-            $mail->addAddress($email, $emp_name);
-
-            $mail->isHTML(true);
-            $mail->Subject = "Your Request Update - Employee Management System";
-            $mail->Body = $messageBody;
-
-            $mail->send();
-
-            // ✔ Set flash message
-            $_SESSION['flash_success'] = "Email sent successfully and request has been $status.";
-
-        } catch (Exception $e) {
-            error_log("Email failed: " . $mail->ErrorInfo);
-            $_SESSION['flash_error'] = "Request updated but email failed to send.";
-        }
     }
 
-    if (!$openPickupModal) {
-        header("Location: Manager_Approvals.php");
-        exit;
+    // (3) Update database
+    $action_by = $managername;
+
+    if ($source === 'leave') {
+      $stmt = $conn->prepare("UPDATE leave_request SET status = ?, action_by = ? WHERE empID = ? AND requested_at = ?");
+      $stmt->bind_param("ssss", $status, $action_by, $req_emp, $req_ts);
+      $stmt->execute();
+      $stmt->close();
+
+      if ($status === 'Approved') {
+        $typeStmt = $conn->prepare("SELECT id FROM types_of_requests WHERE request_type_name = ? LIMIT 1");
+        $typeName = 'Leave';
+        $typeStmt->bind_param("s", $typeName);
+        $typeStmt->execute();
+        $typeRes = $typeStmt->get_result()->fetch_assoc();
+        $leave_type_id = $typeRes['id'] ?? null;
+        $typeStmt->close();
+
+        if ($leave_type_id) {
+          $upd = $conn->prepare("UPDATE leave_settings SET employee_limit = employee_limit - 1 WHERE request_type_id = ? AND month = ? AND employee_limit > 0 ORDER BY settingID DESC LIMIT 1");
+          $upd->bind_param("ii", $leave_type_id, $leaveMonth);
+          $upd->execute();
+          if ($upd->affected_rows <= 0) {
+            $_SESSION['flash_error'] = "No available slots to decrement for leave setting.";
+          }
+          $upd->close();
+        }
+      }
+    } else {
+      if ($status === 'Approved' && !$openPickupModal) {
+        $stmt = $conn->prepare("UPDATE general_request SET status = ?, action_by = ? WHERE request_id = ?");
+        $stmt->bind_param("ssi", $status, $action_by, $request_id);
+        $stmt->execute();
+        $stmt->close();
+      }
     }
+
+    // (4) SEND EMAIL
+    $mail = new PHPMailer(true);
+    try {
+      $mail->isSMTP();
+      $mail->Host = $config['host'];
+      $mail->SMTPAuth = true;
+      $mail->Username = $config['username'];
+      $mail->Password = $config['password'];
+      $mail->SMTPSecure = $config['encryption'];
+      $mail->Port = $config['port'];
+
+      $mail->setFrom($config['from_email'], $config['from_name']);
+      $mail->addAddress($email, $emp_name);
+
+      $mail->isHTML(true);
+      $mail->Subject = "Your Request Update - Employee Management System";
+      $mail->Body = $messageBody;
+
+      $mail->send();
+
+      // ✔ Set flash message
+      $_SESSION['flash_success'] = "Email sent successfully and request has been $status.";
+
+    } catch (Exception $e) {
+      error_log("Email failed: " . $mail->ErrorInfo);
+      $_SESSION['flash_error'] = "Request updated but email failed to send.";
+    }
+  }
+
+  if (!$openPickupModal) {
+    header("Location: Manager_Approvals.php");
+    exit;
+  }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['schedule_pickup'])) {
-    $gid = intval($_POST['general_id']);
-    $pickup_date = $_POST['pickup_date'] ?? null;
-    if ($gid > 0 && $pickup_date) {
-        $stmt = $conn->prepare("SELECT gr.fullname, gr.email, tor.request_type_name, gr.empID FROM general_request gr JOIN types_of_requests tor ON tor.id = gr.request_type_id WHERE gr.request_id = ?");
-        $stmt->bind_param("i", $gid);
-        $stmt->execute();
-        $r = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
+  $gid = intval($_POST['general_id']);
+  $pickup_date = $_POST['pickup_date'] ?? null;
+  if ($gid > 0 && $pickup_date) {
+    $stmt = $conn->prepare("SELECT gr.fullname, gr.email, tor.request_type_name, gr.empID FROM general_request gr JOIN types_of_requests tor ON tor.id = gr.request_type_id WHERE gr.request_id = ?");
+    $stmt->bind_param("i", $gid);
+    $stmt->execute();
+    $r = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
 
-        $stmt = $conn->prepare("UPDATE general_request SET status='Approved', action_by=?, pickup_date=? WHERE request_id=?");
-        $stmt->bind_param("ssi", $managername, $pickup_date, $gid);
-        $stmt->execute();
-        $stmt->close();
+    $stmt = $conn->prepare("UPDATE general_request SET status='Approved', action_by=?, pickup_date=? WHERE request_id=?");
+    $stmt->bind_param("ssi", $managername, $pickup_date, $gid);
+    $stmt->execute();
+    $stmt->close();
 
+    $mail = new PHPMailer(true);
+    try {
+      $mail->isSMTP();
+      $mail->Host = $config['host'];
+      $mail->SMTPAuth = true;
+      $mail->Username = $config['username'];
+      $mail->Password = $config['password'];
+      $mail->SMTPSecure = $config['encryption'];
+      $mail->Port = $config['port'];
+
+      $mail->setFrom($config['from_email'], $config['from_name']);
+      $mail->addAddress($r['email'], $r['fullname']);
+
+      $pos = ($role === 'HR Director') ? 'Director' : 'Manager';
+      $mail->isHTML(true);
+      $mail->Subject = "General Request Approved";
+      $mail->Body = "Greetings {$r['fullname']},<br><br>" .
+        "Your request for <b>{$r['request_type_name']}</b> has been <b>Approved</b>.<br>" .
+        "Pickup Date: <b>" . htmlspecialchars($pickup_date) . "</b><br>" .
+        "Approved by: <b>" . htmlspecialchars($managername) . "</b> (" . htmlspecialchars($pos) . ").<br><br>Thank you!";
+      $mail->send();
+      $_SESSION['success_modal_text'] = "Approval email sent and pickup scheduled on " . htmlspecialchars($pickup_date) . ".";
+    } catch (Exception $e) {
+      $_SESSION['success_modal_text'] = "Pickup scheduled, but email failed to send.";
+    }
+  }
+  header("Location: Manager_Approvals.php");
+  exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_get_request_detail'])) {
+  header('Content-Type: application/json');
+  $source = $_POST['source'] ?? '';
+  if ($source === 'leave') {
+    $emp = $_POST['emp'] ?? '';
+    $ts = $_POST['ts'] ?? '';
+    $s = $conn->prepare("SELECT empID, fullname, department, position, type_name, email_address, request_type_name, leave_type_name, reason, from_date, to_date, duration, status, requested_at FROM leave_request WHERE empID = ? AND requested_at = ? LIMIT 1");
+    $s->bind_param('ss', $emp, $ts);
+    $s->execute();
+    $row = $s->get_result()->fetch_assoc();
+    $s->close();
+    echo json_encode(['ok' => $row ? 1 : 0, 'data' => $row]);
+    exit;
+  } elseif ($source === 'general') {
+    $rid = isset($_POST['id']) ? intval($_POST['id']) : 0;
+    $s = $conn->prepare("SELECT gr.request_id, gr.empID, gr.fullname, gr.department, gr.position, gr.email, tor.request_type_name AS request_type_name, gr.reason, gr.status, gr.requested_at FROM general_request gr JOIN types_of_requests tor ON tor.id = gr.request_type_id WHERE gr.request_id = ? LIMIT 1");
+    $s->bind_param('i', $rid);
+    $s->execute();
+    $row = $s->get_result()->fetch_assoc();
+    $s->close();
+    echo json_encode(['ok' => $row ? 1 : 0, 'data' => $row]);
+    exit;
+  }
+  echo json_encode(['ok' => 0]);
+  exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_reject_request'])) {
+  header('Content-Type: application/json');
+  $source = $_POST['source'] ?? '';
+  $reasonMsg = trim($_POST['reject_reason'] ?? '');
+  if ($source === 'leave') {
+    $emp = $_POST['emp'] ?? '';
+    $ts = $_POST['ts'] ?? '';
+    $stmt = $conn->prepare("SELECT fullname, email_address, request_type_name, leave_type_name FROM leave_request WHERE empID = ? AND requested_at = ? LIMIT 1");
+    $stmt->bind_param('ss', $emp, $ts);
+    $stmt->execute();
+    $req = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    if ($req) {
+      $stmt = $conn->prepare("UPDATE leave_request SET status='Rejected', action_by=? WHERE empID=? AND requested_at=?");
+      $stmt->bind_param('sss', $managername, $emp, $ts);
+      $okUpd = $stmt->execute();
+      $stmt->close();
+      if ($okUpd) {
         $mail = new PHPMailer(true);
         try {
-            $mail->isSMTP();
-            $mail->Host = $config['host'];
-            $mail->SMTPAuth = true;
-            $mail->Username = $config['username'];
-            $mail->Password = $config['password'];
-            $mail->SMTPSecure = $config['encryption'];
-            $mail->Port = $config['port'];
-
-            $mail->setFrom($config['from_email'], $config['from_name']);
-            $mail->addAddress($r['email'], $r['fullname']);
-
-            $pos = ($role === 'HR Director') ? 'Director' : 'Manager';
-            $mail->isHTML(true);
-            $mail->Subject = "General Request Approved";
-            $mail->Body = "Greetings {$r['fullname']},<br><br>".
-                          "Your request for <b>{$r['request_type_name']}</b> has been <b>Approved</b>.<br>".
-                          "Pickup Date: <b>".htmlspecialchars($pickup_date)."</b><br>".
-                          "Approved by: <b>".htmlspecialchars($managername)."</b> (".htmlspecialchars($pos).").<br><br>Thank you!";
-            $mail->send();
-            $_SESSION['success_modal_text'] = "Approval email sent and pickup scheduled on " . htmlspecialchars($pickup_date) . ".";
+          $mail->isSMTP();
+          $mail->Host = $config['host'];
+          $mail->SMTPAuth = true;
+          $mail->Username = $config['username'];
+          $mail->Password = $config['password'];
+          $mail->SMTPSecure = $config['encryption'];
+          $mail->Port = $config['port'];
+          $mail->setFrom($config['from_email'], $config['from_name']);
+          $mail->addAddress($req['email_address'], $req['fullname']);
+          $mail->isHTML(true);
+          $mail->Subject = "Your Request Update - Employee Management System";
+          $mail->Body = "Greetings " . htmlspecialchars($req['fullname']) . ",<br><br>" .
+            "Your request for <b>" . htmlspecialchars($req['leave_type_name'] ?: $req['request_type_name']) . "</b> has been <b>rejected</b>.<br>" .
+            "Reason: " . nl2br(htmlspecialchars($reasonMsg)) . "<br><br>Thank you!";
+          $mail->send();
         } catch (Exception $e) {
-            $_SESSION['success_modal_text'] = "Pickup scheduled, but email failed to send.";
         }
+        echo json_encode(['ok' => 1]);
+        exit;
+      }
     }
-    header("Location: Manager_Approvals.php");
+    echo json_encode(['ok' => 0]);
     exit;
+  } elseif ($source === 'general') {
+    $rid = isset($_POST['id']) ? intval($_POST['id']) : 0;
+    $stmt = $conn->prepare("SELECT gr.fullname, gr.email, tor.request_type_name FROM general_request gr JOIN types_of_requests tor ON tor.id = gr.request_type_id WHERE gr.request_id = ? LIMIT 1");
+    $stmt->bind_param('i', $rid);
+    $stmt->execute();
+    $req = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    if ($req) {
+      $stmt = $conn->prepare("UPDATE general_request SET status='Rejected', action_by=? WHERE request_id=?");
+      $stmt->bind_param('si', $managername, $rid);
+      $okUpd = $stmt->execute();
+      $stmt->close();
+      if ($okUpd) {
+        $mail = new PHPMailer(true);
+        try {
+          $mail->isSMTP();
+          $mail->Host = $config['host'];
+          $mail->SMTPAuth = true;
+          $mail->Username = $config['username'];
+          $mail->Password = $config['password'];
+          $mail->SMTPSecure = $config['encryption'];
+          $mail->Port = $config['port'];
+          $mail->setFrom($config['from_email'], $config['from_name']);
+          $mail->addAddress($req['email'], $req['fullname']);
+          $mail->isHTML(true);
+          $mail->Subject = "Your Request Update - Employee Management System";
+          $mail->Body = "Greetings " . htmlspecialchars($req['fullname']) . ",<br><br>" .
+            "Your request for <b>" . htmlspecialchars($req['request_type_name']) . "</b> has been <b>rejected</b>.<br>" .
+            "Reason: " . nl2br(htmlspecialchars($reasonMsg)) . "<br><br>Thank you!";
+          $mail->send();
+        } catch (Exception $e) {
+        }
+        echo json_encode(['ok' => 1]);
+        exit;
+      }
+    }
+    echo json_encode(['ok' => 0]);
+    exit;
+  }
+  echo json_encode(['ok' => 0]);
+  exit;
 }
 
 render_page:
@@ -364,8 +482,8 @@ render_page:
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
     crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 
   <style>
@@ -396,8 +514,8 @@ render_page:
     .table-container {
       max-width: 1220px;
       margin: 0 auto;
-    
-    
+
+
     }
 
     .controls-bar {
@@ -458,8 +576,8 @@ render_page:
       overflow: hidden;
 
     }
-    
-    
+
+
 
     th,
     td {
@@ -551,7 +669,8 @@ render_page:
 
     <ul class="nav">
       <?php foreach ($menus[$role] as $label => $link): ?>
-        <li><a href="<?php echo $link; ?>"><i class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
+        <li><a href="<?php echo $link; ?>"><i
+              class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
       <?php endforeach; ?>
     </ul>
   </div>
@@ -564,22 +683,22 @@ render_page:
 
 
     <?php if (isset($_SESSION['flash_success'])): ?>
-  <div class="alert alert-success alert-dismissible fade show" role="alert" 
-       style="max-width: 700px; margin: 0 auto 20px auto;">
-    <?= $_SESSION['flash_success']; ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-  <?php unset($_SESSION['flash_success']); ?>
-<?php endif; ?>
+      <div class="alert alert-success alert-dismissible fade show" role="alert"
+        style="max-width: 700px; margin: 0 auto 20px auto;">
+        <?= $_SESSION['flash_success']; ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      <?php unset($_SESSION['flash_success']); ?>
+    <?php endif; ?>
 
-<?php if (isset($_SESSION['flash_error'])): ?>
-  <div class="alert alert-danger alert-dismissible fade show" role="alert" 
-       style="max-width: 700px; margin: 0 auto 20px auto;">
-    <?= $_SESSION['flash_error']; ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-  <?php unset($_SESSION['flash_error']); ?>
-<?php endif; ?>
+    <?php if (isset($_SESSION['flash_error'])): ?>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert"
+        style="max-width: 700px; margin: 0 auto 20px auto;">
+        <?= $_SESSION['flash_error']; ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      <?php unset($_SESSION['flash_error']); ?>
+    <?php endif; ?>
 
     <div class="table-container">
       <div class="controls-bar">
@@ -612,15 +731,15 @@ render_page:
                   <td>
                     <?= htmlspecialchars($req['request_type_name']) ?>
                     <?php if ($req['source'] === 'leave' && $limitLookupStmt && !empty($req['from_date'])): ?>
-                      <?php 
-                        $monthNum = intval(date('n', strtotime($req['from_date'])));
-                        $limitLookupStmt->bind_param('ii', $leave_type_id_for_lookup, $monthNum);
-                        $limitLookupStmt->execute();
-                        $lr = $limitLookupStmt->get_result()->fetch_assoc();
-                        $slotsLeft = $lr['employee_limit'] ?? null;
+                      <?php
+                      $monthNum = intval(date('n', strtotime($req['from_date'])));
+                      $limitLookupStmt->bind_param('ii', $leave_type_id_for_lookup, $monthNum);
+                      $limitLookupStmt->execute();
+                      $lr = $limitLookupStmt->get_result()->fetch_assoc();
+                      $slotsLeft = $lr['employee_limit'] ?? null;
                       ?>
                       <?php if ($slotsLeft !== null): ?>
-                        <span class="badge bg-info text-dark ms-2">Slots left: <?= (int)$slotsLeft ?></span>
+                        <span class="badge bg-info text-dark ms-2">Slots left: <?= (int) $slotsLeft ?></span>
                       <?php endif; ?>
                     <?php endif; ?>
                   </td>
@@ -633,15 +752,19 @@ render_page:
                       <span style="color:red;font-weight:bold;">Rejected</span>
                     <?php else: ?>
                       <?php if ($req['source'] === 'leave'): ?>
-                      <a href="?type=leave&action=accept&emp=<?= urlencode($req['empID']) ?>&ts=<?= urlencode($req['requested_at']) ?>" class="accept"><i
-                          class="fa-solid fa-check"></i></a>
-                      <a href="?type=leave&action=reject&emp=<?= urlencode($req['empID']) ?>&ts=<?= urlencode($req['requested_at']) ?>" class="reject"><i
-                          class="fa-solid fa-xmark"></i></a>
+                        <a href="#" class="view" data-source="leave" data-emp="<?= htmlspecialchars($req['empID']) ?>"
+                          data-ts="<?= htmlspecialchars($req['requested_at']) ?>"><i class="fa-solid fa-eye"></i></a>
+                        <a href="?type=leave&action=accept&emp=<?= urlencode($req['empID']) ?>&ts=<?= urlencode($req['requested_at']) ?>"
+                          class="accept"><i class="fa-solid fa-check"></i></a>
+                        <a href="#" class="reject" data-source="leave" data-emp="<?= htmlspecialchars($req['empID']) ?>"
+                          data-ts="<?= htmlspecialchars($req['requested_at']) ?>"><i class="fa-solid fa-xmark"></i></a>
                       <?php else: ?>
-                      <a href="?id=<?= (int)$req['rid'] ?>&type=general&action=accept" class="accept"><i
-                          class="fa-solid fa-check"></i></a>
-                      <a href="?id=<?= (int)$req['rid'] ?>&type=general&action=reject" class="reject"><i
-                          class="fa-solid fa-xmark"></i></a>
+                        <a href="#" class="view" data-source="general" data-id="<?= (int) $req['rid'] ?>"><i
+                            class="fa-solid fa-eye"></i></a>
+                        <a href="?id=<?= (int) $req['rid'] ?>&type=general&action=accept" class="accept"><i
+                            class="fa-solid fa-check"></i></a>
+                        <a href="#" class="reject" data-source="general" data-id="<?= (int) $req['rid'] ?>"><i
+                            class="fa-solid fa-xmark"></i></a>
                       <?php endif; ?>
                     <?php endif; ?>
                   </td>
@@ -671,9 +794,11 @@ render_page:
               <div class="mb-2"><strong>Fullname:</strong> <?= htmlspecialchars($pickupInfo['fullname']) ?></div>
               <div class="mb-2"><strong>Department:</strong> <?= htmlspecialchars($pickupInfo['department']) ?></div>
               <div class="mb-2"><strong>Position:</strong> <?= htmlspecialchars($pickupInfo['position']) ?></div>
-              <div class="mb-2"><strong>Type of Employment:</strong> <?= htmlspecialchars($pickupInfo['type_name'] ?? 'N/A') ?></div>
+              <div class="mb-2"><strong>Type of Employment:</strong>
+                <?= htmlspecialchars($pickupInfo['type_name'] ?? 'N/A') ?></div>
               <div class="mb-2"><strong>Email:</strong> <?= htmlspecialchars($pickupInfo['email']) ?></div>
-              <div class="mb-3"><strong>Request Type:</strong> <?= htmlspecialchars($pickupInfo['request_type_name']) ?></div>
+              <div class="mb-3"><strong>Request Type:</strong> <?= htmlspecialchars($pickupInfo['request_type_name']) ?>
+              </div>
             <?php endif; ?>
             <input type="hidden" name="general_id" value="<?= $pickupInfo['request_id'] ?? '' ?>">
             <label class="form-label">Pickup Date</label>
@@ -684,6 +809,60 @@ render_page:
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="viewModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Request Details</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-2"><strong>Employee ID:</strong> <span id="vEmpID"></span></div>
+          <div class="mb-2"><strong>Fullname:</strong> <span id="vFullname"></span></div>
+          <div class="mb-2"><strong>Department:</strong> <span id="vDept"></span></div>
+          <div class="mb-2"><strong>Position:</strong> <span id="vPos"></span></div>
+          <div class="mb-2"><strong>Type of Employment:</strong> <span id="vType"></span></div>
+          <div class="mb-2"><strong>Email:</strong> <span id="vEmail"></span></div>
+          <div class="mb-2"><strong>Request Type:</strong> <span id="vReqType"></span></div>
+          <div class="mb-2" id="vLeaveTypeRow" style="display:none;"><strong>Leave Type:</strong> <span
+              id="vLeaveType"></span></div>
+          <div class="mb-2" id="vFromRow" style="display:none;"><strong>From:</strong> <span id="vFrom"></span></div>
+          <div class="mb-2" id="vToRow" style="display:none;"><strong>To:</strong> <span id="vTo"></span></div>
+          <div class="mb-2" id="vDurRow" style="display:none;"><strong>Duration:</strong> <span id="vDur"></span></div>
+          <div class="mb-2"><strong>Reason:</strong> <span id="vReason"></span></div>
+          <div class="mb-2"><strong>Status:</strong> <span id="vStatus"></span></div>
+          <div class="mb-2"><strong>Requested At:</strong> <span id="vRequested"></span></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="rejectModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">Reject Request</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="rejSource">
+          <input type="hidden" id="rejEmp">
+          <input type="hidden" id="rejTs">
+          <input type="hidden" id="rejId">
+          <label class="form-label">Reason</label>
+          <textarea id="rejReason" class="form-control" rows="4" placeholder="Type reason" required></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" id="confirmRejectBtn" class="btn btn-danger">Reject</button>
+        </div>
       </div>
     </div>
   </div>
@@ -738,11 +917,86 @@ render_page:
       m.show();
     <?php endif; ?>
     <?php if (!empty($_SESSION['success_modal_text'])): ?>
-      document.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener('DOMContentLoaded', function () {
         var s = document.getElementById('successModal');
         if (s) new bootstrap.Modal(s).show();
       });
     <?php endif; ?>
+
+    document.addEventListener('click', function (e) {
+      const v = e.target.closest('a.view');
+      if (v) {
+        e.preventDefault();
+        const src = v.dataset.source;
+        const fd = new FormData();
+        fd.append('ajax_get_request_detail', '1');
+        fd.append('source', src);
+        if (src === 'leave') {
+          fd.append('emp', v.dataset.emp);
+          fd.append('ts', v.dataset.ts);
+        } else {
+          fd.append('id', v.dataset.id);
+        }
+        fetch('Manager_Approvals.php', { method: 'POST', body: fd })
+          .then(r => r.json())
+          .then(json => {
+            if (json && json.ok && json.data) {
+              const d = json.data;
+              document.getElementById('vEmpID').textContent = d.empID || '';
+              document.getElementById('vFullname').textContent = d.fullname || '';
+              document.getElementById('vDept').textContent = d.department || '';
+              document.getElementById('vPos').textContent = d.position || '';
+              document.getElementById('vType').textContent = d.type_name || '';
+              document.getElementById('vEmail').textContent = (d.email_address || d.email || '');
+              document.getElementById('vReqType').textContent = d.request_type_name || '';
+              document.getElementById('vReason').textContent = d.reason || '';
+              document.getElementById('vStatus').textContent = d.status || '';
+              document.getElementById('vRequested').textContent = d.requested_at || '';
+              const isLeave = !!d.leave_type_name;
+              document.getElementById('vLeaveTypeRow').style.display = isLeave ? '' : 'none';
+              document.getElementById('vFromRow').style.display = isLeave ? '' : 'none';
+              document.getElementById('vToRow').style.display = isLeave ? '' : 'none';
+              document.getElementById('vDurRow').style.display = isLeave ? '' : 'none';
+              document.getElementById('vLeaveType').textContent = d.leave_type_name || '';
+              document.getElementById('vFrom').textContent = d.from_date || '';
+              document.getElementById('vTo').textContent = d.to_date || '';
+              document.getElementById('vDur').textContent = d.duration || '';
+              new bootstrap.Modal(document.getElementById('viewModal')).show();
+            }
+          });
+      }
+
+      const rj = e.target.closest('a.reject');
+      if (rj) {
+        e.preventDefault();
+        document.getElementById('rejSource').value = rj.dataset.source;
+        document.getElementById('rejEmp').value = rj.dataset.emp || '';
+        document.getElementById('rejTs').value = rj.dataset.ts || '';
+        document.getElementById('rejId').value = rj.dataset.id || '';
+        new bootstrap.Modal(document.getElementById('rejectModal')).show();
+      }
+    });
+
+    document.getElementById('confirmRejectBtn').addEventListener('click', function () {
+      const src = document.getElementById('rejSource').value;
+      const fd = new FormData();
+      fd.append('ajax_reject_request', '1');
+      fd.append('source', src);
+      fd.append('reject_reason', document.getElementById('rejReason').value);
+      if (src === 'leave') {
+        fd.append('emp', document.getElementById('rejEmp').value);
+        fd.append('ts', document.getElementById('rejTs').value);
+      } else {
+        fd.append('id', document.getElementById('rejId').value);
+      }
+      fetch('Manager_Approvals.php', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(json => {
+          if (json && json.ok) {
+            window.location.reload();
+          }
+        });
+    });
   </script>
 </body>
 

@@ -70,6 +70,7 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
+    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -85,6 +86,7 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
+    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -137,6 +139,7 @@ $icons = [
   "Job Post" => "fa-bullhorn",
   "Calendar" => "fa-calendar-days",
   "Approvals" => "fa-square-check",
+  "Reports" => "fa-chart-column",
   "Settings" => "fa-gear",
   "Logout" => "fa-right-from-bracket"
 ];
@@ -783,7 +786,7 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
 </head>
 
 <body>
- <!-- SIDEBAR -->
+  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-logo">
       <a href="Manager_Profile.php" class="profile">
@@ -797,7 +800,8 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
 
     <ul class="nav">
       <?php foreach ($menus[$role] as $label => $link): ?>
-        <li><a href="<?php echo $link; ?>"><i class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
+        <li><a href="<?php echo $link; ?>"><i
+              class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
       <?php endforeach; ?>
     </ul>
   </div>
@@ -1172,7 +1176,7 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
         document.getElementById('applicantName').textContent = d.fullName;
         document.getElementById('applicantEmail').textContent = d.email_address;
         document.getElementById('applicantContact').textContent = d.contact_number || '-';
-        document.getElementById('applicantPosition').textContent =  d.applied_job_title || '-';
+        document.getElementById('applicantPosition').textContent = d.applied_job_title || '-';
         document.getElementById('applicantDepartment').textContent = d.department_name || '-';
         document.getElementById('applicantDateApplied').textContent = d.date_applied || '-';
         document.getElementById('applicantEducation').textContent = `${d.university || '-'} (${d.course || '-'}, Graduated: ${d.year_graduated || '-'})`;

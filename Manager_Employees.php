@@ -43,6 +43,7 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
+    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -58,6 +59,7 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
+    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -95,12 +97,13 @@ $icons = [
   "Job Post" => "fa-bullhorn",
   "Calendar" => "fa-calendar-days",
   "Approvals" => "fa-square-check",
+  "Reports" => "fa-chart-column",
   "Settings" => "fa-gear",
   "Logout" => "fa-right-from-bracket"
 ];
 
 $employee = [];
-$stmt = $conn->prepare("SELECT empID, fullname, department, position, type_name, email_address FROM employee");
+$stmt = $conn->prepare("SELECT e.empID, e.fullname, e.department, e.position, e.type_name, e.email_address, u.status FROM employee e LEFT JOIN user u ON u.applicant_employee_id = e.empID");
 $stmt->execute();
 $result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
@@ -108,22 +111,64 @@ while ($row = $result->fetch_assoc()) {
 }
 $stmt->close();
 
-// Handle delete employee
-if (isset($_POST['delete_emp'])) {
+if (isset($_POST['ajax_set_inactive'])) {
+  header('Content-Type: application/json');
   $empID = $_POST['empID'] ?? null;
-  if (!$empID || !is_numeric($empID)) {
-    $_SESSION['flash_error'] = "Invalid employee ID.";
-    header("Location: Manager_Employees.php");
+  if (!$empID) {
+    echo json_encode(['status' => 'error', 'message' => 'Missing employee ID']);
     exit;
   }
-  $empID = intval($empID);
+  $upd = $conn->prepare("UPDATE user SET status = 'Inactive' WHERE applicant_employee_id = ?");
+  $upd->bind_param("s", $empID);
+  $ok = $upd->execute();
+  echo json_encode(['status' => $ok ? 'success' : 'error']);
+  exit;
+}
 
-  try {
-    // your deletion code
-  } catch (Exception $e) {
-    // error handling
+if (isset($_POST['ajax_archive_employee'])) {
+  header('Content-Type: application/json');
+  $empID = $_POST['empID'] ?? null;
+  if (!$empID) {
+    echo json_encode(['status' => 'error', 'message' => 'Missing employee ID']);
+    exit;
   }
-  header("Location: Manager_Employees.php");
+  $usr = $conn->prepare("SELECT user_id, applicant_employee_id, email, password, role, fullname, status, created_at, profile_pic, reset_token, token_expiry, sub_role FROM user WHERE applicant_employee_id = ? LIMIT 1");
+  $usr->bind_param("s", $empID);
+  $usr->execute();
+  $u = $usr->get_result()->fetch_assoc();
+  if (!$u) {
+    echo json_encode(['status' => 'error', 'message' => 'User not found']);
+    exit;
+  }
+  $ins = $conn->prepare("INSERT INTO user_archive (user_id, applicant_employee_id, email, password, role, fullname, status, created_at, profile_pic, reset_token, token_expiry, sub_role) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+  $ins->bind_param(
+    "ssssssssssss",
+    $u['user_id'],
+    $u['applicant_employee_id'],
+    $u['email'],
+    $u['password'],
+    $u['role'],
+    $u['fullname'],
+    $u['status'],
+    $u['created_at'],
+    $u['profile_pic'],
+    $u['reset_token'],
+    $u['token_expiry'],
+    $u['sub_role']
+  );
+  $okIns = $ins->execute();
+  if (!$okIns) {
+    echo json_encode(['status' => 'error', 'message' => 'Archive insert failed']);
+    exit;
+  }
+  $delU = $conn->prepare("DELETE FROM user WHERE applicant_employee_id = ?");
+  $delU->bind_param("s", $empID);
+  $okDelU = $delU->execute();
+  $delE = $conn->prepare("DELETE FROM employee WHERE empID = ?");
+  $delE->bind_param("s", $empID);
+  $okDelE = $delE->execute();
+  $ok = $okDelU && $okDelE;
+  echo json_encode(['status' => $ok ? 'success' : 'error']);
   exit;
 }
 
@@ -187,7 +232,7 @@ if (isset($_POST['send_message'])) {
     integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  ">
+
 
   <style>
     body {
@@ -509,7 +554,8 @@ if (isset($_POST['send_message'])) {
 
     <ul class="nav">
       <?php foreach ($menus[$role] as $label => $link): ?>
-        <li><a href="<?php echo $link; ?>"><i class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
+        <li><a href="<?php echo $link; ?>"><i
+              class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
       <?php endforeach; ?>
     </ul>
   </div>
@@ -522,25 +568,25 @@ if (isset($_POST['send_message'])) {
       <h1>Employee List</h1>
     </div>
 
-    <?php if(isset($_SESSION['flash_success'])): ?>
-  <div class="alert alert-success alert-dismissible fade show" role="alert">
-    <?php 
-      echo $_SESSION['flash_success']; 
-      unset($_SESSION['flash_success']); 
-    ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-<?php endif; ?>
+    <?php if (isset($_SESSION['flash_success'])): ?>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <?php
+        echo $_SESSION['flash_success'];
+        unset($_SESSION['flash_success']);
+        ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <?php endif; ?>
 
-<?php if(isset($_SESSION['flash_error'])): ?>
-  <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    <?php 
-      echo $_SESSION['flash_error']; 
-      unset($_SESSION['flash_error']); 
-    ?>
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-  </div>
-<?php endif; ?>
+    <?php if (isset($_SESSION['flash_error'])): ?>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <?php
+        echo $_SESSION['flash_error'];
+        unset($_SESSION['flash_error']);
+        ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <?php endif; ?>
 
     <div class="table-container">
       <div class="controls-bar">
@@ -565,6 +611,7 @@ if (isset($_POST['send_message'])) {
               <th>Position</th>
               <th>Employment Type</th>
               <th>Email Address</th>
+              <th>Status</th>
               <th>Action</th>
             </tr>
           </thead>
@@ -577,6 +624,7 @@ if (isset($_POST['send_message'])) {
                 <td><?php echo htmlspecialchars($emp['position']); ?></td>
                 <td><?php echo htmlspecialchars($emp['type_name']); ?></td>
                 <td><?php echo htmlspecialchars($emp['email_address']); ?></td>
+                <td class="status-cell"><?php echo htmlspecialchars($emp['status'] ?? 'Active'); ?></td>
                 <td class="action-icons">
                   <a href="#viewModal" class="view" onclick="openViewModal('<?php echo $emp['empID']; ?>',
                              '<?php echo $emp['fullname']; ?>',
@@ -591,10 +639,16 @@ if (isset($_POST['send_message'])) {
                     onclick="openMessageModal('<?php echo $emp['email_address']; ?>')">
                     <i class="fa-solid fa-envelope"></i>
                   </a>
-
-                  <a href="#deleteModal" class="delete" onclick="confirmDelete('<?php echo $emp['empID']; ?>')">
-                    <i class="fa-solid fa-trash"></i>
-                  </a>
+                  <?php $isInactive = strtolower($emp['status'] ?? 'Active') === 'inactive'; ?>
+                  <?php if (!$isInactive): ?>
+                    <a href="#inactiveModal" class="status-toggle" data-empid="<?php echo $emp['empID']; ?>">
+                      <i class="fa-solid fa-circle" style="color:#10b981;"></i>
+                    </a>
+                  <?php else: ?>
+                    <a href="#archiveModal" class="archive-btn" data-empid="<?php echo $emp['empID']; ?>">
+                      <i class="fa-solid fa-trash"></i>
+                    </a>
+                  <?php endif; ?>
                 </td>
               </tr>
             <?php endforeach; ?>
@@ -652,11 +706,53 @@ if (isset($_POST['send_message'])) {
     </div>
   </div>
 
+  <!-- Inactive Confirm Modal -->
+  <div class="modal fade" id="inactiveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirm Inactive</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to make this employee Inactive?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="confirmInactiveBtn">Yes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Archive Confirm Modal -->
+  <div class="modal fade" id="archiveModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Confirm Archive</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to archive this employee?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" id="confirmArchiveBtn">Yes</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 
-  <form method="POST" id="deleteForm" style="display:none;">
-    <input type="hidden" name="empID" id="deleteID">
-    <input type="hidden" name="delete_emp" value="1">
+
+  <form method="POST" id="inactiveForm" style="display:none;">
+    <input type="hidden" name="empID" id="inactiveEmpID">
+    <input type="hidden" name="ajax_set_inactive" value="1">
+  </form>
+  <form method="POST" id="archiveForm" style="display:none;">
+    <input type="hidden" name="empID" id="archiveEmpID">
+    <input type="hidden" name="ajax_archive_employee" value="1">
   </form>
 
   <script>
@@ -708,31 +804,6 @@ if (isset($_POST['send_message'])) {
         // Show only if both match
         row.toggle(textMatch && deptMatch);
       });
-    } function filterTable() {
-      const search = $("#searchInput").val().toLowerCase();
-      const deptFilter = $("#deptFilter").val().toLowerCase();
-
-      $("#employeeTable tr").each(function () {
-        let row = $(this);
-        let textMatch = false;
-
-        // Check search input across all columns except Action
-        row.find("td").each(function (index) {
-          if (index < row.find("td").length - 1) {
-            let cellText = $(this).text().toLowerCase();
-            if (cellText.includes(search)) {
-              textMatch = true;
-            }
-          }
-        });
-
-        // Check department filter
-        let rowDept = row.find("td:nth-child(3)").text().toLowerCase();
-        let deptMatch = deptFilter === "" || rowDept === deptFilter;
-
-        // Show only if both match
-        row.toggle(textMatch && deptMatch);
-      });
     }
 
     function openViewModal(id, name, dept, pos, type, email) {
@@ -759,15 +830,49 @@ if (isset($_POST['send_message'])) {
       $("#messageModal").removeClass("active").fadeOut(150);
     }
 
-    function confirmDelete(empID) {
-      if (confirm("Are you sure you want to delete this employee?")) {
-        $("#deleteID").val(empID);
-        $("#deleteForm").submit();
-      }
-    }
+    let currentEmpId = null;
+    $(document).on('click', '.status-toggle', function (e) {
+      e.preventDefault();
+      currentEmpId = $(this).data('empid');
+      const modal = new bootstrap.Modal(document.getElementById('inactiveModal'));
+      modal.show();
+    });
+
+    $('#confirmInactiveBtn').on('click', function () {
+      const form = $('#inactiveForm');
+      $('#inactiveEmpID').val(currentEmpId);
+      $.post('Manager_Employees.php', form.serialize(), function (resp) {
+        if (resp && resp.status === 'success') {
+          const row = $(`a.status-toggle[data-empid="${currentEmpId}"]`).closest('tr');
+          row.find('.status-cell').text('Inactive');
+          const actionCell = row.find('.action-icons');
+          actionCell.find('a.status-toggle').replaceWith(`<a href="#archiveModal" class="archive-btn" data-empid="${currentEmpId}"><i class="fa-solid fa-trash"></i></a>`);
+          bootstrap.Modal.getInstance(document.getElementById('inactiveModal')).hide();
+        }
+      }, 'json');
+    });
+
+    $(document).on('click', '.archive-btn', function (e) {
+      e.preventDefault();
+      currentEmpId = $(this).data('empid');
+      const modal = new bootstrap.Modal(document.getElementById('archiveModal'));
+      modal.show();
+    });
+
+    $('#confirmArchiveBtn').on('click', function () {
+      const form = $('#archiveForm');
+      $('#archiveEmpID').val(currentEmpId);
+      $.post('Manager_Employees.php', form.serialize(), function (resp) {
+        if (resp && resp.status === 'success') {
+          const row = $(`a.archive-btn[data-empid="${currentEmpId}"]`).closest('tr');
+          row.remove();
+          bootstrap.Modal.getInstance(document.getElementById('archiveModal')).hide();
+        }
+      }, 'json');
+    });
   </script>
   <!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 

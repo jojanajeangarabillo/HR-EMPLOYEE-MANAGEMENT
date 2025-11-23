@@ -38,6 +38,7 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
+    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -53,6 +54,7 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
+    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -90,6 +92,7 @@ $icons = [
   "Job Post" => "fa-bullhorn",
   "Calendar" => "fa-calendar-days",
   "Approvals" => "fa-square-check",
+  "Reports" => "fa-chart-column",
   "Settings" => "fa-gear",
   "Logout" => "fa-right-from-bracket"
 ];
@@ -106,7 +109,9 @@ $leaves = [];
 $stmt = $conn->prepare("SELECT empID, fullname, department, position, type_name, request_type_id, request_type_name, leave_type_name, action_by, from_date, to_date, duration FROM leave_request WHERE status = 'Approved' ORDER BY from_date ASC");
 $stmt->execute();
 $res = $stmt->get_result();
-while ($row = $res->fetch_assoc()) { $leaves[] = $row; }
+while ($row = $res->fetch_assoc()) {
+  $leaves[] = $row;
+}
 $stmt->close();
 
 $filterDept = isset($_GET['dept']) ? $_GET['dept'] : '';
@@ -116,17 +121,25 @@ $filterName = isset($_GET['q']) ? $_GET['q'] : '';
 $departments = [];
 $types = [];
 foreach ($leaves as $lv) {
-  if (!empty($lv['department'])) $departments[$lv['department']] = true;
-  if (!empty($lv['leave_type_name'])) $types[$lv['leave_type_name']] = true;
+  if (!empty($lv['department']))
+    $departments[$lv['department']] = true;
+  if (!empty($lv['leave_type_name']))
+    $types[$lv['leave_type_name']] = true;
 }
 
 $archives = [];
 if ($hasArchive) {
   $aq = $conn->query("SELECT empID, fullname, department, position, type_name, request_type_id, request_type_name, leave_type_name, action_by, from_date, to_date, duration FROM leave_request_archive ORDER BY to_date DESC LIMIT 200");
-  if ($aq) { while ($r = $aq->fetch_assoc()) { $archives[] = $r; } }
+  if ($aq) {
+    while ($r = $aq->fetch_assoc()) {
+      $archives[] = $r;
+    }
+  }
   foreach ($archives as $av) {
-    if (!empty($av['department'])) $departments[$av['department']] = true;
-    if (!empty($av['leave_type_name'])) $types[$av['leave_type_name']] = true;
+    if (!empty($av['department']))
+      $departments[$av['department']] = true;
+    if (!empty($av['leave_type_name']))
+      $types[$av['leave_type_name']] = true;
   }
 }
 
@@ -135,17 +148,23 @@ sort($allDept);
 $allTypes = array_keys($types);
 sort($allTypes);
 
-$displayLeaves = array_values(array_filter($leaves, function($lv) use ($filterDept, $filterType, $filterName) {
-  if ($filterDept !== '' && $lv['department'] !== $filterDept) return false;
-  if ($filterType !== '' && $lv['leave_type_name'] !== $filterType) return false;
-  if ($filterName !== '' && stripos($lv['fullname'], $filterName) === false) return false;
+$displayLeaves = array_values(array_filter($leaves, function ($lv) use ($filterDept, $filterType, $filterName) {
+  if ($filterDept !== '' && $lv['department'] !== $filterDept)
+    return false;
+  if ($filterType !== '' && $lv['leave_type_name'] !== $filterType)
+    return false;
+  if ($filterName !== '' && stripos($lv['fullname'], $filterName) === false)
+    return false;
   return true;
 }));
 
-$displayArchives = array_values(array_filter($archives, function($lv) use ($filterDept, $filterType, $filterName) {
-  if ($filterDept !== '' && $lv['department'] !== $filterDept) return false;
-  if ($filterType !== '' && $lv['leave_type_name'] !== $filterType) return false;
-  if ($filterName !== '' && stripos($lv['fullname'], $filterName) === false) return false;
+$displayArchives = array_values(array_filter($archives, function ($lv) use ($filterDept, $filterType, $filterName) {
+  if ($filterDept !== '' && $lv['department'] !== $filterDept)
+    return false;
+  if ($filterType !== '' && $lv['leave_type_name'] !== $filterType)
+    return false;
+  if ($filterName !== '' && stripos($lv['fullname'], $filterName) === false)
+    return false;
   return true;
 }));
 
@@ -153,10 +172,12 @@ $eventsByDate = [];
 foreach ($leaves as $lv) {
   $start = $lv['from_date'] ? new DateTime($lv['from_date']) : null;
   $end = $lv['to_date'] ? new DateTime($lv['to_date']) : null;
-  if (!$start || !$end) continue;
+  if (!$start || !$end)
+    continue;
   for ($d = clone $start; $d <= $end; $d->modify('+1 day')) {
     $key = $d->format('Y-m-d');
-    if (!isset($eventsByDate[$key])) $eventsByDate[$key] = [];
+    if (!isset($eventsByDate[$key]))
+      $eventsByDate[$key] = [];
     $eventsByDate[$key][] = [
       'empID' => $lv['empID'],
       'fullname' => $lv['fullname'],
@@ -292,7 +313,8 @@ $nextYear = $month === 12 ? $year + 1 : $year;
 
     <ul class="nav">
       <?php foreach ($menus[$role] as $label => $link): ?>
-        <li><a href="<?php echo $link; ?>"><i class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
+        <li><a href="<?php echo $link; ?>"><i
+              class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
       <?php endforeach; ?>
     </ul>
   </div>
@@ -307,7 +329,8 @@ $nextYear = $month === 12 ? $year + 1 : $year;
         <select name="dept" class="form-select" style="min-width:220px;">
           <option value="">All</option>
           <?php foreach ($allDept as $d): ?>
-            <option value="<?= htmlspecialchars($d) ?>" <?= ($filterDept === $d) ? 'selected' : '' ?>><?= htmlspecialchars($d) ?></option>
+            <option value="<?= htmlspecialchars($d) ?>" <?= ($filterDept === $d) ? 'selected' : '' ?>>
+              <?= htmlspecialchars($d) ?></option>
           <?php endforeach; ?>
         </select>
       </div>
@@ -316,13 +339,15 @@ $nextYear = $month === 12 ? $year + 1 : $year;
         <select name="ltype" class="form-select" style="min-width:220px;">
           <option value="">All</option>
           <?php foreach ($allTypes as $t): ?>
-            <option value="<?= htmlspecialchars($t) ?>" <?= ($filterType === $t) ? 'selected' : '' ?>><?= htmlspecialchars($t) ?></option>
+            <option value="<?= htmlspecialchars($t) ?>" <?= ($filterType === $t) ? 'selected' : '' ?>>
+              <?= htmlspecialchars($t) ?></option>
           <?php endforeach; ?>
         </select>
       </div>
       <div>
         <label class="form-label">Employee</label>
-        <input type="text" name="q" class="form-control" placeholder="Search name" value="<?= htmlspecialchars($filterName) ?>" />
+        <input type="text" name="q" class="form-control" placeholder="Search name"
+          value="<?= htmlspecialchars($filterName) ?>" />
       </div>
       <div>
         <button type="submit" class="btn btn-primary">Filter</button>
@@ -331,9 +356,11 @@ $nextYear = $month === 12 ? $year + 1 : $year;
     </form>
 
     <div class="d-flex align-items-center mb-3" style="gap:12px;">
-      <a class="btn btn-outline-primary" href="?month=<?= $prevMonth ?>&year=<?= $prevYear ?>"><i class="fa-solid fa-chevron-left"></i></a>
+      <a class="btn btn-outline-primary" href="?month=<?= $prevMonth ?>&year=<?= $prevYear ?>"><i
+          class="fa-solid fa-chevron-left"></i></a>
       <div class="fw-bold"><?= date('F Y', strtotime(sprintf('%04d-%02d-01', $year, $month))) ?></div>
-      <a class="btn btn-outline-primary" href="?month=<?= $nextMonth ?>&year=<?= $nextYear ?>"><i class="fa-solid fa-chevron-right"></i></a>
+      <a class="btn btn-outline-primary" href="?month=<?= $nextMonth ?>&year=<?= $nextYear ?>"><i
+          class="fa-solid fa-chevron-right"></i></a>
     </div>
 
     <div class="table-responsive">
@@ -350,7 +377,9 @@ $nextYear = $month === 12 ? $year + 1 : $year;
           </tr>
         </thead>
         <tbody>
-          <?php $day = 1; $printed = false; for ($row = 0; $row < 6; $row++): ?>
+          <?php $day = 1;
+          $printed = false;
+          for ($row = 0; $row < 6; $row++): ?>
             <tr>
               <?php for ($col = 0; $col < 7; $col++): ?>
                 <?php if ($row === 0 && $col < $startWeekday): ?>
@@ -358,19 +387,22 @@ $nextYear = $month === 12 ? $year + 1 : $year;
                 <?php elseif ($day > $daysInMonth): ?>
                   <td class="bg-light"></td>
                 <?php else: ?>
-                  <?php $dateStr = sprintf('%04d-%02d-%02d', $year, $month, $day); $items = $eventsByDate[$dateStr] ?? []; ?>
+                  <?php $dateStr = sprintf('%04d-%02d-%02d', $year, $month, $day);
+                  $items = $eventsByDate[$dateStr] ?? []; ?>
                   <td class="<?= !empty($items) ? 'bg-warning-subtle' : '' ?>" style="min-height:90px;">
                     <div class="fw-semibold"><?= $day ?></div>
                     <?php if (!empty($items)): ?>
                       <div class="badge bg-warning text-dark mb-2"><?= count($items) ?> on leave</div>
-                      <button type="button" class="btn btn-sm btn-primary view-day" data-date="<?= $dateStr ?>" data-items='<?= json_encode($items) ?>'>View</button>
+                      <button type="button" class="btn btn-sm btn-primary view-day" data-date="<?= $dateStr ?>"
+                        data-items='<?= json_encode($items) ?>'>View</button>
                     <?php endif; ?>
                   </td>
                   <?php $day++; ?>
                 <?php endif; ?>
               <?php endfor; ?>
             </tr>
-            <?php if ($day > $daysInMonth) break; ?>
+            <?php if ($day > $daysInMonth)
+              break; ?>
           <?php endfor; ?>
         </tbody>
       </table>
@@ -398,17 +430,17 @@ $nextYear = $month === 12 ? $year + 1 : $year;
           </thead>
           <tbody>
             <?php foreach ($displayLeaves as $lv): ?>
-              <?php 
-                $from = $lv['from_date'];
-                $to = $lv['to_date'];
-                $st = ($from && $to && $today >= $from && $today <= $to) ? 'Effective' : (($from && $today < $from) ? 'Upcoming' : 'Completed');
+              <?php
+              $from = $lv['from_date'];
+              $to = $lv['to_date'];
+              $st = ($from && $to && $today >= $from && $today <= $to) ? 'Effective' : (($from && $today < $from) ? 'Upcoming' : 'Completed');
               ?>
               <tr>
                 <td><?= htmlspecialchars($lv['fullname']) ?></td>
                 <td><?= htmlspecialchars($lv['position']) ?></td>
                 <td><?= htmlspecialchars($lv['department']) ?></td>
                 <td><?= htmlspecialchars($lv['type_name'] ?? 'N/A') ?></td>
-                <td><?= (int)($lv['request_type_id'] ?? 0) ?></td>
+                <td><?= (int) ($lv['request_type_id'] ?? 0) ?></td>
                 <td><?= htmlspecialchars($lv['request_type_name'] ?? 'N/A') ?></td>
                 <td><?= htmlspecialchars($lv['leave_type_name'] ?? 'N/A') ?></td>
                 <td><?= htmlspecialchars($lv['action_by'] ?? 'N/A') ?></td>
@@ -453,23 +485,26 @@ $nextYear = $month === 12 ? $year + 1 : $year;
               </tr>
             </thead>
             <tbody>
-              <?php if (!empty($displayArchives)): foreach ($displayArchives as $lv): ?>
+              <?php if (!empty($displayArchives)):
+                foreach ($displayArchives as $lv): ?>
+                  <tr>
+                    <td><?= htmlspecialchars($lv['fullname']) ?></td>
+                    <td><?= htmlspecialchars($lv['position']) ?></td>
+                    <td><?= htmlspecialchars($lv['department']) ?></td>
+                    <td><?= htmlspecialchars($lv['type_name'] ?? 'N/A') ?></td>
+                    <td><?= (int) ($lv['request_type_id'] ?? 0) ?></td>
+                    <td><?= htmlspecialchars($lv['request_type_name'] ?? 'N/A') ?></td>
+                    <td><?= htmlspecialchars($lv['leave_type_name'] ?? 'N/A') ?></td>
+                    <td><?= htmlspecialchars($lv['action_by'] ?? 'N/A') ?></td>
+                    <td><?= htmlspecialchars($lv['from_date'] ?? 'N/A') ?></td>
+                    <td><?= htmlspecialchars($lv['to_date'] ?? 'N/A') ?></td>
+                    <td><?= htmlspecialchars($lv['duration'] ?? 'N/A') ?></td>
+                    <td><span class="badge bg-secondary">Archived</span></td>
+                  </tr>
+                <?php endforeach; else: ?>
                 <tr>
-                  <td><?= htmlspecialchars($lv['fullname']) ?></td>
-                  <td><?= htmlspecialchars($lv['position']) ?></td>
-                  <td><?= htmlspecialchars($lv['department']) ?></td>
-                  <td><?= htmlspecialchars($lv['type_name'] ?? 'N/A') ?></td>
-                  <td><?= (int)($lv['request_type_id'] ?? 0) ?></td>
-                  <td><?= htmlspecialchars($lv['request_type_name'] ?? 'N/A') ?></td>
-                  <td><?= htmlspecialchars($lv['leave_type_name'] ?? 'N/A') ?></td>
-                  <td><?= htmlspecialchars($lv['action_by'] ?? 'N/A') ?></td>
-                  <td><?= htmlspecialchars($lv['from_date'] ?? 'N/A') ?></td>
-                  <td><?= htmlspecialchars($lv['to_date'] ?? 'N/A') ?></td>
-                  <td><?= htmlspecialchars($lv['duration'] ?? 'N/A') ?></td>
-                  <td><span class="badge bg-secondary">Archived</span></td>
+                  <td colspan="12" class="text-muted">No archived leaves.</td>
                 </tr>
-              <?php endforeach; else: ?>
-                <tr><td colspan="12" class="text-muted">No archived leaves.</td></tr>
               <?php endif; ?>
             </tbody>
           </table>
@@ -477,46 +512,46 @@ $nextYear = $month === 12 ? $year + 1 : $year;
       </div>
     <?php endif; ?>
   </div>
-<div class="modal fade" id="dayModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title">Employees on Leave</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body">
-        <div id="dayList"></div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+  <div class="modal fade" id="dayModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Employees on Leave</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="dayList"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
       </div>
     </div>
   </div>
-  </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('.view-day').forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      var items = [];
-      try { items = JSON.parse(this.getAttribute('data-items')); } catch(e) {}
-      var list = document.getElementById('dayList');
-      var html = '';
-      items.forEach(function(it) {
-        html += '<div class="border rounded p-2 mb-2">' +
-                '<div><strong>' + (it.fullname || '') + '</strong> (' + (it.empID || '') + ')</div>' +
-                '<div>' + (it.department || 'N/A') + ' • ' + (it.position || 'N/A') + '</div>' +
-                '<div>Leave Type: ' + (it.leave_type_name || 'N/A') + '</div>' +
-                '</div>';
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      document.querySelectorAll('.view-day').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var items = [];
+          try { items = JSON.parse(this.getAttribute('data-items')); } catch (e) { }
+          var list = document.getElementById('dayList');
+          var html = '';
+          items.forEach(function (it) {
+            html += '<div class="border rounded p-2 mb-2">' +
+              '<div><strong>' + (it.fullname || '') + '</strong> (' + (it.empID || '') + ')</div>' +
+              '<div>' + (it.department || 'N/A') + ' • ' + (it.position || 'N/A') + '</div>' +
+              '<div>Leave Type: ' + (it.leave_type_name || 'N/A') + '</div>' +
+              '</div>';
+          });
+          list.innerHTML = html || '<p class="text-muted">No data</p>';
+          var m = new bootstrap.Modal(document.getElementById('dayModal'));
+          m.show();
+        });
       });
-      list.innerHTML = html || '<p class="text-muted">No data</p>';
-      var m = new bootstrap.Modal(document.getElementById('dayModal'));
-      m.show();
     });
-  });
-});
-</script>
+  </script>
 </body>
 
 </html>

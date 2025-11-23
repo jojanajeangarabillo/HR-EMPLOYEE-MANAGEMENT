@@ -39,6 +39,7 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
+    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -54,6 +55,7 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
+    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -90,6 +92,7 @@ $icons = [
   "Job Post" => "fa-bullhorn",
   "Calendar" => "fa-calendar-days",
   "Approvals" => "fa-square-check",
+  "Reports" => "fa-chart-column",
   "Settings" => "fa-gear",
   "Logout" => "fa-right-from-bracket"
 ];
@@ -123,15 +126,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (!$employeeID)
     die("Employee not found or not logged in.");
 
-  // Check for existing pending request
-  $pendingStmt = $conn->prepare("SELECT COUNT(*) as pending_count FROM employee_request WHERE empID = ? AND status = 'Pending'");
-  $pendingStmt->bind_param("s", $employeeID);
-  $pendingStmt->execute();
-  $pendingResult = $pendingStmt->get_result()->fetch_assoc();
-
-  if ($pendingResult['pending_count'] > 0) {
-    $_SESSION['request_error'] = "You still have a pending request. Wait for further action before requesting again. Thank you!";
-    header("Location: Manager_Requests.php");
+  $pendingCount = 0;
+  $ps1 = $conn->prepare("SELECT COUNT(*) AS c FROM leave_request WHERE empID = ? AND status = 'Pending'");
+  $ps1->bind_param("s", $employeeID);
+  $ps1->execute();
+  $r1 = $ps1->get_result()->fetch_assoc();
+  $pendingCount += intval($r1['c'] ?? 0);
+  $ps2 = $conn->prepare("SELECT COUNT(*) AS c FROM general_request WHERE empID = ? AND status = 'Pending'");
+  $ps2->bind_param("s", $employeeID);
+  $ps2->execute();
+  $r2 = $ps2->get_result()->fetch_assoc();
+  $pendingCount += intval($r2['c'] ?? 0);
+  if ($pendingCount > 0) {
+    $_SESSION['request_error'] = "You still have a pending request. Wait for action before requesting again.";
+    header("Location: Manager_Request.php");
     exit;
   }
 
@@ -139,6 +147,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $requestTypeID = $_POST['request_type_id'] ?? null;
   $leaveTypeID = $_POST['leave_type_id'] ?? null;
   $reason = trim($_POST['reason'] ?? '');
+  $from_date = $_POST['from_date'] ?? null;
+  $to_date = $_POST['to_date'] ?? null;
+  $duration = $_POST['duration'] ?? null;
 
   // Handle file upload for e-signature
   $signaturePath = '';
@@ -173,47 +184,96 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $requestTypeName = $typeResult['request_type_name'] ?? null;
   }
 
-  // Get leave type name only if request is Leave
-  $leaveTypeName = null;
-  if ($requestTypeName === 'Leave' && $leaveTypeID) {
-    $leaveStmt = $conn->prepare("SELECT leave_type_name FROM leave_types WHERE id = ?");
-    $leaveStmt->bind_param("i", $leaveTypeID);
-    $leaveStmt->execute();
-    $leaveResult = $leaveStmt->get_result()->fetch_assoc();
-    $leaveTypeName = $leaveResult['leave_type_name'] ?? null;
-  } else {
-    $leaveTypeID = null;
+  if ($requestTypeName === 'Leave') {
+    if (!$leaveTypeID || !$from_date || !$to_date) {
+      $_SESSION['request_error'] = "Provide leave type and date range.";
+      header("Location: Manager_Request.php");
+      exit;
+    }
+    $d1 = date_create($from_date);
+    $d2 = date_create($to_date);
+    if (!$d1 || !$d2 || $d1 > $d2) {
+      $_SESSION['request_error'] = "Invalid date range.";
+      header("Location: Manager_Request.php");
+      exit;
+    }
+    $monthNum = intval(date('n', strtotime($from_date)));
+    $slotStmt = $conn->prepare("SELECT employee_limit FROM leave_settings WHERE request_type_id = ? AND month = ? ORDER BY settingID DESC LIMIT 1");
+    $slotStmt->bind_param("ii", $requestTypeID, $monthNum);
+    $slotStmt->execute();
+    $slotRow = $slotStmt->get_result()->fetch_assoc();
+    $slotsLeft = isset($slotRow['employee_limit']) ? (int) $slotRow['employee_limit'] : null;
+    $slotStmt->close();
+    if ($slotsLeft !== null && $slotsLeft <= 0) {
+      $_SESSION['request_error'] = "No slots available for this month.";
+      header("Location: Manager_Request.php");
+      exit;
+    }
+    if (!$duration) {
+      $diff = $d2->diff($d1)->days + 1;
+      $duration = $diff;
+    }
     $leaveTypeName = null;
+    $ltStmt = $conn->prepare("SELECT leave_type_name, pay_category_id FROM leave_types WHERE id = ?");
+    $ltStmt->bind_param("i", $leaveTypeID);
+    $ltStmt->execute();
+    $ltRow = $ltStmt->get_result()->fetch_assoc();
+    $leaveTypeName = $ltRow['leave_type_name'] ?? '';
+    $payCategoryID = isset($ltRow['pay_category_id']) ? (int) $ltRow['pay_category_id'] : 1;
+    $stmt = $conn->prepare("INSERT INTO leave_request (
+      empID, fullname, department, position, type_name, email_address, e_signature,
+      request_type_id, request_type_name, reason, status, requested_at,
+      leave_type_id, pay_category_id, leave_type_name, from_date, to_date, duration
+    ) VALUES (
+      ?, ?, ?, ?, ?, ?, ?,
+      ?, ?, ?, 'Pending', NOW(),
+      ?, ?, ?, ?, ?, ?
+    )");
+    $stmt->bind_param(
+      "sssssssississssi",
+      $employeeID,
+      $fullname,
+      $department,
+      $position,
+      $type_name,
+      $email_address,
+      $signaturePath,
+      $requestTypeID,
+      $requestTypeName,
+      $reason,
+      $leaveTypeID,
+      $payCategoryID,
+      $leaveTypeName,
+      $from_date,
+      $to_date,
+      $duration
+    );
+  } else {
+    if (!$requestTypeID || !$requestTypeName) {
+      $_SESSION['request_error'] = "Select a valid request type.";
+      header("Location: Manager_Request.php");
+      exit;
+    }
+    $stmt = $conn->prepare("INSERT INTO general_request (empID, fullname, department, position, email, request_type_id, reason) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param(
+      "sssssis",
+      $employeeID,
+      $fullname,
+      $department,
+      $position,
+      $email_address,
+      $requestTypeID,
+      $reason
+    );
   }
-
-  // Insert employee request
-  $stmt = $conn->prepare("INSERT INTO employee_request 
-        (empID, fullname, department, position, type_name, email_address, e_signature, request_type_id, request_type_name, leave_type_id, leave_type_name, reason, status, requested_at) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', NOW())");
-
-  $stmt->bind_param(
-    "sssssssisiss",
-    $employeeID,
-    $fullname,
-    $department,
-    $position,
-    $type_name,
-    $email_address,
-    $signaturePath,
-    $requestTypeID,
-    $requestTypeName,
-    $leaveTypeID,
-    $leaveTypeName,
-    $reason
-  );
 
   if ($stmt->execute()) {
     $_SESSION['request_success'] = "Requested Successfully!";
-    header("Location: Manager_Requests.php");
-    exit;
   } else {
-    $_SESSION['request_error'] = "Failed to submit request. Please try again.";
+    $_SESSION['request_error'] = "Failed to submit request.";
   }
+  header("Location: Manager_Request.php");
+  exit;
 }
 
 
@@ -234,6 +294,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <style>
     .sidebar-profile-img {
@@ -604,7 +665,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <ul class="nav">
       <?php foreach ($menus[$role] as $label => $link): ?>
-        <li><a href="<?php echo $link; ?>"><i class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
+        <li><a href="<?php echo $link; ?>"><i
+              class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
       <?php endforeach; ?>
     </ul>
   </div>
@@ -678,13 +740,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php
             if ($employeeID) {
               $reqStmt = $conn->prepare("
-                  SELECT request_type_name, leave_type_name, reason, status, requested_at, action_by
-                  FROM employee_request 
-                  WHERE empID = ? 
+                  SELECT 'Leave' AS request_type_name, lr.leave_type_name, lr.reason, lr.status, lr.requested_at, NULL AS action_by
+                  FROM leave_request lr WHERE lr.empID = ?
+                  UNION ALL
+                  SELECT tor.request_type_name, NULL AS leave_type_name, gr.reason, gr.status, gr.requested_at, gr.action_by
+                  FROM general_request gr
+                  JOIN types_of_requests tor ON tor.id = gr.request_type_id
+                  WHERE gr.empID = ?
                   ORDER BY requested_at DESC
               ");
 
-              $reqStmt->bind_param("s", $employeeID);
+              $reqStmt->bind_param("ss", $employeeID, $employeeID);
               $reqStmt->execute();
               $reqResult = $reqStmt->get_result();
 
@@ -801,6 +867,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               </div>
             </div>
 
+            <div class="modal-row" id="leave-dates-container" style="display:none;">
+              <div class="form-group wide">
+                <label>From Date:</label>
+                <input type="date" id="from-date" name="from_date">
+              </div>
+              <div class="form-group wide">
+                <label>To Date:</label>
+                <input type="date" id="to-date" name="to_date">
+              </div>
+              <div class="form-group wide">
+                <label>Duration (Days):</label>
+                <input type="number" id="duration" name="duration" readonly>
+              </div>
+              <div class="form-group wide">
+                <div id="slot-warning" style="display:none;color:#E63946;font-weight:600;"></div>
+              </div>
+            </div>
+
             <div class="form-group wide">
               <label>Upload E-Signature:</label>
               <input type="file" name="e_signature" accept="image/*">
@@ -888,22 +972,93 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     const requestTypeSelect = document.getElementById('request-type');
     const leaveTypeContainer = document.getElementById('leave-type-container');
     const leaveTypeSelect = document.getElementById('leave-type');
+    const leaveDatesContainer = document.getElementById('leave-dates-container');
+    const fromDateInput = document.getElementById('from-date');
+    const toDateInput = document.getElementById('to-date');
+    const durationInput = document.getElementById('duration');
+    const sendBtn = document.querySelector('.send-btn');
+    const slotWarning = document.getElementById('slot-warning');
+    const slotsByMonth = <?php
+    $slotsByMonth = [];
+    $leaveTypeIdRow = null;
+    $ltidStmt = $conn->prepare("SELECT id FROM types_of_requests WHERE request_type_name = 'Leave' LIMIT 1");
+    $ltidStmt->execute();
+    $leaveTypeIdRow = $ltidStmt->get_result()->fetch_assoc();
+    $ltidStmt->close();
+    $leaveReqTypeId = $leaveTypeIdRow['id'] ?? null;
+    if ($leaveReqTypeId) {
+      $lsStmt = $conn->prepare("SELECT month, employee_limit, settingID FROM leave_settings WHERE request_type_id = ? ORDER BY settingID DESC");
+      $lsStmt->bind_param("i", $leaveReqTypeId);
+      $lsStmt->execute();
+      $lsRes = $lsStmt->get_result();
+      while ($row = $lsRes->fetch_assoc()) {
+        $m = (int) $row['month'];
+        if (!isset($slotsByMonth[$m]))
+          $slotsByMonth[$m] = (int) $row['employee_limit'];
+      }
+      $lsStmt->close();
+    }
+    echo json_encode($slotsByMonth);
+    ?>;
 
     requestTypeSelect.addEventListener('change', () => {
       const selected = requestTypeSelect.selectedOptions[0].text;
-
-      // Show leave types if "Leave" selected
       if (selected === 'Leave') {
         leaveTypeContainer.style.display = 'block';
+        leaveDatesContainer.style.display = 'flex';
         Array.from(leaveTypeSelect.options).forEach(opt => {
           opt.style.display = (opt.dataset.request == requestTypeSelect.value || opt.value === "") ? 'block' : 'none';
         });
+        checkSlots();
       } else {
         leaveTypeContainer.style.display = 'none';
+        leaveDatesContainer.style.display = 'none';
         leaveTypeSelect.value = "";
+        fromDateInput.value = "";
+        toDateInput.value = "";
+        durationInput.value = "";
+        sendBtn.disabled = false;
+        slotWarning.style.display = 'none';
       }
-
     });
+
+    function calculateDuration() {
+      if (fromDateInput.value && toDateInput.value) {
+        const from = new Date(fromDateInput.value);
+        const to = new Date(toDateInput.value);
+        const diff = (to - from) / (1000 * 60 * 60 * 24) + 1;
+        durationInput.value = diff > 0 ? diff : 0;
+      } else {
+        durationInput.value = '';
+      }
+    }
+
+    fromDateInput.addEventListener('change', calculateDuration);
+    toDateInput.addEventListener('change', calculateDuration);
+
+    function checkSlots() {
+      const selected = requestTypeSelect.selectedOptions[0]?.text;
+      if (selected === 'Leave' && fromDateInput.value) {
+        const m = new Date(fromDateInput.value).getMonth() + 1;
+        const slots = slotsByMonth && slotsByMonth[m] !== undefined ? parseInt(slotsByMonth[m], 10) : null;
+        if (slots !== null && slots <= 0) {
+          sendBtn.disabled = true;
+          leaveTypeSelect.disabled = true;
+          fromDateInput.disabled = true;
+          toDateInput.disabled = true;
+          slotWarning.textContent = 'No slots available for this month.';
+          slotWarning.style.display = 'block';
+        } else {
+          sendBtn.disabled = false;
+          leaveTypeSelect.disabled = false;
+          fromDateInput.disabled = false;
+          toDateInput.disabled = false;
+          slotWarning.style.display = 'none';
+        }
+      }
+    }
+
+    fromDateInput.addEventListener('change', () => { calculateDuration(); checkSlots(); });
 
 
     const viewButtons = document.querySelectorAll('.view-btn');
