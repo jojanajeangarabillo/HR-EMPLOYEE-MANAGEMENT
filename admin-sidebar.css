@@ -354,8 +354,48 @@ button:hover {
   transform: scale(1.05);
 }
 
-.sidebar-name p {
+  .sidebar-name p {
   color: white;
   text-align: center;
   font-weight: 500;
+  }
+/* --- Design tokens and modern spacing --- */
+:root{
+  --primary:#1E3A8A;
+  --primary-600:#2563EB;
+  --bg:#F5F8FF;
+  --text:#111827;
+  --muted:#4b5563;
+  --radius:12px;
+  --shadow:0 10px 25px rgba(15,23,42,.08);
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px; --space-7:40px;
 }
+
+/* Content area spacing */
+.main-content { margin-left:230px !important; padding: var(--space-6) var(--space-5) !important; min-height:100vh; display:block; }
+.main-content-header h1 { color: var(--primary); font-weight:700; margin-bottom: var(--space-6); }
+
+/* Cards */
+.card { border:none; border-radius: var(--radius); box-shadow: var(--shadow); }
+.card-header { background:#fff; border-bottom:1px solid #e5e7eb; }
+.card-body { padding: var(--space-5); }
+
+/* Tables */
+.table { border-collapse: collapse; border-radius: var(--radius); overflow: hidden; }
+.table th, .table td { padding: var(--space-4) var(--space-5); vertical-align: middle; }
+.table thead { background-color: #e5edfb; }
+
+/* Buttons */
+.btn { border-radius: 10px; padding: 10px 16px; }
+.btn-primary { background-color: var(--primary); border-color: var(--primary); }
+.btn-primary:hover { background-color: var(--primary-600); border-color: var(--primary-600); }
+.btn-outline-primary { color: var(--primary); border-color: var(--primary); }
+.btn-outline-primary:hover { background-color: var(--primary); color:#fff; }
+
+/* Badges */
+.badge { border-radius:999px; padding:6px 10px; }
+
+/* Utility spacing */
+.stack-sm > * + * { margin-top: var(--space-3); }
+.stack-md > * + * { margin-top: var(--space-4); }
+.stack-lg > * + * { margin-top: var(--space-6); }

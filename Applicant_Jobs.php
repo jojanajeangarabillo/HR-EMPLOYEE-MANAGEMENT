@@ -384,8 +384,8 @@ if ($search !== '') {
   <title>Job Listing</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="applicant.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 
   <style>
     body {
@@ -440,10 +440,11 @@ if ($search !== '') {
       flex-direction: column;
     }
     
-  </style>
+</style>
 </head>
 
 <body>
+  <?php $current = basename($_SERVER['PHP_SELF']); ?>
   <div class="sidebar">
     <a href="Applicant_Profile.php" class="profile">
       <img
@@ -454,9 +455,9 @@ if ($search !== '') {
       <p><?= "Welcome, $applicantname" ?></p>
     </div>
     <ul class="nav">
-      <li><a href="Applicant_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
-      <li><a href="Applicant_Application.php"><i class="fa-solid fa-file-lines"></i>Applications</a></li>
-      <li class="active"><a href="Applicant_Jobs.php"><i class="fa-solid fa-briefcase"></i>Jobs</a></li>
+      <li<?php echo $current==='Applicant_Dashboard.php' ? ' class="active"' : ''; ?>><a href="Applicant_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+      <li<?php echo $current==='Applicant_Application.php' ? ' class="active"' : ''; ?>><a href="Applicant_Application.php"><i class="fa-solid fa-file-lines"></i>Applications</a></li>
+      <li<?php echo $current==='Applicant_Jobs.php' ? ' class="active"' : ''; ?>><a href="Applicant_Jobs.php"><i class="fa-solid fa-briefcase"></i>Jobs</a></li>
       <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Log Out</a></li>
     </ul>
   </div>
@@ -572,7 +573,7 @@ if ($search !== '') {
   </div>
 
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     $(function () {
       $('.apply-btn').click(function () {

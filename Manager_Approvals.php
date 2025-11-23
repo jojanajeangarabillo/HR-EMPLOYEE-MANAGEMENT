@@ -87,68 +87,127 @@ $menus = [
 ];
 
 $role = $_SESSION['sub_role'] ?? "HR Manager";
+$icons = [
+  "Dashboard" => "fa-table-columns",
+  "Applicants" => "fa-user",
+  "Pending Applicants" => "fa-clock",
+  "Newly Hired" => "fa-user-check",
+  "Employees" => "fa-users",
+  "Requests" => "fa-file-lines",
+  "Vacancies" => "fa-briefcase",
+  "Job Post" => "fa-bullhorn",
+  "Calendar" => "fa-calendar-days",
+  "Approvals" => "fa-square-check",
+  "Settings" => "fa-gear",
+  "Logout" => "fa-right-from-bracket"
+];
 
 
 $requests = [];
+$openPickupModal = false;
+$pickupInfo = null;
 
-if ($role === "HR Manager") {
-  // HR Manager should not see their own requests
-  $stmt = $conn->prepare("SELECT r.request_id, e.empID, e.fullname, e.department, r.request_type_name, r.status, r.reason, r.requested_at 
-                            FROM employee_request r
-                            JOIN employee e ON r.empID = e.empID
-                            LEFT JOIN department d ON e.department = d.deptID
-                            WHERE e.empID != ?
-                            ORDER BY r.requested_at DESC");
-  $stmt->bind_param("s", $employeeID);
-} elseif ($role === "HR Director") {
-  // HR Director should not see their own requests
-  $stmt = $conn->prepare("SELECT r.request_id, e.empID, e.fullname, e.department, r.request_type_name, r.status, r.reason, r.requested_at 
-                            FROM employee_request r
-                            JOIN employee e ON r.empID = e.empID
-                            LEFT JOIN department d ON e.department = d.deptID
-                            WHERE e.empID != ?
-                            ORDER BY r.requested_at DESC");
-  $stmt->bind_param("s", $employeeID);
+// Build combined request list: leave_request + general_request
+if ($role === "HR Manager" || $role === "HR Director") {
+  $excludeEmp = $employeeID ?? '';
+  $sql = "
+    SELECT lr.request_id AS rid, e.empID, e.fullname, e.department, 'Leave' AS request_type_name,
+           lr.reason, lr.status, lr.requested_at, 'leave' AS source, lr.from_date
+    FROM leave_request lr
+    JOIN employee e ON lr.empID = e.empID
+    WHERE e.empID != ?
+    UNION ALL
+    SELECT gr.request_id AS rid, e.empID, e.fullname, e.department, tor.request_type_name,
+           gr.reason, gr.status, gr.requested_at, 'general' AS source, NULL AS from_date
+    FROM general_request gr
+    JOIN employee e ON gr.empID = e.empID
+    JOIN types_of_requests tor ON tor.id = gr.request_type_id
+    WHERE e.empID != ?
+    ORDER BY requested_at DESC";
+  $stmt = $conn->prepare($sql);
+  $stmt->bind_param('ss', $excludeEmp, $excludeEmp);
 } else {
-  // Other roles see all requests
-  $stmt = $conn->prepare("SELECT r.request_id, e.empID, e.fullname, e.department, r.request_type_name, r.status, r.reason, r.requested_at 
-                            FROM employee_request r
-                            JOIN employee e ON r.empID = e.empID
-                            LEFT JOIN department d ON e.department = d.deptID
-                            ORDER BY r.requested_at DESC");
+  $sql = "
+    SELECT lr.request_id AS rid, e.empID, e.fullname, e.department, 'Leave' AS request_type_name,
+           lr.reason, lr.status, lr.requested_at, 'leave' AS source, lr.from_date
+    FROM leave_request lr
+    JOIN employee e ON lr.empID = e.empID
+    UNION ALL
+    SELECT gr.request_id AS rid, e.empID, e.fullname, e.department, tor.request_type_name,
+           gr.reason, gr.status, gr.requested_at, 'general' AS source, NULL AS from_date
+    FROM general_request gr
+    JOIN employee e ON gr.empID = e.empID
+    JOIN types_of_requests tor ON tor.id = gr.request_type_id
+    ORDER BY requested_at DESC";
+  $stmt = $conn->prepare($sql);
 }
 
 $stmt->execute();
 $res = $stmt->get_result();
-while ($row = $res->fetch_assoc()) {
-  $requests[] = $row;
-}
+while ($row = $res->fetch_assoc()) { $requests[] = $row; }
 $stmt->close();
 
+// Prepare monthly slots lookup for Leave
+$typeStmt2 = $conn->prepare("SELECT id FROM types_of_requests WHERE request_type_name = ? LIMIT 1");
+$typeName2 = 'Leave';
+$typeStmt2->bind_param("s", $typeName2);
+$typeStmt2->execute();
+$typeRes2 = $typeStmt2->get_result()->fetch_assoc();
+$leave_type_id_for_lookup = $typeRes2['id'] ?? null;
+$typeStmt2->close();
+
+$limitLookupStmt = null;
+if ($leave_type_id_for_lookup) {
+  $limitLookupStmt = $conn->prepare("SELECT employee_limit FROM leave_settings WHERE request_type_id = ? AND month = ? ORDER BY settingID DESC LIMIT 1");
+}
 
 
 // --- Handle Approve/Reject Actions ---
-if (isset($_GET['action'], $_GET['id'])) {
-    $request_id = intval($_GET['id']);
+if (isset($_GET['action'], $_GET['type'])) {
     $action = $_GET['action'];
+    $source = $_GET['type'];
+    $request_id = isset($_GET['id']) ? intval($_GET['id']) : null;
+    $req_emp = isset($_GET['emp']) ? $_GET['emp'] : null;
+    $req_ts = isset($_GET['ts']) ? $_GET['ts'] : null;
 
     $status = ($action === 'accept') ? 'Approved' : (($action === 'reject') ? 'Rejected' : null);
 
     if ($status) {
 
-        // (1) Get request details for email
-        $stmt = $conn->prepare("SELECT fullname, email_address, request_type_name, leave_type_name 
-                                FROM employee_request 
-                                WHERE request_id = ?");
-        $stmt->bind_param("i", $request_id);
-        $stmt->execute();
-        $req = $stmt->get_result()->fetch_assoc();
-        $stmt->close();
+        if ($source === 'general' && $status === 'Approved') {
+            $gi = $conn->prepare("SELECT gr.request_id, gr.empID, gr.fullname, gr.department, gr.position, gr.email, tor.request_type_name, e.type_name FROM general_request gr JOIN types_of_requests tor ON tor.id = gr.request_type_id LEFT JOIN employee e ON e.empID = gr.empID WHERE gr.request_id = ?");
+            $gi->bind_param("i", $request_id);
+            $gi->execute();
+            $pickupInfo = $gi->get_result()->fetch_assoc();
+            $gi->close();
+            $openPickupModal = $pickupInfo ? true : false;
+            if ($openPickupModal) {
+                goto render_page;
+            }
+        }
 
-        $emp_name = $req['fullname'];
-        $email = $req['email_address'];
-        $requestType = $req['request_type_name'];
-        $leaveType = $req['leave_type_name'];
+        if ($source === 'leave') {
+            $stmt = $conn->prepare("SELECT fullname, email_address, 'Leave' AS request_type_name, leave_type_name, from_date FROM leave_request WHERE empID = ? AND requested_at = ?");
+            $stmt->bind_param("ss", $req_emp, $req_ts);
+            $stmt->execute();
+            $req = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            $emp_name = $req['fullname'];
+            $email = $req['email_address'];
+            $requestType = $req['request_type_name'];
+            $leaveType = $req['leave_type_name'];
+            $leaveMonth = isset($req['from_date']) ? intval(date('n', strtotime($req['from_date']))) : intval(date('n'));
+        } elseif ($source === 'general') {
+            $stmt = $conn->prepare("SELECT fullname, email AS email_address, tor.request_type_name, NULL AS leave_type_name FROM general_request gr JOIN types_of_requests tor ON tor.id = gr.request_type_id WHERE gr.request_id = ?");
+            $stmt->bind_param("i", $request_id);
+            $stmt->execute();
+            $req = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+            $emp_name = $req['fullname'];
+            $email = $req['email_address'];
+            $requestType = $req['request_type_name'];
+            $leaveType = $req['leave_type_name'];
+        }
 
         // (2) Prepare email message
         if ($status == "Approved") {
@@ -173,12 +232,39 @@ if (isset($_GET['action'], $_GET['id'])) {
         // (3) Update database
         $action_by = $managername;
 
-        $stmt = $conn->prepare("UPDATE employee_request 
-                                SET status = ?, action_by = ? 
-                                WHERE request_id = ?");
-        $stmt->bind_param("ssi", $status, $action_by, $request_id);
-        $stmt->execute();
-        $stmt->close();
+        if ($source === 'leave') {
+            $stmt = $conn->prepare("UPDATE leave_request SET status = ?, action_by = ? WHERE empID = ? AND requested_at = ?");
+            $stmt->bind_param("ssss", $status, $action_by, $req_emp, $req_ts);
+            $stmt->execute();
+            $stmt->close();
+
+            if ($status === 'Approved') {
+                $typeStmt = $conn->prepare("SELECT id FROM types_of_requests WHERE request_type_name = ? LIMIT 1");
+                $typeName = 'Leave';
+                $typeStmt->bind_param("s", $typeName);
+                $typeStmt->execute();
+                $typeRes = $typeStmt->get_result()->fetch_assoc();
+                $leave_type_id = $typeRes['id'] ?? null;
+                $typeStmt->close();
+
+                if ($leave_type_id) {
+                    $upd = $conn->prepare("UPDATE leave_settings SET employee_limit = employee_limit - 1 WHERE request_type_id = ? AND month = ? AND employee_limit > 0 ORDER BY settingID DESC LIMIT 1");
+                    $upd->bind_param("ii", $leave_type_id, $leaveMonth);
+                    $upd->execute();
+                    if ($upd->affected_rows <= 0) {
+                        $_SESSION['flash_error'] = "No available slots to decrement for leave setting.";
+                    }
+                    $upd->close();
+                }
+            }
+        } else {
+            if ($status === 'Approved' && !$openPickupModal) {
+                $stmt = $conn->prepare("UPDATE general_request SET status = ?, action_by = ? WHERE request_id = ?");
+                $stmt->bind_param("ssi", $status, $action_by, $request_id);
+                $stmt->execute();
+                $stmt->close();
+            }
+        }
 
         // (4) SEND EMAIL
         $mail = new PHPMailer(true);
@@ -209,9 +295,58 @@ if (isset($_GET['action'], $_GET['id'])) {
         }
     }
 
+    if (!$openPickupModal) {
+        header("Location: Manager_Approvals.php");
+        exit;
+    }
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['schedule_pickup'])) {
+    $gid = intval($_POST['general_id']);
+    $pickup_date = $_POST['pickup_date'] ?? null;
+    if ($gid > 0 && $pickup_date) {
+        $stmt = $conn->prepare("SELECT gr.fullname, gr.email, tor.request_type_name, gr.empID FROM general_request gr JOIN types_of_requests tor ON tor.id = gr.request_type_id WHERE gr.request_id = ?");
+        $stmt->bind_param("i", $gid);
+        $stmt->execute();
+        $r = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        $stmt = $conn->prepare("UPDATE general_request SET status='Approved', action_by=?, pickup_date=? WHERE request_id=?");
+        $stmt->bind_param("ssi", $managername, $pickup_date, $gid);
+        $stmt->execute();
+        $stmt->close();
+
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = $config['host'];
+            $mail->SMTPAuth = true;
+            $mail->Username = $config['username'];
+            $mail->Password = $config['password'];
+            $mail->SMTPSecure = $config['encryption'];
+            $mail->Port = $config['port'];
+
+            $mail->setFrom($config['from_email'], $config['from_name']);
+            $mail->addAddress($r['email'], $r['fullname']);
+
+            $pos = ($role === 'HR Director') ? 'Director' : 'Manager';
+            $mail->isHTML(true);
+            $mail->Subject = "General Request Approved";
+            $mail->Body = "Greetings {$r['fullname']},<br><br>".
+                          "Your request for <b>{$r['request_type_name']}</b> has been <b>Approved</b>.<br>".
+                          "Pickup Date: <b>".htmlspecialchars($pickup_date)."</b><br>".
+                          "Approved by: <b>".htmlspecialchars($managername)."</b> (".htmlspecialchars($pos).").<br><br>Thank you!";
+            $mail->send();
+            $_SESSION['success_modal_text'] = "Approval email sent and pickup scheduled on " . htmlspecialchars($pickup_date) . ".";
+        } catch (Exception $e) {
+            $_SESSION['success_modal_text'] = "Pickup scheduled, but email failed to send.";
+        }
+    }
     header("Location: Manager_Approvals.php");
     exit;
 }
+
+render_page:
 
 ?>
 
@@ -416,7 +551,7 @@ if (isset($_GET['action'], $_GET['id'])) {
 
     <ul class="nav">
       <?php foreach ($menus[$role] as $label => $link): ?>
-        <li><a href="<?php echo $link; ?>"><?php echo $label; ?></a></li>
+        <li><a href="<?php echo $link; ?>"><i class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
       <?php endforeach; ?>
     </ul>
   </div>
@@ -474,7 +609,21 @@ if (isset($_GET['action'], $_GET['id'])) {
                   <td><?= htmlspecialchars($req['empID']) ?></td>
                   <td><?= htmlspecialchars($req['fullname']) ?></td>
                   <td><?= htmlspecialchars($req['department'] ?? 'N/A') ?></td>
-                  <td><?= htmlspecialchars($req['request_type_name']) ?></td>
+                  <td>
+                    <?= htmlspecialchars($req['request_type_name']) ?>
+                    <?php if ($req['source'] === 'leave' && $limitLookupStmt && !empty($req['from_date'])): ?>
+                      <?php 
+                        $monthNum = intval(date('n', strtotime($req['from_date'])));
+                        $limitLookupStmt->bind_param('ii', $leave_type_id_for_lookup, $monthNum);
+                        $limitLookupStmt->execute();
+                        $lr = $limitLookupStmt->get_result()->fetch_assoc();
+                        $slotsLeft = $lr['employee_limit'] ?? null;
+                      ?>
+                      <?php if ($slotsLeft !== null): ?>
+                        <span class="badge bg-info text-dark ms-2">Slots left: <?= (int)$slotsLeft ?></span>
+                      <?php endif; ?>
+                    <?php endif; ?>
+                  </td>
                   <td><?= htmlspecialchars($req['reason']) ?></td>
                   <td><?= date('Y-m-d h:i A', strtotime($req['requested_at'])) ?></td>
                   <td class="action-icons">
@@ -483,10 +632,17 @@ if (isset($_GET['action'], $_GET['id'])) {
                     <?php elseif ($req['status'] === 'Rejected'): ?>
                       <span style="color:red;font-weight:bold;">Rejected</span>
                     <?php else: ?>
-                      <a href="?id=<?= $req['request_id'] ?>&action=accept" class="accept"><i
+                      <?php if ($req['source'] === 'leave'): ?>
+                      <a href="?type=leave&action=accept&emp=<?= urlencode($req['empID']) ?>&ts=<?= urlencode($req['requested_at']) ?>" class="accept"><i
                           class="fa-solid fa-check"></i></a>
-                      <a href="?id=<?= $req['request_id'] ?>&action=reject" class="reject"><i
+                      <a href="?type=leave&action=reject&emp=<?= urlencode($req['empID']) ?>&ts=<?= urlencode($req['requested_at']) ?>" class="reject"><i
                           class="fa-solid fa-xmark"></i></a>
+                      <?php else: ?>
+                      <a href="?id=<?= (int)$req['rid'] ?>&type=general&action=accept" class="accept"><i
+                          class="fa-solid fa-check"></i></a>
+                      <a href="?id=<?= (int)$req['rid'] ?>&type=general&action=reject" class="reject"><i
+                          class="fa-solid fa-xmark"></i></a>
+                      <?php endif; ?>
                     <?php endif; ?>
                   </td>
                 </tr>
@@ -501,6 +657,57 @@ if (isset($_GET['action'], $_GET['id'])) {
       </div>
     </div>
   </div>
+
+  <div class="modal fade" id="pickupModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Schedule Pickup</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <form method="POST" action="Manager_Approvals.php">
+          <div class="modal-body">
+            <?php if ($pickupInfo): ?>
+              <div class="mb-2"><strong>Fullname:</strong> <?= htmlspecialchars($pickupInfo['fullname']) ?></div>
+              <div class="mb-2"><strong>Department:</strong> <?= htmlspecialchars($pickupInfo['department']) ?></div>
+              <div class="mb-2"><strong>Position:</strong> <?= htmlspecialchars($pickupInfo['position']) ?></div>
+              <div class="mb-2"><strong>Type of Employment:</strong> <?= htmlspecialchars($pickupInfo['type_name'] ?? 'N/A') ?></div>
+              <div class="mb-2"><strong>Email:</strong> <?= htmlspecialchars($pickupInfo['email']) ?></div>
+              <div class="mb-3"><strong>Request Type:</strong> <?= htmlspecialchars($pickupInfo['request_type_name']) ?></div>
+            <?php endif; ?>
+            <input type="hidden" name="general_id" value="<?= $pickupInfo['request_id'] ?? '' ?>">
+            <label class="form-label">Pickup Date</label>
+            <input type="date" name="pickup_date" class="form-control" required>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" name="schedule_pickup" class="btn btn-primary">Send Approval</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <?php if (!empty($_SESSION['success_modal_text'])): ?>
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-success">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title">Success</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body text-center">
+            <i class="fa-solid fa-check-circle fa-2x text-success mb-3"></i>
+            <p><?php echo htmlspecialchars($_SESSION['success_modal_text']); ?></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-success" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <?php unset($_SESSION['success_modal_text']); ?>
+  <?php endif; ?>
 
   <script>
     function filterTable() {
@@ -526,6 +733,16 @@ if (isset($_GET['action'], $_GET['id'])) {
         rows[i].style.display = found ? '' : 'none';
       }
     }
+    <?php if ($openPickupModal): ?>
+      const m = new bootstrap.Modal(document.getElementById('pickupModal'));
+      m.show();
+    <?php endif; ?>
+    <?php if (!empty($_SESSION['success_modal_text'])): ?>
+      document.addEventListener('DOMContentLoaded', function() {
+        var s = document.getElementById('successModal');
+        if (s) new bootstrap.Modal(s).show();
+      });
+    <?php endif; ?>
   </script>
 </body>
 

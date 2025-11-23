@@ -177,12 +177,42 @@ input[type="checkbox"]{
 .sidebar-nav span, i{
     color: white;
     font-family: "Roboto", sans-serif;
-    font-weight: 500;
-    font-style: normal;
-    width:500px;
-    font-size: 24px;
-    padding: 4px;
+  font-weight: 500;
+  font-style: normal;
+  width:500px;
+  font-size: 24px;
+  padding: 4px;
 }
+
+/* --- Modern tokens and overrides for consistent spacing --- */
+:root{
+  --primary:#1E3A8A;
+  --primary-600:#2563EB;
+  --bg:#F5F8FF;
+  --text:#111827;
+  --muted:#4b5563;
+  --radius:12px;
+  --shadow:0 10px 25px rgba(15,23,42,.08);
+  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px; --space-7:40px;
+}
+
+.top-bar{ background-color: var(--primary); }
+
+.main-content .login-section{ background-color:#fff; border-radius: var(--radius); box-shadow: var(--shadow); padding: var(--space-6); min-height:420px; }
+
+.login-input button{ background-color: var(--primary-600); border:none; border-radius:12px; min-width:240px; height:48px; color:#fff; margin: var(--space-3); }
+.login-input button:hover{ background-color: var(--primary); }
+
+input[type="email"], input[type="password"]{ padding: 14px 16px 14px 50px; border-radius:10px; border:1px solid #D9D9D9; }
+
+.forgot-password a{ color:#0f172a; }
+
+.show-password{ gap: var(--space-2); }
+
+/* Utility spacing */
+.stack-sm > * + * { margin-top: var(--space-3); }
+.stack-md > * + * { margin-top: var(--space-4); }
+.stack-lg > * + * { margin-top: var(--space-6); }
 
 
 .admin-main{

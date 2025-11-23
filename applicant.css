@@ -293,21 +293,36 @@ button:hover {
 .nav {
     list-style: none;
     width: 100%;
+    padding: 0;
+    margin: 0;
+    display: block;
 }
 
 .nav li {
     color: #ffffff;
-    padding: 15px 25px;
     display: flex;
     align-items: center;
     gap: 10px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
+    width: 100%;
+    margin: 0;
 }
 
-.nav li:hover,
-.nav li.active {
+.nav li a {
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 15px 25px;
+    box-sizing: border-box;
+}
+
+.nav li a:hover,
+.nav li.active a {
     background-color: #e5edfb;
     color: #1E3A8A;
 }
@@ -317,15 +332,17 @@ button:hover {
     text-align: center;
 }
 
-.nav a {
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-}
+.nav a { text-decoration: none; }
 
 .nav li.active a {
     color: #1E3A8A;
 }
+:root{--primary:#1E3A8A;--primary-600:#2563EB;--bg:#F5F8FF;--text:#111827;--radius:12px;--shadow:0 10px 25px rgba(15,23,42,.08);--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--space-7:40px}
+.main-content{margin-left:230px!important;padding:var(--space-6) var(--space-5)!important;min-height:100vh;display:block}
+.card{border:none;border-radius:var(--radius);box-shadow:var(--shadow)}
+.table{border-collapse:collapse;border-radius:var(--radius);overflow:hidden}
+.table th,.table td{padding:var(--space-4) var(--space-5);vertical-align:middle}
+.btn{border-radius:10px;padding:10px 16px}
+.btn-primary{background-color:var(--primary);border-color:var(--primary)}
+.btn-primary:hover{background-color:var(--primary-600);border-color:var(--primary-600)}
+.badge{border-radius:999px;padding:6px 10px}

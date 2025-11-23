@@ -49,13 +49,33 @@ if ($employeeID) {
 }
 
 // Fetch announcements
-$managerResult = mysqli_query($conn, "SELECT * FROM manager_announcement ORDER BY date_posted DESC");
-$adminResult = mysqli_query($conn, "SELECT * FROM admin_announcement ORDER BY date_posted DESC");
+$managerResult = mysqli_query($conn, "SELECT ma.id, ma.title, ma.message, ma.date_posted, ma.posted_by FROM manager_announcement ma LEFT JOIN leave_settings ls ON ma.settingID = ls.settingID WHERE ma.is_active = 1 AND (ls.end_date IS NULL OR ls.end_date >= CURDATE()) ORDER BY ma.date_posted DESC");
+$adminResult = mysqli_query($conn, "SELECT id, title, message, date_posted FROM admin_announcement WHERE is_active = 1 ORDER BY date_posted DESC");
 
-//total announcements
-$countManager = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM manager_announcement WHERE is_active = 1"))['total'];
+$countManager = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM manager_announcement ma LEFT JOIN leave_settings ls ON ma.settingID = ls.settingID WHERE ma.is_active = 1 AND (ls.end_date IS NULL OR ls.end_date >= CURDATE())"))['total'];
 $countAdmin   = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) AS total FROM admin_announcement WHERE is_active = 1"))['total'];
 $totalAnnouncements = $countManager + $countAdmin;
+
+// Employee requests count (leave + general)
+$countRequests = 0;
+if ($employeeID) {
+    $reqCount = 0;
+    if ($stmt = $conn->prepare("SELECT COUNT(*) AS c FROM leave_request WHERE empID = ?")) {
+        $stmt->bind_param("s", $employeeID);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $reqCount += intval($row['c'] ?? 0);
+        $stmt->close();
+    }
+    if ($stmt = $conn->prepare("SELECT COUNT(*) AS c FROM general_request WHERE empID = ?")) {
+        $stmt->bind_param("s", $employeeID);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $reqCount += intval($row['c'] ?? 0);
+        $stmt->close();
+    }
+    $countRequests = $reqCount;
+}
 
 // For modal view
 $openModal = false;
@@ -68,7 +88,7 @@ if (isset($_GET['view']) && isset($_GET['id'])) {
     if ($type == "manager") {
         $query = "
             SELECT ma.title, ma.message, ma.date_posted, ma.posted_by,
-                   ls.leave_type, ls.duration, ls.employee_limit, ls.time_limit
+                   ls.start_date, ls.end_date, ls.employee_limit
             FROM manager_announcement ma
             LEFT JOIN leave_settings ls ON ma.settingID = ls.settingID
             WHERE ma.id = $id
@@ -87,14 +107,6 @@ if (isset($_GET['view']) && isset($_GET['id'])) {
 }
 
 
-// Count Employee Requests
-$countRequests = 0;
-if ($employeeID) {
-    $stmt = $conn->prepare("SELECT COUNT(*) AS total FROM employee_request WHERE empID = ?");
-    $stmt->bind_param("s", $employeeID);
-    $stmt->execute();
-    $countRequests = $stmt->get_result()->fetch_assoc()['total'] ?? 0;
-}
 
 
 ?>
@@ -106,7 +118,7 @@ if ($employeeID) {
 <title>Employee Dashboard</title>
 <link rel="stylesheet" href="manager-sidebar.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 
 <style>
 /* YOUR ORIGINAL CSS UNCHANGED */
@@ -231,7 +243,7 @@ h1 { font-family:'Roboto',sans-serif; font-size:35px; color:white; text-align:ce
 <?php while ($row = mysqli_fetch_assoc($managerResult)) { ?>
 <tr>
 <td><?php echo $row['title']; ?></td>
-<td><?php echo $row['posted_by']; ?> (Manager)</td>
+<td><?php echo $row['posted_by']; ?></td>
 <td><?php echo date("M d, Y", strtotime($row['date_posted'])); ?></td>
 <td><a href="?view=manager&id=<?php echo $row['id']; ?>"><button>View</button></a></td>
 </tr>
@@ -268,22 +280,17 @@ h1 { font-family:'Roboto',sans-serif; font-size:35px; color:white; text-align:ce
 
 <p><?php echo nl2br($announcement['message']); ?></p>
 
-<?php if (!empty($announcement['leave_type'])) { ?>
+<?php if (!empty($announcement['start_date']) || !empty($announcement['end_date'])) { ?>
 <hr>
 <h6 class="fw-bold text-success">Related Leave Setting</h6>
 
-<p><strong>Purpose:</strong> <?php echo $announcement['leave_type']; ?></p>
+<?php $start = !empty($announcement['start_date']) ? date("m/d/Y", strtotime($announcement['start_date'])) : null; ?>
+<?php $end   = !empty($announcement['end_date']) ? date("m/d/Y", strtotime($announcement['end_date'])) : null; ?>
+<p><strong>Filing Duration:</strong> <?php echo ($start && $end) ? "$start to $end" : 'N/A'; ?></p>
 
-<?php 
-$range = explode(" to ", $announcement['duration']);
-$start = date("m/d/Y", strtotime($range[0]));
-$end   = date("m/d/Y", strtotime($range[1]));
-?>
-<p><strong>Filing Duration:</strong> <?php echo "$start to $end"; ?></p>
+<p><strong>Slots:</strong> <?php echo isset($announcement['employee_limit']) ? $announcement['employee_limit'] : 'N/A'; ?></p>
 
-<p><strong>Slots:</strong> <?php echo $announcement['employee_limit']; ?></p>
-
-<p><strong>Leave duration:</strong> <?php echo $announcement['time_limit']; ?></p>
+<p><strong>Expires:</strong> <?php echo $end ? $end : 'N/A'; ?></p>
 <?php } ?>
 
 <br>
@@ -302,7 +309,7 @@ HR Manager, <br>
 </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <?php if ($openModal) { ?>
 <script>
 var modal = new bootstrap.Modal(document.getElementById('announcementModal'));

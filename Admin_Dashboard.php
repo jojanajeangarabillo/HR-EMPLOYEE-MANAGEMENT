@@ -25,9 +25,7 @@ $applicants = ($applicantQuery && $row = $applicantQuery->fetch_assoc()) ? $row[
 $pendingQuery = $conn->query("SELECT COUNT(*) AS count FROM applications WHERE status = 'Pending'");
 $pendingApplicants = ($pendingQuery && $row = $pendingQuery->fetch_assoc()) ? $row['count'] : 0;
 
-// Count Requests
-$requestQuery = $conn->query("SELECT COUNT(*) AS count FROM employee_request");
-$requests = ($requestQuery && $row = $requestQuery->fetch_assoc()) ? $row['count'] : 0;
+
 
 //fetch pending applicants
 $pending_applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM applications WHERE id = '0'");

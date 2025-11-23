@@ -14,9 +14,7 @@ $applicants = ($applicantQuery && $row = $applicantQuery->fetch_assoc()) ? $row[
 $pendingQuery = $conn->query("SELECT COUNT(*) AS count FROM applications WHERE status = 'Pending'");
 $pendingApplicants = ($pendingQuery && $row = $pendingQuery->fetch_assoc()) ? $row['count'] : 0;
 
-// Count Requests
-$requestQuery = $conn->query("SELECT COUNT(*) AS count FROM employee_request");
-$requests = ($requestQuery && $row = $requestQuery->fetch_assoc()) ? $row['count'] : 0;
+
 
 //fetch pending applicants
 $pending_applicantQuery = $conn->query("SELECT COUNT(*) AS count FROM applications WHERE id = '0'");
@@ -24,13 +22,19 @@ if ($pending_applicantQuery && $row = $pending_applicantQuery->fetch_assoc()) {
     $pending_applicantQuery = $row['count'];
 }
 
+$pendingLeaves = 0;
+$plRes = $conn->query("SELECT COUNT(*) AS c FROM leave_request WHERE status = 'Pending'");
+if ($plRes && $r = $plRes->fetch_assoc()) $pendingLeaves = (int)$r['c'];
+$pendingGeneral = 0;
+$pgRes = $conn->query("SELECT COUNT(*) AS c FROM general_request WHERE status = 'Pending'");
+if ($pgRes && $r2 = $pgRes->fetch_assoc()) $pendingGeneral = (int)$r2['c'];
+$pendingRequests = $pendingLeaves + $pendingGeneral;
 
-// Requests
-$requests = 0;
-$q1 = $conn->query("SELECT COUNT(*) AS count FROM employee_request WHERE status = 'Pending'");
-if ($q1 && $row = $q1->fetch_assoc()) {
-    $requests = $row['count'];
-}
+$onLeaveCount = 0;
+$olRes = $conn->query("SELECT COUNT(DISTINCT empID) AS count FROM leave_request WHERE status = 'Approved'");
+if ($olRes && $row = $olRes->fetch_assoc()) $onLeaveCount = (int)$row['count'];
+
+
 
 // Fetch total number of positions for Hirings (status = 'On-Going' or 'To Post')
 $hiringsQuery = $conn->query("
@@ -162,6 +166,20 @@ $menus = [
 ];
 
 $role = $_SESSION['sub_role'] ?? "HR Manager";
+$icons = [
+    "Dashboard" => "fa-table-columns",
+    "Applicants" => "fa-user",
+    "Pending Applicants" => "fa-clock",
+    "Newly Hired" => "fa-user-check",
+    "Employees" => "fa-users",
+    "Requests" => "fa-file-lines",
+    "Vacancies" => "fa-briefcase",
+    "Job Post" => "fa-bullhorn",
+    "Calendar" => "fa-calendar-days",
+    "Approvals" => "fa-square-check",
+    "Settings" => "fa-gear",
+    "Logout" => "fa-right-from-bracket"
+];
 ?>
 
 
@@ -257,7 +275,7 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
 
     <ul class="nav">
       <?php foreach ($menus[$role] as $label => $link): ?>
-        <li><a href="<?php echo $link; ?>"><?php echo $label; ?></a></li>
+        <li><a href="<?php echo $link; ?>"><i class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
       <?php endforeach; ?>
     </ul>
   </div>
@@ -279,8 +297,8 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
             </div>
 
             <div class="section">
-                <label>Requests</label>
-                <h3><?php echo $requests; ?></h3>
+                <label>Pending Requests</label>
+                <h3><?php echo $pendingRequests; ?></h3>
             </div>
 
             <div class="section">
@@ -291,6 +309,10 @@ $role = $_SESSION['sub_role'] ?? "HR Manager";
             <div class="section">
                 <label>Pending Applicants</label>
                <h3><?php echo $pendingApplicants; ?></h3>
+            </div>
+            <div class="section">
+                <label>Employees On Leave</label>
+                <h3><?php echo $onLeaveCount; ?></h3>
             </div>
         </div>
 

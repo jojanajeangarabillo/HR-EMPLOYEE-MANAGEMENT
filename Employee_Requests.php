@@ -73,104 +73,181 @@ if ($employeeID) {
   }
 }
 
+$slotsByMonth = [];
+$leaveTypeIdRow = null;
+$ltidStmt = $conn->prepare("SELECT id FROM types_of_requests WHERE request_type_name = 'Leave' LIMIT 1");
+$ltidStmt->execute();
+$leaveTypeIdRow = $ltidStmt->get_result()->fetch_assoc();
+$ltidStmt->close();
+$leaveReqTypeId = $leaveTypeIdRow['id'] ?? null;
+if ($leaveReqTypeId) {
+  $lsStmt = $conn->prepare("SELECT month, employee_limit, settingID FROM leave_settings WHERE request_type_id = ? ORDER BY settingID DESC");
+  $lsStmt->bind_param("i", $leaveReqTypeId);
+  $lsStmt->execute();
+  $lsRes = $lsStmt->get_result();
+  while ($row = $lsRes->fetch_assoc()) {
+    $m = (int)$row['month'];
+    if (!isset($slotsByMonth[$m])) $slotsByMonth[$m] = (int)$row['employee_limit'];
+  }
+  $lsStmt->close();
+}
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $employeeID = $_SESSION['applicant_employee_id'] ?? null;
-  if (!$employeeID)
-    die("Employee not found or not logged in.");
-
-  // Check for existing pending request
-  $pendingStmt = $conn->prepare("SELECT COUNT(*) as pending_count FROM employee_request WHERE empID = ? AND status = 'Pending'");
-  $pendingStmt->bind_param("s", $employeeID);
-  $pendingStmt->execute();
-  $pendingResult = $pendingStmt->get_result()->fetch_assoc();
-
-  if ($pendingResult['pending_count'] > 0) {
-    $_SESSION['request_error'] = "You still have a pending request. Wait for further action before requesting again. Thank you!";
+  if (!$employeeID) {
+    $_SESSION['request_error'] = "Employee not logged in.";
     header("Location: Employee_Requests.php");
     exit;
   }
 
-  // Get submitted values
+  $pendingCount = 0;
+  $ps1 = $conn->prepare("SELECT COUNT(*) AS c FROM leave_request WHERE empID = ? AND status = 'Pending'");
+  $ps1->bind_param("s", $employeeID);
+  $ps1->execute();
+  $r1 = $ps1->get_result()->fetch_assoc();
+  $pendingCount += intval($r1['c'] ?? 0);
+  $ps2 = $conn->prepare("SELECT COUNT(*) AS c FROM general_request WHERE empID = ? AND status = 'Pending'");
+  $ps2->bind_param("s", $employeeID);
+  $ps2->execute();
+  $r2 = $ps2->get_result()->fetch_assoc();
+  $pendingCount += intval($r2['c'] ?? 0);
+  if ($pendingCount > 0) {
+    $_SESSION['request_error'] = "You still have a pending request. Wait for action before requesting again.";
+    header("Location: Employee_Requests.php");
+    exit;
+  }
+
   $requestTypeID = $_POST['request_type_id'] ?? null;
   $leaveTypeID = $_POST['leave_type_id'] ?? null;
   $reason = trim($_POST['reason'] ?? '');
+  $from_date = $_POST['from_date'] ?? null;
+  $to_date = $_POST['to_date'] ?? null;
+  $duration = $_POST['duration'] ?? null;
 
-  // Handle file upload for e-signature
   $signaturePath = '';
   if (!empty($_FILES['e_signature']['name'])) {
     $fileName = time() . '_' . basename($_FILES['e_signature']['name']);
     $targetDir = 'uploads/signatures/';
-    if (!is_dir($targetDir))
+    if (!is_dir($targetDir)) {
       mkdir($targetDir, 0777, true);
+    }
     move_uploaded_file($_FILES['e_signature']['tmp_name'], $targetDir . $fileName);
     $signaturePath = $targetDir . $fileName;
   }
 
-  // Fetch employee info dynamically
   $empStmt = $conn->prepare("SELECT fullname, department, position, type_name, email_address FROM employee WHERE empID = ?");
   $empStmt->bind_param("s", $employeeID);
   $empStmt->execute();
-  $empResult = $empStmt->get_result()->fetch_assoc();
+  $empRes = $empStmt->get_result()->fetch_assoc();
+  $fullname = $empRes['fullname'] ?? '';
+  $department = $empRes['department'] ?? '';
+  $position = $empRes['position'] ?? '';
+  $type_name = $empRes['type_name'] ?? '';
+  $email_address = $empRes['email_address'] ?? '';
 
-  $fullname = $empResult['fullname'] ?? '';
-  $department = $empResult['department'] ?? '';
-  $position = $empResult['position'] ?? '';
-  $type_name = $empResult['type_name'] ?? '';
-  $email_address = $empResult['email_address'] ?? '';
-
-  // Get request type name
   $requestTypeName = null;
   if ($requestTypeID) {
     $typeStmt = $conn->prepare("SELECT request_type_name FROM types_of_requests WHERE id = ?");
     $typeStmt->bind_param("i", $requestTypeID);
     $typeStmt->execute();
-    $typeResult = $typeStmt->get_result()->fetch_assoc();
-    $requestTypeName = $typeResult['request_type_name'] ?? null;
+    $typeRow = $typeStmt->get_result()->fetch_assoc();
+    $requestTypeName = $typeRow['request_type_name'] ?? null;
   }
 
-  // Get leave type name only if request is Leave
-  $leaveTypeName = null;
-  if ($requestTypeName === 'Leave' && $leaveTypeID) {
-    $leaveStmt = $conn->prepare("SELECT leave_type_name FROM leave_types WHERE id = ?");
-    $leaveStmt->bind_param("i", $leaveTypeID);
-    $leaveStmt->execute();
-    $leaveResult = $leaveStmt->get_result()->fetch_assoc();
-    $leaveTypeName = $leaveResult['leave_type_name'] ?? null;
-  } else {
-    $leaveTypeID = null;
+  if ($requestTypeName === 'Leave') {
+    if (!$leaveTypeID || !$from_date || !$to_date) {
+      $_SESSION['request_error'] = "Provide leave type and date range.";
+      header("Location: Employee_Requests.php");
+      exit;
+    }
+    $d1 = date_create($from_date);
+    $d2 = date_create($to_date);
+    if (!$d1 || !$d2 || $d1 > $d2) {
+      $_SESSION['request_error'] = "Invalid date range.";
+      header("Location: Employee_Requests.php");
+      exit;
+    }
+    $monthNum = intval(date('n', strtotime($from_date)));
+    $slotStmt = $conn->prepare("SELECT employee_limit FROM leave_settings WHERE request_type_id = ? AND month = ? ORDER BY settingID DESC LIMIT 1");
+    $slotStmt->bind_param("ii", $requestTypeID, $monthNum);
+    $slotStmt->execute();
+    $slotRow = $slotStmt->get_result()->fetch_assoc();
+    $slotsLeft = isset($slotRow['employee_limit']) ? (int)$slotRow['employee_limit'] : null;
+    $slotStmt->close();
+    if ($slotsLeft !== null && $slotsLeft <= 0) {
+      $_SESSION['request_error'] = "No slots available for this month.";
+      header("Location: Employee_Requests.php");
+      exit;
+    }
+    if (!$duration) {
+      $diff = $d2->diff($d1)->days + 1;
+      $duration = $diff;
+    }
     $leaveTypeName = null;
+    $ltStmt = $conn->prepare("SELECT leave_type_name, pay_category_id FROM leave_types WHERE id = ?");
+    $ltStmt->bind_param("i", $leaveTypeID);
+    $ltStmt->execute();
+    $ltRow = $ltStmt->get_result()->fetch_assoc();
+    $leaveTypeName = $ltRow['leave_type_name'] ?? '';
+    $payCategoryID = isset($ltRow['pay_category_id']) ? (int)$ltRow['pay_category_id'] : 1;
+    $stmt = $conn->prepare("INSERT INTO leave_request (
+      empID, fullname, department, position, type_name, email_address, e_signature,
+      request_type_id, request_type_name, reason, status, requested_at,
+      leave_type_id, pay_category_id, leave_type_name, from_date, to_date, duration
+    ) VALUES (
+      ?, ?, ?, ?, ?, ?, ?,
+      ?, ?, ?, 'Pending', NOW(),
+      ?, ?, ?, ?, ?, ?
+    )");
+    $stmt->bind_param(
+      "sssssssississssi",
+      $employeeID,
+      $fullname,
+      $department,
+      $position,
+      $type_name,
+      $email_address,
+      $signaturePath,
+      $requestTypeID,
+      $requestTypeName,
+      $reason,
+      $leaveTypeID,
+      $payCategoryID,
+      $leaveTypeName,
+      $from_date,
+      $to_date,
+      $duration
+    );
+  } else {
+    if (!$requestTypeID || !$requestTypeName) {
+      $_SESSION['request_error'] = "Select a valid request type.";
+      header("Location: Employee_Requests.php");
+      exit;
+    }
+    $stmt = $conn->prepare("INSERT INTO general_request (empID, fullname, department, position, email, request_type_id, reason) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param(
+      "sssssis",
+      $employeeID,
+      $fullname,
+      $department,
+      $position,
+      $email_address,
+      $requestTypeID,
+      $reason
+    );
   }
-
-  // Insert employee request
-  $stmt = $conn->prepare("INSERT INTO employee_request 
-        (empID, fullname, department, position, type_name, email_address, e_signature, request_type_id, request_type_name, leave_type_id, leave_type_name, reason, status, requested_at) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Pending', NOW())");
-
-  $stmt->bind_param(
-    "sssssssisiss",
-    $employeeID,
-    $fullname,
-    $department,
-    $position,
-    $type_name,
-    $email_address,
-    $signaturePath,
-    $requestTypeID,
-    $requestTypeName,
-    $leaveTypeID,
-    $leaveTypeName,
-    $reason
-  );
 
   if ($stmt->execute()) {
     $_SESSION['request_success'] = "Requested Successfully!";
-    header("Location: Employee_Requests.php");
-    exit;
   } else {
-    $_SESSION['request_error'] = "Failed to submit request. Please try again.";
+    $_SESSION['request_error'] = "Failed to submit request.";
   }
+  header("Location: Employee_Requests.php");
+  exit;
 }
+
+
 
 
 
@@ -188,13 +265,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <meta charset="UTF-8">
   <title>Employee Requests</title>
   <link rel="stylesheet" href="manager-sidebar.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 
 </head>
 
 <body>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <div class="sidebar">
     <div class="sidebar-logo">
@@ -217,45 +294,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </div>
 
 
-  <!-- Toast Container Centered -->
-  <div class="position-fixed p-3" style="z-index: 1100; top: 50%; left: 50%; transform: translate(-50%, -50%);">
-    <div id="requestToast" class="toast align-items-center text-white bg-success border-0" role="alert"
-      aria-live="assertive" aria-atomic="true">
-      <div class="d-flex">
-        <div class="toast-body" id="toast-message"></div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
-          aria-label="Close"></button>
+  <?php
+  $modalType = null;
+  $modalText = null;
+  if (isset($_SESSION['request_success'])) {
+    $modalType = 'success';
+    $modalText = $_SESSION['request_success'];
+    unset($_SESSION['request_success']);
+  } elseif (isset($_SESSION['request_error'])) {
+    $modalType = 'danger';
+    $modalText = $_SESSION['request_error'];
+    unset($_SESSION['request_error']);
+  }
+  ?>
+  <?php if ($modalType && $modalText): ?>
+    <div class="modal fade" id="flashModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-<?php echo $modalType; ?>">
+          <div class="modal-header bg-<?php echo $modalType; ?> text-white">
+            <h5 class="modal-title">Notification</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body text-center">
+            <?php if ($modalType === 'success'): ?>
+              <i class="fa-solid fa-check-circle fa-2x text-success mb-3"></i>
+            <?php else: ?>
+              <i class="fa-solid fa-triangle-exclamation fa-2x text-danger mb-3"></i>
+            <?php endif; ?>
+            <p><?php echo htmlspecialchars($modalText); ?></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-<?php echo $modalType; ?>" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
-
-
-  <?php if (isset($_SESSION['request_success'])): ?>
     <script>
       document.addEventListener('DOMContentLoaded', function () {
-        const toastEl = document.getElementById('requestToast');
-        if (toastEl) {
-          document.getElementById('toast-message').innerText = "<?php echo $_SESSION['request_success'];
-          unset($_SESSION['request_success']); ?>";
-          const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-          toast.show();
-        }
-      });
-    </script>
-  <?php endif; ?>
-
-  <?php if (isset($_SESSION['request_error'])): ?>
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const toastEl = document.getElementById('requestToast');
-        if (toastEl) {
-          toastEl.classList.remove('bg-success');
-          toastEl.classList.add('bg-danger');
-          document.getElementById('toast-message').innerText = "<?php echo $_SESSION['request_error'];
-          unset($_SESSION['request_error']); ?>";
-          const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-          toast.show();
-        }
+        var m = document.getElementById('flashModal');
+        if (m) new bootstrap.Modal(m).show();
       });
     </script>
   <?php endif; ?>
@@ -286,13 +363,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php
             if ($employeeID) {
               $reqStmt = $conn->prepare("
-                  SELECT request_type_name, leave_type_name, reason, status, requested_at, action_by
-                  FROM employee_request 
-                  WHERE empID = ? 
+                  SELECT 'Leave' AS request_type_name, lr.leave_type_name, lr.reason, lr.status, lr.requested_at, NULL AS action_by
+                  FROM leave_request lr WHERE lr.empID = ?
+                  UNION ALL
+                  SELECT tor.request_type_name, NULL AS leave_type_name, gr.reason, gr.status, gr.requested_at, gr.action_by
+                  FROM general_request gr
+                  JOIN types_of_requests tor ON tor.id = gr.request_type_id
+                  WHERE gr.empID = ?
                   ORDER BY requested_at DESC
               ");
 
-              $reqStmt->bind_param("s", $employeeID);
+              $reqStmt->bind_param("ss", $employeeID, $employeeID);
               $reqStmt->execute();
               $reqResult = $reqStmt->get_result();
 
@@ -408,6 +489,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <textarea name="reason" placeholder="Enter your reason" rows="5" required></textarea>
               </div>
             </div>
+
+                      <div class="modal-row" id="leave-dates-container" style="display:none;">
+            <div class="form-group wide">
+              <label>From Date:</label>
+              <input type="date" id="from-date" name="from_date">
+            </div>
+            <div class="form-group wide">
+              <label>To Date:</label>
+              <input type="date" id="to-date" name="to_date">
+            </div>
+          <div class="form-group wide">
+            <label>Duration (Days):</label>
+            <input type="number" id="duration" name="duration" readonly>
+          </div>
+          <div class="form-group wide">
+            <div id="slot-warning" style="display:none;color:#E63946;font-weight:600;"></div>
+          </div>
+        </div>
+
 
             <div class="form-group wide">
               <label>Upload E-Signature:</label>
@@ -897,6 +997,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         blurBox.classList.remove('blurred');
       }
     });
+
+    const leaveDatesContainer = document.getElementById('leave-dates-container');
+const fromDateInput = document.getElementById('from-date');
+const toDateInput = document.getElementById('to-date');
+const durationInput = document.getElementById('duration');
+const sendBtn = document.querySelector('.send-btn');
+const slotWarning = document.getElementById('slot-warning');
+const slotsByMonth = <?php echo json_encode($slotsByMonth); ?>;
+
+requestTypeSelect.addEventListener('change', () => {
+  const selected = requestTypeSelect.selectedOptions[0].text;
+
+  if (selected === 'Leave') {
+    leaveTypeContainer.style.display = 'block';
+    leaveDatesContainer.style.display = 'flex';
+    Array.from(leaveTypeSelect.options).forEach(opt => {
+      opt.style.display = (opt.dataset.request == requestTypeSelect.value || opt.value === "") ? 'block' : 'none';
+    });
+    checkSlots();
+  } else {
+    leaveTypeContainer.style.display = 'none';
+    leaveDatesContainer.style.display = 'none';
+    leaveTypeSelect.value = "";
+    fromDateInput.value = "";
+    toDateInput.value = "";
+    durationInput.value = "";
+    sendBtn.disabled = false;
+    slotWarning.style.display = 'none';
+  }
+});
+
+// Auto calculate duration
+function calculateDuration() {
+  if (fromDateInput.value && toDateInput.value) {
+    const from = new Date(fromDateInput.value);
+    const to = new Date(toDateInput.value);
+    const diff = (to - from) / (1000 * 60 * 60 * 24) + 1; // include both start/end
+    durationInput.value = diff > 0 ? diff : 0;
+  } else {
+    durationInput.value = '';
+  }
+}
+
+fromDateInput.addEventListener('change', calculateDuration);
+toDateInput.addEventListener('change', calculateDuration);
+
+function checkSlots() {
+  const selected = requestTypeSelect.selectedOptions[0]?.text;
+  if (selected === 'Leave' && fromDateInput.value) {
+    const m = new Date(fromDateInput.value).getMonth() + 1;
+    const slots = slotsByMonth && slotsByMonth[m] !== undefined ? parseInt(slotsByMonth[m], 10) : null;
+    if (slots !== null && slots <= 0) {
+      sendBtn.disabled = true;
+      leaveTypeSelect.disabled = true;
+      fromDateInput.disabled = true;
+      toDateInput.disabled = true;
+      slotWarning.textContent = 'No slots available for this month.';
+      slotWarning.style.display = 'block';
+    } else {
+      sendBtn.disabled = false;
+      leaveTypeSelect.disabled = false;
+      fromDateInput.disabled = false;
+      toDateInput.disabled = false;
+      slotWarning.style.display = 'none';
+    }
+  }
+}
+
+fromDateInput.addEventListener('change', () => { calculateDuration(); checkSlots(); });
+
+
 
 
 

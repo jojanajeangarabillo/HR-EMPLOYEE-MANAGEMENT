@@ -4,6 +4,20 @@ require 'admin/db.connect.php';
 
 // Get logged-in user's sub-role and empID
 $role = $_SESSION['sub_role'] ?? "HR Manager";
+$icons = [
+    "Dashboard" => "fa-table-columns",
+    "Applicants" => "fa-user",
+    "Pending Applicants" => "fa-clock",
+    "Newly Hired" => "fa-user-check",
+    "Employees" => "fa-users",
+    "Requests" => "fa-file-lines",
+    "Vacancies" => "fa-briefcase",
+    "Job Post" => "fa-bullhorn",
+    "Calendar" => "fa-calendar-days",
+    "Approvals" => "fa-square-check",
+    "Settings" => "fa-gear",
+    "Logout" => "fa-right-from-bracket"
+];
 $managername = $_SESSION['fullname'] ?? "Manager";
 $employeeID = $_SESSION['applicant_employee_id'] ?? null; // Make sure empID is stored in session
 
@@ -474,7 +488,7 @@ $employeename = $employee['fullname'];
 
         <ul class="nav">
             <?php foreach ($menus[$role] as $label => $link): ?>
-                <li><a href="<?php echo $link; ?>"><?php echo $label; ?></a></li>
+                <li><a href="<?php echo $link; ?>"><i class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
             <?php endforeach; ?>
         </ul>
     </div>

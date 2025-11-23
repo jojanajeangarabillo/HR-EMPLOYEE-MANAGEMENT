@@ -392,7 +392,7 @@ section h2 {
   </style>
 </head>
 
-<body> 
+<body>
 
        <div class="sidebar">
             <div class="sidebar-logo">
@@ -615,5 +615,6 @@ fileInput.addEventListener('change', function() {
 </script>
 
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

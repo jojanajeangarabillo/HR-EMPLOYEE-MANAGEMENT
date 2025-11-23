@@ -125,7 +125,7 @@ $recentVacanciesQuery = $conn->query("
         rel="stylesheet">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 
     <!-- Sidebar CSS -->
     <link rel="stylesheet" href="applicant.css">
@@ -278,7 +278,7 @@ $recentVacanciesQuery = $conn->query("
 
 <body>
     <!-- Sidebar -->
-    <!-- Sidebar -->
+   <?php $current = basename($_SERVER['PHP_SELF']); ?>
    <div class="sidebar">
     <a href="Applicant_Profile.php" class="profile">
      <img src="<?php echo !empty($profile_picture) ? htmlspecialchars($profile_picture) : 'uploads/employees/default.png'; ?>" 
@@ -290,10 +290,9 @@ $recentVacanciesQuery = $conn->query("
     </div>
 
         <ul class="nav">
-            <li class="active"><a href="Applicant_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a>
-            </li>
-            <li><a href="Applicant_Application.php"><i class="fa-solid fa-file-lines"></i>Applications</a></li>
-            <li><a href="Applicant_Jobs.php"><i class="fa-solid fa-briefcase"></i>Jobs</a></li>
+            <li<?php echo $current==='Applicant_Dashboard.php' ? ' class="active"' : ''; ?>><a href="Applicant_Dashboard.php"><i class="fa-solid fa-table-columns"></i>Dashboard</a></li>
+            <li<?php echo $current==='Applicant_Application.php' ? ' class="active"' : ''; ?>><a href="Applicant_Application.php"><i class="fa-solid fa-file-lines"></i>Applications</a></li>
+            <li<?php echo $current==='Applicant_Jobs.php' ? ' class="active"' : ''; ?>><a href="Applicant_Jobs.php"><i class="fa-solid fa-briefcase"></i>Jobs</a></li>
             <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i>Log Out</a></li>
         </ul>
     </div>
