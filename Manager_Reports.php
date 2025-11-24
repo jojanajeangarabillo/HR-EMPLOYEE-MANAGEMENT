@@ -65,6 +65,8 @@ $menus = [
         "Pending Applicants" => "Manager_PendingApplicants.php",
         "Newly Hired" => "Newly-Hired.php",
         "Vacancies" => "Manager_Vacancies.php",
+        "Requests" => "Manager_Request.php",
+    "Reports" => "Manager_Reports.php",
         "Logout" => "Login.php"
     ],
 
@@ -97,65 +99,7 @@ $icons = [
     "Logout" => "fa-right-from-bracket"
 ];
 
-// --- AJAX: Return types for selected department ---
-if (isset($_GET['ajax']) && $_GET['ajax'] == 1 && isset($_GET['dept'])) {
-    $deptID = $_GET['dept'];
-    $types = [];
-
-    if ($deptID != 'all') {
-        $deptRes = $conn->query("SELECT deptName FROM department WHERE deptID = '" . $conn->real_escape_string($deptID) . "'");
-        $deptName = ($deptRes && $row = $deptRes->fetch_assoc()) ? $row['deptName'] : '';
-
-        if ($deptName) {
-            $typeQuery = $conn->query("
-                SELECT DISTINCT type_name 
-                FROM employee 
-                WHERE department = '" . $conn->real_escape_string($deptName) . "'
-                ORDER BY type_name
-            ");
-            while ($t = $typeQuery->fetch_assoc())
-                $types[] = $t['type_name'];
-        }
-    } else {
-        $typeQuery = $conn->query("SELECT DISTINCT type_name FROM employee ORDER BY type_name");
-        while ($t = $typeQuery->fetch_assoc())
-            $types[] = $t['type_name'];
-    }
-
-    echo json_encode($types);
-    exit; // important: stop further execution for AJAX
-}
-
-// --- AJAX: Return types for selected department ---
-if (isset($_GET['ajax']) && $_GET['ajax'] == 1 && isset($_GET['dept'])) {
-    $deptID = $_GET['dept'];
-    $types = [];
-
-    if ($deptID != 'all') {
-        // Get department name
-        $deptRes = $conn->query("SELECT deptName FROM department WHERE deptID = '" . $conn->real_escape_string($deptID) . "'");
-        $deptName = ($deptRes && $row = $deptRes->fetch_assoc()) ? $row['deptName'] : '';
-
-        if ($deptName) {
-            $typeQuery = $conn->query("
-                SELECT DISTINCT type_name 
-                FROM employee 
-                WHERE department = '" . $conn->real_escape_string($deptName) . "'
-                ORDER BY type_name
-            ");
-            while ($t = $typeQuery->fetch_assoc())
-                $types[] = $t['type_name'];
-        }
-    } else {
-        // All departments → all types
-        $typeQuery = $conn->query("SELECT DISTINCT type_name FROM employee ORDER BY type_name");
-        while ($t = $typeQuery->fetch_assoc())
-            $types[] = $t['type_name'];
-    }
-
-    echo json_encode($types);
-    exit; // stop execution for AJAX
-}
+ 
 
 
 // --- Fetch admin name ---
@@ -163,11 +107,12 @@ $adminnameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin' L
 $adminname = ($adminnameQuery && $row = $adminnameQuery->fetch_assoc()) ? $row['fullname'] : 'Admin';
 
 // --- Get filters ---
-$report_type = $_GET['report'] ?? 'department-summary';
+$report_type = $_GET['report'] ?? (($role === 'Recruitment Manager') ? 'pending-applicants' : 'leaves');
 $filter_dept = $_GET['dept'] ?? 'all';
-$filter_type = $_GET['type'] ?? 'all';
 $filter_from = $_GET['from'] ?? null;
 $filter_to = $_GET['to'] ?? null;
+$filter_month = isset($_GET['month']) ? intval($_GET['month']) : intval(date('n'));
+$filter_year = isset($_GET['year']) ? intval($_GET['year']) : intval(date('Y'));
 
 // --- Fetch departments ---
 $deptQuery = $conn->query("SELECT deptID, deptName FROM department ORDER BY deptName");
@@ -175,70 +120,76 @@ $departments = [];
 while ($d = $deptQuery->fetch_assoc())
     $departments[] = $d;
 
-// --- Fetch types based on selected department ---
-$types = [];
-if ($filter_dept != 'all') {
-    $deptName = '';
-    foreach ($departments as $d) {
-        if ($d['deptID'] == $filter_dept) {
-            $deptName = $d['deptName'];
-            break;
-        }
-    }
-    if ($deptName != '') {
-        $typeQuery = $conn->query("SELECT DISTINCT type_name FROM employee WHERE department = '" . $conn->real_escape_string($deptName) . "' ORDER BY type_name");
-    } else {
-        $typeQuery = $conn->query("SELECT DISTINCT type_name FROM employee ORDER BY type_name");
-    }
-} else {
-    $typeQuery = $conn->query("SELECT DISTINCT type_name FROM employee ORDER BY type_name");
-}
-while ($t = $typeQuery->fetch_assoc())
-    $types[] = $t['type_name'];
+ 
 
-// --- Fetch report summary ---
 $summary = [];
-$sql = "SELECT 
-            COALESCE(e.department,'Unassigned') AS deptName,
-            COALESCE(e.position,'Unassigned') AS position_title,
-            COALESCE(e.type_name,'Unassigned') AS type_name,
-            COUNT(e.empID) as total
-        FROM employee e
-        WHERE 1";
+$leaves = [];
+$generals = [];
+$pendingApplicants = [];
+$archivedApplicants = [];
 
+$deptNameSel = null;
 if ($filter_dept != 'all') {
-    $deptName = '';
     foreach ($departments as $d) {
         if ($d['deptID'] == $filter_dept) {
-            $deptName = $d['deptName'];
+            $deptNameSel = $d['deptName'];
             break;
         }
     }
-    if ($deptName != '') {
-        $sql .= " AND COALESCE(e.department,'Unassigned') = '" . $conn->real_escape_string($deptName) . "'";
-    }
 }
 
-if ($filter_type != 'all')
-    $sql .= " AND COALESCE(e.type_name,'Unassigned') = '" . $conn->real_escape_string($filter_type) . "'";
-if ($filter_from)
-    $sql .= " AND e.hired_at >= '" . $conn->real_escape_string($filter_from) . "'";
-if ($filter_to)
-    $sql .= " AND e.hired_at <= '" . $conn->real_escape_string($filter_to) . "'";
-
-$sql .= " GROUP BY deptName, position_title, type_name ORDER BY deptName, position_title";
-
-$res = $conn->query($sql);
-while ($row = $res->fetch_assoc()) {
-    $dept = $row['deptName'];
-    $pos = $row['position_title'];
-    $type = $row['type_name'];
-    $total = $row['total'];
-    if (!isset($summary[$dept]))
-        $summary[$dept] = [];
-    if (!isset($summary[$dept][$pos]))
-        $summary[$dept][$pos] = [];
-    $summary[$dept][$pos][$type] = $total;
+if ($report_type === 'leaves' && ($role === 'HR Director' || $role === 'HR Manager' || $role === 'HR Officer')) {
+    if ($deptNameSel) {
+        $stmt = $conn->prepare("SELECT lr.empID, lr.fullname, e.department, lr.leave_type_name, lr.from_date, lr.to_date, lr.duration, lr.status, lr.requested_at FROM leave_request lr JOIN employee e ON lr.empID = e.empID WHERE YEAR(lr.requested_at) = ? AND MONTH(lr.requested_at) = ? AND e.department = ? ORDER BY lr.requested_at DESC");
+        $stmt->bind_param('iis', $filter_year, $filter_month, $deptNameSel);
+    } else {
+        $stmt = $conn->prepare("SELECT lr.empID, lr.fullname, e.department, lr.leave_type_name, lr.from_date, lr.to_date, lr.duration, lr.status, lr.requested_at FROM leave_request lr JOIN employee e ON lr.empID = e.empID WHERE YEAR(lr.requested_at) = ? AND MONTH(lr.requested_at) = ? ORDER BY lr.requested_at DESC");
+        $stmt->bind_param('ii', $filter_year, $filter_month);
+    }
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc())
+        $leaves[] = $row;
+    $stmt->close();
+} elseif ($report_type === 'general-requests' && ($role === 'HR Director' || $role === 'HR Manager' || $role === 'HR Officer')) {
+    if ($deptNameSel) {
+        $stmt = $conn->prepare("SELECT gr.request_id, gr.empID, gr.fullname, e.department, tor.request_type_name, gr.reason, gr.status, gr.requested_at FROM general_request gr JOIN employee e ON gr.empID = e.empID JOIN types_of_requests tor ON tor.id = gr.request_type_id WHERE YEAR(gr.requested_at) = ? AND MONTH(gr.requested_at) = ? AND e.department = ? ORDER BY gr.requested_at DESC");
+        $stmt->bind_param('iis', $filter_year, $filter_month, $deptNameSel);
+    } else {
+        $stmt = $conn->prepare("SELECT gr.request_id, gr.empID, gr.fullname, e.department, tor.request_type_name, gr.reason, gr.status, gr.requested_at FROM general_request gr JOIN employee e ON gr.empID = e.empID JOIN types_of_requests tor ON tor.id = gr.request_type_id WHERE YEAR(gr.requested_at) = ? AND MONTH(gr.requested_at) = ? ORDER BY gr.requested_at DESC");
+        $stmt->bind_param('ii', $filter_year, $filter_month);
+    }
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc())
+        $generals[] = $row;
+    $stmt->close();
+} elseif ($report_type === 'pending-applicants' && ($role === 'Recruitment Manager')) {
+    $dateExpr = "COALESCE(app.applied_at, a.date_applied)";
+    if ($deptNameSel) {
+        $stmt = $conn->prepare("SELECT a.applicantID, a.fullName, app.department_name, app.job_title, COALESCE(app.status, a.status) AS status, $dateExpr AS applied_at FROM applicant a LEFT JOIN applications app ON a.applicantID = app.applicantID WHERE COALESCE(app.status, a.status) = 'Pending' AND app.department_name = ? AND YEAR($dateExpr) = ? AND MONTH($dateExpr) = ? ORDER BY $dateExpr DESC");
+        $stmt->bind_param('sii', $deptNameSel, $filter_year, $filter_month);
+    } else {
+        $stmt = $conn->prepare("SELECT a.applicantID, a.fullName, app.department_name, app.job_title, COALESCE(app.status, a.status) AS status, $dateExpr AS applied_at FROM applicant a LEFT JOIN applications app ON a.applicantID = app.applicantID WHERE COALESCE(app.status, a.status) = 'Pending' AND YEAR($dateExpr) = ? AND MONTH($dateExpr) = ? ORDER BY $dateExpr DESC");
+        $stmt->bind_param('ii', $filter_year, $filter_month);
+    }
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc()) $pendingApplicants[] = $row;
+    $stmt->close();
+} elseif ($report_type === 'archived-applicants' && ($role === 'Recruitment Manager')) {
+    $dateExpr = "COALESCE(a.hired_at, a.date_applied)";
+    if ($deptNameSel) {
+        $stmt = $conn->prepare("SELECT a.applicantID, a.fullName, a.department, a.position_applied, a.status, a.hired_at, a.date_applied FROM applicant a WHERE a.status = 'Archived' AND a.department = ? AND (YEAR(a.hired_at) = ? OR a.hired_at IS NULL) AND MONTH(a.hired_at) = ? ORDER BY $dateExpr DESC");
+        $stmt->bind_param('sii', $deptNameSel, $filter_year, $filter_month);
+    } else {
+        $stmt = $conn->prepare("SELECT a.applicantID, a.fullName, a.department, a.position_applied, a.status, a.hired_at, a.date_applied FROM applicant a WHERE a.status = 'Archived' AND (YEAR(a.hired_at) = ? OR a.hired_at IS NULL) AND MONTH(a.hired_at) = ? ORDER BY $dateExpr DESC");
+        $stmt->bind_param('ii', $filter_year, $filter_month);
+    }
+    $stmt->execute();
+    $res = $stmt->get_result();
+    while ($row = $res->fetch_assoc()) $archivedApplicants[] = $row;
+    $stmt->close();
 }
 
 
@@ -260,7 +211,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'pdf') {
     $pdf->Cell(0, 10, 'HOSPITAL REPORT', 0, 1, 'C');
 
     $pdf->SetFont('Arial', 'B', 14);
-    $pdf->Cell(0, 7, 'EMPLOYEE REPORT', 0, 1, 'C');
+    $pdf->Cell(0, 7, strtoupper(($role === 'Recruitment Manager') ? 'APPLICANT REPORT' : 'EMPLOYEE REPORT'), 0, 1, 'C');
 
     $pdf->SetFont('Arial', '', 11);
     $pdf->Cell(0, 6, 'Report Created: ' . date('F d, Y H:i:s'), 0, 1, 'C');
@@ -287,73 +238,187 @@ if (isset($_GET['export']) && $_GET['export'] == 'pdf') {
     $pdf->Ln(4);
 
 
-    // --- Table Header ---
-    $colWidths = [10, 70, 100, 60, 30];
-    $pdf->SetFont('Arial', 'B', 10);
-    $pdf->SetFillColor(50, 120, 200); // Blue header
-    $pdf->SetTextColor(255, 255, 255);
-    $pdf->Cell($colWidths[0], 8, 'No.', 1, 0, 'C', true);
-    $pdf->Cell($colWidths[1], 8, 'Department', 1, 0, 'C', true);
-    $pdf->Cell($colWidths[2], 8, 'Position', 1, 0, 'C', true);
-    $pdf->Cell($colWidths[3], 8, 'Employment Type', 1, 0, 'C', true);
-    $pdf->Cell($colWidths[4], 8, 'Total', 1, 1, 'C', true);
-
-    // --- Table Data ---
-    $pdf->SetFont('Arial', '', 10);
-    $pdf->SetTextColor(0, 0, 0);
-    $fill = false; // alternating row color
-    $lineHeight = 6;
-    $pageHeightLimit = 190;
-    $counter = 1;
-
-    foreach ($summary as $dept => $positions) {
-        foreach ($positions as $pos => $types) {
-            foreach ($types as $type => $total) {
-                if ($pdf->GetY() + $lineHeight * 2 > $pageHeightLimit) {
-                    $pdf->AddPage();
-                    // repeat table header
-                    $pdf->SetFont('Arial', 'B', 10);
-                    $pdf->SetFillColor(50, 120, 200);
-                    $pdf->SetTextColor(255, 255, 255);
-                    $pdf->Cell($colWidths[0], 8, 'No.', 1, 0, 'C', true);
-                    $pdf->Cell($colWidths[1], 8, 'Department', 1, 0, 'C', true);
-                    $pdf->Cell($colWidths[2], 8, 'Position', 1, 0, 'C', true);
-                    $pdf->Cell($colWidths[3], 8, 'Employment Type', 1, 0, 'C', true);
-                    $pdf->Cell($colWidths[4], 8, 'Total', 1, 1, 'C', true);
-                    $pdf->SetFont('Arial', '', 10);
-                    $pdf->SetTextColor(0, 0, 0);
-                }
-                // alternating row colors
-                $pdf->SetFillColor($fill ? 230 : 255, $fill ? 230 : 255, $fill ? 230 : 255);
-                $pdf->Cell($colWidths[0], $lineHeight, $counter, 1, 0, 'C', true);
-                $pdf->Cell($colWidths[1], $lineHeight, $dept, 1, 0, 'L', true);
-                $pdf->Cell($colWidths[2], $lineHeight, $pos, 1, 0, 'L', true);
-                $pdf->Cell($colWidths[3], $lineHeight, $type, 1, 0, 'L', true);
-                $pdf->Cell($colWidths[4], $lineHeight, $total, 1, 1, 'C', true);
-                $fill = !$fill;
-                $counter++;
+    if ($report_type === 'leaves') {
+        $colWidths = [10, 35, 55, 55, 35, 35, 20, 40];
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->SetFillColor(50, 120, 200);
+        $pdf->SetTextColor(255, 255, 255);
+        $pdf->Cell($colWidths[0], 8, 'No.', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[1], 8, 'Emp ID', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[2], 8, 'Fullname', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[3], 8, 'Department', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[4], 8, 'From', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[5], 8, 'To', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[6], 8, 'Days', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[7], 8, 'Leave Type', 1, 1, 'C', true);
+        $pdf->SetFont('Arial', '', 10);
+        $pdf->SetTextColor(0, 0, 0);
+        $fill = false;
+        $lineHeight = 6;
+        $pageHeightLimit = 190;
+        $counter = 1;
+        foreach ($leaves as $r) {
+            if ($pdf->GetY() + $lineHeight * 2 > $pageHeightLimit) {
+                $pdf->AddPage();
+                $pdf->SetFont('Arial', 'B', 10);
+                $pdf->SetFillColor(50, 120, 200);
+                $pdf->SetTextColor(255, 255, 255);
+                $pdf->Cell($colWidths[0], 8, 'No.', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[1], 8, 'Emp ID', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[2], 8, 'Fullname', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[3], 8, 'Department', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[4], 8, 'From', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[5], 8, 'To', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[6], 8, 'Days', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[7], 8, 'Leave Type', 1, 1, 'C', true);
+                $pdf->SetFont('Arial', '', 10);
+                $pdf->SetTextColor(0, 0, 0);
             }
+            $pdf->SetFillColor($fill ? 230 : 255, $fill ? 230 : 255, $fill ? 230 : 255);
+            $pdf->Cell($colWidths[0], $lineHeight, $counter, 1, 0, 'C', true);
+            $pdf->Cell($colWidths[1], $lineHeight, $r['empID'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[2], $lineHeight, $r['fullname'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[3], $lineHeight, $r['department'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[4], $lineHeight, $r['from_date'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[5], $lineHeight, $r['to_date'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[6], $lineHeight, $r['duration'], 1, 0, 'C', true);
+            $pdf->Cell($colWidths[7], $lineHeight, $r['leave_type_name'], 1, 1, 'L', true);
+            $fill = !$fill;
+            $counter++;
+        }
+    } elseif ($report_type === 'general-requests') {
+        $colWidths = [10, 35, 55, 55, 50, 60, 35];
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->SetFillColor(50, 120, 200);
+        $pdf->SetTextColor(255, 255, 255);
+        $pdf->Cell($colWidths[0], 8, 'No.', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[1], 8, 'Emp ID', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[2], 8, 'Fullname', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[3], 8, 'Department', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[4], 8, 'Request Type', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[5], 8, 'Reason', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[6], 8, 'Status', 1, 1, 'C', true);
+        $pdf->SetFont('Arial', '', 10);
+        $pdf->SetTextColor(0, 0, 0);
+        $fill = false;
+        $lineHeight = 6;
+        $pageHeightLimit = 190;
+        $counter = 1;
+        foreach ($generals as $r) {
+            if ($pdf->GetY() + $lineHeight * 2 > $pageHeightLimit) {
+                $pdf->AddPage();
+                $pdf->SetFont('Arial', 'B', 10);
+                $pdf->SetFillColor(50, 120, 200);
+                $pdf->SetTextColor(255, 255, 255);
+                $pdf->Cell($colWidths[0], 8, 'No.', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[1], 8, 'Emp ID', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[2], 8, 'Fullname', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[3], 8, 'Department', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[4], 8, 'Request Type', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[5], 8, 'Reason', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[6], 8, 'Status', 1, 1, 'C', true);
+                $pdf->SetFont('Arial', '', 10);
+                $pdf->SetTextColor(0, 0, 0);
+            }
+            $pdf->SetFillColor($fill ? 230 : 255, $fill ? 230 : 255, $fill ? 230 : 255);
+            $pdf->Cell($colWidths[0], $lineHeight, $counter, 1, 0, 'C', true);
+            $pdf->Cell($colWidths[1], $lineHeight, $r['empID'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[2], $lineHeight, $r['fullname'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[3], $lineHeight, $r['department'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[4], $lineHeight, $r['request_type_name'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[5], $lineHeight, $r['reason'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[6], $lineHeight, $r['status'], 1, 1, 'C', true);
+            $fill = !$fill;
+            $counter++;
+        }
+    } elseif ($report_type === 'pending-applicants') {
+        $colWidths = [10, 30, 60, 50, 50, 35];
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->SetFillColor(50, 120, 200);
+        $pdf->SetTextColor(255, 255, 255);
+        $pdf->Cell($colWidths[0], 8, 'No.', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[1], 8, 'Applicant ID', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[2], 8, 'Fullname', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[3], 8, 'Department', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[4], 8, 'Job Title', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[5], 8, 'Applied At', 1, 1, 'C', true);
+        $pdf->SetFont('Arial', '', 10);
+        $pdf->SetTextColor(0, 0, 0);
+        $fill = false;
+        $lineHeight = 6;
+        $pageHeightLimit = 190;
+        $counter = 1;
+        foreach ($pendingApplicants as $r) {
+            if ($pdf->GetY() + $lineHeight * 2 > $pageHeightLimit) {
+                $pdf->AddPage();
+                $pdf->SetFont('Arial', 'B', 10);
+                $pdf->SetFillColor(50, 120, 200);
+                $pdf->SetTextColor(255, 255, 255);
+                $pdf->Cell($colWidths[0], 8, 'No.', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[1], 8, 'Applicant ID', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[2], 8, 'Fullname', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[3], 8, 'Department', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[4], 8, 'Job Title', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[5], 8, 'Applied At', 1, 1, 'C', true);
+                $pdf->SetFont('Arial', '', 10);
+                $pdf->SetTextColor(0, 0, 0);
+            }
+            $pdf->SetFillColor($fill ? 230 : 255, $fill ? 230 : 255, $fill ? 230 : 255);
+            $pdf->Cell($colWidths[0], $lineHeight, $counter, 1, 0, 'C', true);
+            $pdf->Cell($colWidths[1], $lineHeight, $r['applicantID'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[2], $lineHeight, $r['fullName'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[3], $lineHeight, $r['department_name'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[4], $lineHeight, $r['job_title'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[5], $lineHeight, $r['applied_at'], 1, 1, 'L', true);
+            $fill = !$fill;
+            $counter++;
+        }
+    } elseif ($report_type === 'archived-applicants') {
+        $colWidths = [10, 30, 60, 50, 45, 35, 35];
+        $pdf->SetFont('Arial', 'B', 10);
+        $pdf->SetFillColor(50, 120, 200);
+        $pdf->SetTextColor(255, 255, 255);
+        $pdf->Cell($colWidths[0], 8, 'No.', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[1], 8, 'Applicant ID', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[2], 8, 'Fullname', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[3], 8, 'Department', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[4], 8, 'Position Applied', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[5], 8, 'Hired At', 1, 0, 'C', true);
+        $pdf->Cell($colWidths[6], 8, 'Date Applied', 1, 1, 'C', true);
+        $pdf->SetFont('Arial', '', 10);
+        $pdf->SetTextColor(0, 0, 0);
+        $fill = false;
+        $lineHeight = 6;
+        $pageHeightLimit = 190;
+        $counter = 1;
+        foreach ($archivedApplicants as $r) {
+            if ($pdf->GetY() + $lineHeight * 2 > $pageHeightLimit) {
+                $pdf->AddPage();
+                $pdf->SetFont('Arial', 'B', 10);
+                $pdf->SetFillColor(50, 120, 200);
+                $pdf->SetTextColor(255, 255, 255);
+                $pdf->Cell($colWidths[0], 8, 'No.', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[1], 8, 'Applicant ID', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[2], 8, 'Fullname', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[3], 8, 'Department', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[4], 8, 'Position Applied', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[5], 8, 'Hired At', 1, 0, 'C', true);
+                $pdf->Cell($colWidths[6], 8, 'Date Applied', 1, 1, 'C', true);
+                $pdf->SetFont('Arial', '', 10);
+                $pdf->SetTextColor(0, 0, 0);
+            }
+            $pdf->SetFillColor($fill ? 230 : 255, $fill ? 230 : 255, $fill ? 230 : 255);
+            $pdf->Cell($colWidths[0], $lineHeight, $counter, 1, 0, 'C', true);
+            $pdf->Cell($colWidths[1], $lineHeight, $r['applicantID'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[2], $lineHeight, $r['fullName'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[3], $lineHeight, $r['department'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[4], $lineHeight, $r['position_applied'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[5], $lineHeight, $r['hired_at'], 1, 0, 'L', true);
+            $pdf->Cell($colWidths[6], $lineHeight, $r['date_applied'], 1, 1, 'L', true);
+            $fill = !$fill;
+            $counter++;
         }
     }
-
-    // --- Grand Total ---
-    $totalSQL = "SELECT COUNT(empID) AS total_employees FROM employee WHERE 1";
-    if ($filter_dept != 'all')
-        $totalSQL .= " AND COALESCE(department,'Unassigned') = '" . $conn->real_escape_string($deptName) . "'";
-    if ($filter_type != 'all')
-        $totalSQL .= " AND COALESCE(type_name,'Unassigned') = '" . $conn->real_escape_string($filter_type) . "'";
-    if ($filter_from)
-        $totalSQL .= " AND hired_at >= '" . $conn->real_escape_string($filter_from) . "'";
-    if ($filter_to)
-        $totalSQL .= " AND hired_at <= '" . $conn->real_escape_string($filter_to) . "'";
-
-    $totalRes = $conn->query($totalSQL);
-    $grandTotal = ($totalRes && $row = $totalRes->fetch_assoc()) ? $row['total_employees'] : 0;
-
-    $pdf->SetFont('Arial', 'B', 10);
-    $pdf->SetFillColor(200, 200, 200);
-    $pdf->Cell(array_sum($colWidths) - $colWidths[4], 8, 'TOTAL EMPLOYEES', 1, 0, 'R', true);
-    $pdf->Cell($colWidths[4], 8, $grandTotal, 1, 1, 'C', true);
 
     // --- Footer ---
     $pdf->SetY(-15);
@@ -426,8 +491,8 @@ if (isset($_GET['export']) && $_GET['export'] == 'pdf') {
 
         <ul class="nav">
             <?php foreach ($menus[$role] as $label => $link): ?>
-                <li><a href="<?php echo $link; ?>"><i
-                            class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
+                        <li><a href="<?php echo $link; ?>"><i
+                                    class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
             <?php endforeach; ?>
         </ul>
     </div>
@@ -443,47 +508,50 @@ if (isset($_GET['export']) && $_GET['export'] == 'pdf') {
                         <div class="col-md-3">
                             <label class="form-label fw-bold">Report Type</label>
                             <select class="form-select" name="report" onchange="this.form.submit()">
-                                <option value="department-summary" <?= $report_type == 'department-summary' ? 'selected' : '' ?>>Department Summary</option>
+                                <?php if ($role === 'Recruitment Manager'): ?>
+                                    <option value="pending-applicants" <?= $report_type == 'pending-applicants' ? 'selected' : '' ?>>Pending Applicants</option>
+                                    <option value="archived-applicants" <?= $report_type == 'archived-applicants' ? 'selected' : '' ?>>Archived Applicants</option>
+                                <?php else: ?>
+                                    <option value="leaves" <?= $report_type == 'leaves' ? 'selected' : '' ?>>Leaves By Month</option>
+                                    <option value="general-requests" <?= $report_type == 'general-requests' ? 'selected' : '' ?>>General Requests By Month</option>
+                                <?php endif; ?>
                             </select>
                         </div>
 
                         <div class="col-md-3">
                             <label class="form-label fw-bold">Department</label>
-                            <select class="form-select" name="dept">
+                            <select class="form-select" name="dept" onchange="this.form.submit()">
                                 <option value="all">All Departments</option>
                                 <?php foreach ($departments as $d): ?>
-                                    <option value="<?= $d['deptID'] ?>" <?= ($filter_dept == $d['deptID']) ? 'selected' : '' ?>>
-                                        <?= $d['deptName'] ?>
-                                    </option>
+                                            <option value="<?= $d['deptID'] ?>" <?= ($filter_dept == $d['deptID']) ? 'selected' : '' ?>>
+                                                <?= $d['deptName'] ?>
+                                            </option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
 
-                        <div class="col-md-3">
-                            <label class="form-label fw-bold">Employment Type</label>
-                            <select class="form-select" name="type" id="typeSelect">
-                                <option value="all">All Types</option>
-                                <?php foreach ($types as $t): ?>
-                                    <option value="<?= $t ?>" <?= ($filter_type == $t) ? 'selected' : '' ?>><?= $t ?></option>
-                                <?php endforeach; ?>
+                        
+
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold">Month</label>
+                            <select class="form-select" name="month" onchange="this.form.submit()">
+                                <?php for ($m = 1; $m <= 12; $m++): ?>
+                                            <option value="<?= $m ?>" <?= ($filter_month == $m) ? 'selected' : '' ?>><?= date('F', mktime(0, 0, 0, $m, 1)) ?></option>
+                                <?php endfor; ?>
                             </select>
                         </div>
 
                         <div class="col-md-2">
-                            <label class="form-label fw-bold">From</label>
-                            <input type="date" class="form-control" name="from" value="<?= $filter_from ?>">
-                        </div>
-
-                        <div class="col-md-2">
-                            <label class="form-label fw-bold">To</label>
-                            <input type="date" class="form-control" name="to" value="<?= $filter_to ?>">
+                            <label class="form-label fw-bold">Year</label>
+                            <select class="form-select" name="year" onchange="this.form.submit()">
+                                <?php for ($y = date('Y') - 5; $y <= date('Y') + 1; $y++): ?>
+                                            <option value="<?= $y ?>" <?= ($filter_year == $y) ? 'selected' : '' ?>><?= $y ?></option>
+                                <?php endfor; ?>
+                            </select>
                         </div>
 
                         <div class="col-12 d-flex gap-2 mt-2">
-                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i>
-                                Filter</button>
-                            <a href="?<?= http_build_query($_GET) ?>&export=pdf" class="btn btn-danger"><i
-                                    class="fa-solid fa-file-pdf"></i> Export PDF</a>
+                            <a href="?<?= http_build_query($_GET) ?>&export=pdf" class="btn btn-danger"><i class="fa-solid fa-file-pdf"></i> Export PDF</a>
                         </div>
                     </form>
                 </div>
@@ -493,30 +561,117 @@ if (isset($_GET['export']) && $_GET['export'] == 'pdf') {
             <div class="card shadow-sm border-0">
                 <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle text-center mb-0">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Department</th>
-                                    <th>Position</th>
-                                    <th>Employment Type</th>
-                                    <th>Total Employees</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($summary as $dept => $positions): ?>
-                                    <?php foreach ($positions as $pos => $types): ?>
-                                        <?php foreach ($types as $type => $total): ?>
+                        <?php if ($report_type === 'leaves'): ?>
+                                    <table class="table table-striped table-hover align-middle text-center mb-0">
+                                        <thead class="table-dark">
                                             <tr>
-                                                <td><?= $dept ?></td>
-                                                <td><?= $pos ?></td>
-                                                <td><?= $type ?></td>
-                                                <td><?= $total ?></td>
+                                                <th>Emp ID</th>
+                                                <th>Fullname</th>
+                                                <th>Department</th>
+                                                <th>Leave Type</th>
+                                                <th>From</th>
+                                                <th>To</th>
+                                                <th>Days</th>
+                                                <th>Status</th>
+                                                <th>Requested At</th>
                                             </tr>
-                                        <?php endforeach; ?>
-                                    <?php endforeach; ?>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($leaves as $r): ?>
+                                                        <tr>
+                                                            <td><?= htmlspecialchars($r['empID']) ?></td>
+                                                            <td><?= htmlspecialchars($r['fullname']) ?></td>
+                                                            <td><?= htmlspecialchars($r['department']) ?></td>
+                                                            <td><?= htmlspecialchars($r['leave_type_name']) ?></td>
+                                                            <td><?= htmlspecialchars($r['from_date']) ?></td>
+                                                            <td><?= htmlspecialchars($r['to_date']) ?></td>
+                                                            <td><?= htmlspecialchars($r['duration']) ?></td>
+                                                            <td><?= htmlspecialchars($r['status']) ?></td>
+                                                            <td><?= htmlspecialchars($r['requested_at']) ?></td>
+                                                        </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                        <?php elseif ($report_type === 'general-requests'): ?>
+                                    <table class="table table-striped table-hover align-middle text-center mb-0">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Emp ID</th>
+                                                <th>Fullname</th>
+                                                <th>Department</th>
+                                                <th>Request Type</th>
+                                                <th>Reason</th>
+                                                <th>Status</th>
+                                                <th>Requested At</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($generals as $r): ?>
+                                                        <tr>
+                                                            <td><?= htmlspecialchars($r['empID']) ?></td>
+                                                            <td><?= htmlspecialchars($r['fullname']) ?></td>
+                                                            <td><?= htmlspecialchars($r['department']) ?></td>
+                                                            <td><?= htmlspecialchars($r['request_type_name']) ?></td>
+                                                            <td><?= htmlspecialchars($r['reason']) ?></td>
+                                                            <td><?= htmlspecialchars($r['status']) ?></td>
+                                                            <td><?= htmlspecialchars($r['requested_at']) ?></td>
+                                                        </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                        <?php elseif ($report_type === 'pending-applicants'): ?>
+                                    <table class="table table-striped table-hover align-middle text-center mb-0">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Applicant ID</th>
+                                                <th>Fullname</th>
+                                                <th>Department</th>
+                                                <th>Job Title</th>
+                                                <th>Status</th>
+                                                <th>Applied At</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($pendingApplicants as $r): ?>
+                                                        <tr>
+                                                            <td><?= htmlspecialchars($r['applicantID']) ?></td>
+                                                            <td><?= htmlspecialchars($r['fullName']) ?></td>
+                                                            <td><?= htmlspecialchars($r['department_name']) ?></td>
+                                                            <td><?= htmlspecialchars($r['job_title']) ?></td>
+                                                            <td><?= htmlspecialchars($r['status']) ?></td>
+                                                            <td><?= htmlspecialchars($r['applied_at']) ?></td>
+                                                        </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                        <?php elseif ($report_type === 'archived-applicants'): ?>
+                                    <table class="table table-striped table-hover align-middle text-center mb-0">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Applicant ID</th>
+                                                <th>Fullname</th>
+                                                <th>Department</th>
+                                                <th>Position Applied</th>
+                                                <th>Status</th>
+                                                <th>Hired At</th>
+                                                <th>Date Applied</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($archivedApplicants as $r): ?>
+                                                        <tr>
+                                                            <td><?= htmlspecialchars($r['applicantID']) ?></td>
+                                                            <td><?= htmlspecialchars($r['fullName']) ?></td>
+                                                            <td><?= htmlspecialchars($r['department']) ?></td>
+                                                            <td><?= htmlspecialchars($r['position_applied']) ?></td>
+                                                            <td><?= htmlspecialchars($r['status']) ?></td>
+                                                            <td><?= htmlspecialchars($r['hired_at']) ?></td>
+                                                            <td><?= htmlspecialchars($r['date_applied']) ?></td>
+                                                        </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -526,30 +681,8 @@ if (isset($_GET['export']) && $_GET['export'] == 'pdf') {
 
 <script>
 
-
-
     const filterForm = document.querySelector('form');
     const deptSelect = document.querySelector('select[name="dept"]');
-    const typeSelect = document.querySelector('select[name="type"]');
-
-    deptSelect.addEventListener('change', () => {
-        const deptID = deptSelect.value;
-
-        // Fetch types dynamically
-        fetch(`?ajax=1&dept=${deptID}`)
-            .then(res => res.json())
-            .then(types => {
-                // Reset type dropdown
-                typeSelect.innerHTML = '<option value="all">All Types</option>';
-
-                types.forEach(t => {
-                    typeSelect.innerHTML += `<option value="${t}">${t}</option>`;
-                });
-
-                // Optional: reset type filter to "all" when department changes
-                typeSelect.value = 'all';
-            });
-    });
 
 </script>
 

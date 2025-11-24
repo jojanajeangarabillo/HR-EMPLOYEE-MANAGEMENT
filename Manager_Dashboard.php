@@ -155,6 +155,8 @@ $menus = [
         "Pending Applicants" => "Manager_PendingApplicants.php",
         "Newly Hired" => "Newly-Hired.php",
         "Vacancies" => "Manager_Vacancies.php",
+        "Requests" => "Manager_Request.php",
+        "Reports" => "Manager_Reports.php",
         "Logout" => "Login.php"
     ],
 
@@ -164,6 +166,7 @@ $menus = [
         "Pending Applicants" => "Manager_PendingApplicants.php",
         "Newly Hired" => "Newly-Hired.php",
         "Employees" => "Manager_Employees.php",
+
         "Logout" => "Login.php"
     ],
 
