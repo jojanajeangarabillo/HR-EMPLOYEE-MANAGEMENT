@@ -77,6 +77,8 @@ $menus = [
     "Pending Applicants" => "Manager_PendingApplicants.php",
     "Newly Hired" => "Newly-Hired.php",
     "Vacancies" => "Manager_Vacancies.php",
+    "Requests" => "Manager_Request.php",
+    "Reports" => "Manager_Reports.php",
     "Logout" => "Login.php"
   ],
 
@@ -542,10 +544,11 @@ $icons = [
           <input autocomplete="off" type="text" id="searchInput" placeholder="Search applicants...">
         </div>
         <select id="statusFilter">
-          <option value="">All Status</option>
+          <option value="pending" selected>Pending</option>
+          <option value="archived">Archived</option>
           <option value="interviewed">Interviewed</option>
           <option value="rejected">Rejected</option>
-          <option value="pending">Pending</option>
+          <option value="">All Status</option>
         </select>
       </div>
     </div>
@@ -686,7 +689,44 @@ $icons = [
       }
     }
 
-    window.onload = paginateTable;
+    window.onload = function () {
+      const statusSelect = document.getElementById('statusFilter');
+      if (statusSelect) statusSelect.value = 'pending';
+      filterTable();
+      paginateTable();
+    };
+
+    // Generic Alert Modal (for consistency across manager pages)
+    (function setupAlertModal() {
+      const modalHtml = `
+      <div class="modal fade" id="alertModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+              <h5 class="modal-title">Notice</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body"><div id="alertModalMessage"></div></div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      const alertModalEl = document.getElementById('alertModal');
+      const alertModal = alertModalEl ? new bootstrap.Modal(alertModalEl) : null;
+      window.showAlertModal = function (message) {
+        const msgEl = document.getElementById('alertModalMessage');
+        if (msgEl) msgEl.textContent = message;
+        if (alertModal) alertModal.show();
+      };
+      const nativeAlert = window.alert;
+      window.alert = function (message) {
+        if (alertModal) return window.showAlertModal(message);
+        nativeAlert(message);
+      };
+    })();
   </script>
 </body>
 

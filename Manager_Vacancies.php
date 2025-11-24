@@ -112,6 +112,8 @@ $menus = [
         "Pending Applicants" => "Manager_PendingApplicants.php",
         "Newly Hired" => "Newly-Hired.php",
         "Vacancies" => "Admin_Vacancies.php",
+        "Requests" => "Manager_Request.php",
+        "Reports" => "Manager_Reports.php",
         "Logout" => "Login.php"
     ],
     "HR Officer" => [
@@ -214,7 +216,7 @@ while ($row = $etypeQuery->fetch_assoc())
     <title>Manager Vacancies</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link rel="stylesheet" href="manager-sidebar.css">
     <style>
         body {
@@ -307,7 +309,7 @@ while ($row = $etypeQuery->fetch_assoc())
             color: #1E3A8A;
         }
 
-        .modal {
+        .vacancy-modal {
             display: none;
             position: fixed;
             z-index: 1000;
@@ -320,7 +322,7 @@ while ($row = $etypeQuery->fetch_assoc())
             align-items: center;
         }
 
-        .modal-content {
+        .vacancy-modal-content {
             background: white;
             padding: 30px;
             border-radius: 15px;
@@ -329,12 +331,12 @@ while ($row = $etypeQuery->fetch_assoc())
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
         }
 
-        .modal h2 {
+        .vacancy-modal h2 {
             color: #1E3A8A;
             margin-bottom: 20px;
         }
 
-        .modal input {
+        .vacancy-modal input {
             width: 100%;
             padding: 10px;
             margin-bottom: 20px;
@@ -481,8 +483,8 @@ while ($row = $etypeQuery->fetch_assoc())
     </main>
 
     <!-- Vacancy Count Modal -->
-    <div id="vacancyModal" class="modal">
-        <div class="modal-content">
+    <div id="vacancyModal" class="vacancy-modal">
+        <div class="vacancy-modal-content">
             <h2>Set Number of Vacancies</h2>
             <input type="number" id="vacancyCount" placeholder="Enter number of vacancies" min="1">
             <div>
@@ -521,13 +523,13 @@ while ($row = $etypeQuery->fetch_assoc())
 
         // Modal logic
         openModalBtn.onclick = () => {
-            if (!deptSelect.value || !posSelect.value) return alert("Select department and position first.");
+            if (!deptSelect.value || !posSelect.value) { showAlertModal("Select department and position first."); return; }
             modal.style.display = 'flex';
         };
         cancelBtn.onclick = () => { modal.style.display = 'none'; vacancyInput.value = ''; };
         confirmBtn.onclick = () => {
             const count = vacancyInput.value.trim();
-            if (!count || isNaN(count) || count <= 0) return alert("Enter a valid number.");
+            if (!count || isNaN(count) || count <= 0) { showAlertModal("Enter a valid number."); return; }
             vacancyHidden.value = count;
             modal.style.display = 'none';
             form.submit();
@@ -535,27 +537,93 @@ while ($row = $etypeQuery->fetch_assoc())
         window.onclick = e => { if (e.target === modal) modal.style.display = 'none'; };
 
         // AJAX archive
-        $(document).ready(function () {
-            $('.archive-btn').on('click', function () {
-                const vacancyID = $(this).data('id');
-                if (!confirm("Archive this vacancy?")) return;
-                $.ajax({
-                    url: '', // same PHP file
-                    method: 'POST',
-                    data: { archive_vacancy_id: vacancyID },
-                    dataType: 'json',
-                    success: function (res) {
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.archive-btn').forEach(function (btn) {
+                btn.addEventListener('click', async function () {
+                    const vacancyID = this.getAttribute('data-id');
+                    const ok = await showConfirmModal("Archive this vacancy?");
+                    if (!ok) return;
+                    const params = new URLSearchParams({ archive_vacancy_id: vacancyID });
+                    try {
+                        const resp = await fetch('', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+                            body: params.toString()
+                        });
+                        const res = await resp.json();
                         if (res.success) {
-                            alert(res.message);
-                            $(`button[data-id="${vacancyID}"]`).closest('tr').remove();
-                        } else alert("Error: " + res.message);
-                    },
-                    error: function (xhr, status, error) {
-                        alert("AJAX error: " + error);
+                            showAlertModal(res.message);
+                            const row = btn.closest('tr');
+                            if (row) row.remove();
+                        } else {
+                            showAlertModal("Error: " + (res.message || 'Unknown error'));
+                        }
+                    } catch (err) {
+                        showAlertModal("AJAX error: " + (err && err.message ? err.message : err));
                     }
                 });
             });
         });
+
+        // Alert & Confirm modals
+        (function setupManagerModals() {
+            const html = `
+            <div class="modal fade" id="managerAlertModal" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Notice</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body"><div id="managerAlertMessage"></div></div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal fade" id="managerConfirmModal" tabindex="-1" aria-hidden="true">
+              <div class="modal-dialog">
+                <div class="modal-content">
+                  <div class="modal-header bg-warning">
+                    <h5 class="modal-title">Confirm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body"><div id="managerConfirmMessage"></div></div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="managerConfirmCancel">Cancel</button>
+                    <button type="button" class="btn btn-warning" id="managerConfirmOk">OK</button>
+                  </div>
+                </div>
+              </div>
+            </div>`;
+            document.body.insertAdjacentHTML('beforeend', html);
+            const alertEl = document.getElementById('managerAlertModal');
+            const alertModal = new bootstrap.Modal(alertEl);
+            const confirmEl = document.getElementById('managerConfirmModal');
+            const confirmModal = new bootstrap.Modal(confirmEl);
+            window.showAlertModal = function (message) {
+                document.getElementById('managerAlertMessage').textContent = message;
+                alertModal.show();
+            };
+            window.showConfirmModal = function (message) {
+                return new Promise(resolve => {
+                    document.getElementById('managerConfirmMessage').textContent = message;
+                    const okBtn = document.getElementById('managerConfirmOk');
+                    const cancelBtn = document.getElementById('managerConfirmCancel');
+                    const cleanup = () => {
+                        okBtn.replaceWith(okBtn.cloneNode(true));
+                        cancelBtn.replaceWith(cancelBtn.cloneNode(true));
+                    };
+                    confirmModal.show();
+                    document.getElementById('managerConfirmOk').addEventListener('click', () => { cleanup(); confirmModal.hide(); resolve(true); });
+                    document.getElementById('managerConfirmCancel').addEventListener('click', () => { cleanup(); confirmModal.hide(); resolve(false); });
+                });
+            };
+            const nativeAlert = window.alert; const nativeConfirm = window.confirm;
+            window.alert = (msg) => window.showAlertModal(msg);
+            window.confirm = (msg) => { console.warn('Use showConfirmModal instead of confirm for async flow.'); return nativeConfirm(msg); };
+        })();
     </script>
 </body>
 

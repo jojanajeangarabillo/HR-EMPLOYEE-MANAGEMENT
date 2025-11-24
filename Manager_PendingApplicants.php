@@ -97,6 +97,8 @@ $menus = [
     "Pending Applicants" => "Manager_PendingApplicants.php",
     "Newly Hired" => "Newly-Hired.php",
     "Vacancies" => "Manager_Vacancies.php",
+    "Requests" => "Manager_Request.php",
+    "Reports" => "Manager_Reports.php",
     "Logout" => "Login.php"
   ],
 
@@ -1005,26 +1007,89 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
     crossorigin="anonymous"></script>
 
   <script>
-    // Utility: show bootstrap alert dynamically in flashWrap
-    function showAlert(message, type = 'success', autoClose = true) {
-      const wrap = document.getElementById('flashWrap');
-      if (!wrap) return;
-      const alertId = 'alert-' + Date.now();
-      const div = document.createElement('div');
-      div.className = `alert alert-${type} alert-dismissible fade show`;
-      div.role = 'alert';
-      div.id = alertId;
-      div.innerHTML = `${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>`;
-      // Insert at top
-      wrap.prepend(div);
-      if (autoClose) {
-        setTimeout(() => {
-          const bsAlert = bootstrap.Alert.getOrCreateInstance(div);
-          bsAlert.close();
-        }, 6000);
-      }
-    }
+    // Manager-wide alert / confirm / prompt modals
+    (function setupManagerModals() {
+      const html = `
+      <div class="modal fade" id="mgrAlertModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+              <h5 class="modal-title">Notice</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body"><div id="mgrAlertMessage"></div></div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal fade" id="mgrConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header bg-warning">
+              <h5 class="modal-title">Confirm</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body"><div id="mgrConfirmMessage"></div></div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="mgrConfirmCancel">Cancel</button>
+              <button type="button" class="btn btn-warning" id="mgrConfirmOk">OK</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal fade" id="mgrPromptModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+              <h5 class="modal-title">Enter Details</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div id="mgrPromptMessage" class="mb-2"></div>
+              <input type="text" class="form-control" id="mgrPromptInput" placeholder="Type here...">
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="mgrPromptCancel">Cancel</button>
+              <button type="button" class="btn btn-info" id="mgrPromptOk">OK</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+      document.body.insertAdjacentHTML('beforeend', html);
+      const alertModal = new bootstrap.Modal(document.getElementById('mgrAlertModal'));
+      const confirmModal = new bootstrap.Modal(document.getElementById('mgrConfirmModal'));
+      const promptModal = new bootstrap.Modal(document.getElementById('mgrPromptModal'));
+      window.showAlertModal = function (message) {
+        document.getElementById('mgrAlertMessage').textContent = message;
+        alertModal.show();
+      };
+      window.showConfirmModal = function (message) {
+        return new Promise(resolve => {
+          document.getElementById('mgrConfirmMessage').textContent = message;
+          const ok = document.getElementById('mgrConfirmOk');
+          const cancel = document.getElementById('mgrConfirmCancel');
+          const cleanup = () => { ok.replaceWith(ok.cloneNode(true)); cancel.replaceWith(cancel.cloneNode(true)); };
+          confirmModal.show();
+          document.getElementById('mgrConfirmOk').addEventListener('click', () => { cleanup(); confirmModal.hide(); resolve(true); });
+          document.getElementById('mgrConfirmCancel').addEventListener('click', () => { cleanup(); confirmModal.hide(); resolve(false); });
+        });
+      };
+      window.showPromptModal = function (message, defaultText = '') {
+        return new Promise(resolve => {
+          document.getElementById('mgrPromptMessage').textContent = message;
+          const input = document.getElementById('mgrPromptInput');
+          const ok = document.getElementById('mgrPromptOk');
+          const cancel = document.getElementById('mgrPromptCancel');
+          input.value = defaultText;
+          const cleanup = () => { ok.replaceWith(ok.cloneNode(true)); cancel.replaceWith(cancel.cloneNode(true)); };
+          promptModal.show();
+          document.getElementById('mgrPromptOk').addEventListener('click', () => { const val = input.value; cleanup(); promptModal.hide(); resolve(val); });
+          document.getElementById('mgrPromptCancel').addEventListener('click', () => { cleanup(); promptModal.hide(); resolve(null); });
+        });
+      };
+    })();
 
     // All client-side behavior - use fetch for AJAX
     document.addEventListener('DOMContentLoaded', function () {
@@ -1037,7 +1102,8 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
           const fullname = this.dataset.fullname;
 
           if (newStatus === 'Hired') {
-            if (!confirm(`Are you sure you want to hire ${fullname}?`)) {
+            const ok = await showConfirmModal(`Are you sure you want to hire ${fullname}?`);
+            if (!ok) {
               this.value = 'Pending';
               return;
             }
@@ -1045,11 +1111,12 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
 
             await updateStatus(appid, newStatus, true, sel);
           } else if (newStatus === 'Rejected') {
-            if (!confirm(`Are you sure you want to reject ${fullname}?`)) {
+            const ok = await showConfirmModal(`Are you sure you want to reject ${fullname}?`);
+            if (!ok) {
               this.value = 'Pending';
               return;
             }
-            const reason = prompt("Enter reason for rejection (optional):", "");
+            const reason = await showPromptModal("Enter reason for rejection (optional):", "");
             await updateStatus(appid, newStatus, true, sel, reason);
           } else {
             const needsModal = ['Initial Interview', 'Assessment', 'Final Interview', 'Requirements'];
@@ -1079,16 +1146,16 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
           });
           const data = await resp.json();
           if (data.success) {
-            showAlert(data.message, 'success');
+            showAlertModal(data.message);
             if (status === 'Hired' || status === 'Rejected') {
               selectEl.disabled = true;
               selectEl.value = status;
             }
           } else {
-            showAlert(data.message, 'danger');
+            showAlertModal(data.message);
           }
         } catch (err) {
-          showAlert('Network error. Try again.', 'danger');
+          showAlertModal('Network error. Try again.');
         }
       }
       // modal cancel
@@ -1168,7 +1235,7 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
           headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         const data = await resp.json();
-        if (!data.success) return alert(data.message || 'Applicant not found');
+        if (!data.success) { showAlertModal(data.message || 'Applicant not found'); return; }
 
         const d = data.data;
         document.getElementById('applicantModalTitle').textContent = d.fullName;
@@ -1187,7 +1254,7 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
         const modal = new bootstrap.Modal(document.getElementById('applicantModal'));
         modal.show();
       } catch (err) {
-        alert('Network error. Try again.');
+        showAlertModal('Network error. Try again.');
       }
     }
 

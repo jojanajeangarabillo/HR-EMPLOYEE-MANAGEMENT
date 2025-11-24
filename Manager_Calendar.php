@@ -65,6 +65,8 @@ $menus = [
     "Pending Applicants" => "Manager_PendingApplicants.php",
     "Newly Hired" => "Newly-Hired.php",
     "Vacancies" => "Manager_Vacancies.php",
+    "Requests" => "Manager_Request.php",
+    "Reports" => "Manager_Reports.php",
     "Logout" => "Login.php"
   ],
 
@@ -330,7 +332,8 @@ $nextYear = $month === 12 ? $year + 1 : $year;
           <option value="">All</option>
           <?php foreach ($allDept as $d): ?>
             <option value="<?= htmlspecialchars($d) ?>" <?= ($filterDept === $d) ? 'selected' : '' ?>>
-              <?= htmlspecialchars($d) ?></option>
+              <?= htmlspecialchars($d) ?>
+            </option>
           <?php endforeach; ?>
         </select>
       </div>
@@ -340,7 +343,8 @@ $nextYear = $month === 12 ? $year + 1 : $year;
           <option value="">All</option>
           <?php foreach ($allTypes as $t): ?>
             <option value="<?= htmlspecialchars($t) ?>" <?= ($filterType === $t) ? 'selected' : '' ?>>
-              <?= htmlspecialchars($t) ?></option>
+              <?= htmlspecialchars($t) ?>
+            </option>
           <?php endforeach; ?>
         </select>
       </div>
