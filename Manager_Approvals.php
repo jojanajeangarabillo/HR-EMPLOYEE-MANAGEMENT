@@ -235,7 +235,7 @@ if (isset($_GET['action'], $_GET['type'])) {
     }
 
     // (3) Update database
-    $action_by = $managername;
+    $action_by = $role;
 
     if ($source === 'leave') {
       $stmt = $conn->prepare("UPDATE leave_request SET status = ?, action_by = ? WHERE empID = ? AND requested_at = ?");
@@ -317,7 +317,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['schedule_pickup'])) {
     $stmt->close();
 
     $stmt = $conn->prepare("UPDATE general_request SET status='Approved', action_by=?, pickup_date=? WHERE request_id=?");
-    $stmt->bind_param("ssi", $managername, $pickup_date, $gid);
+    $stmt->bind_param("ssi", $role, $pickup_date, $gid);
     $stmt->execute();
     $stmt->close();
 
@@ -392,7 +392,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_reject_request']
     $stmt->close();
     if ($req) {
       $stmt = $conn->prepare("UPDATE leave_request SET status='Rejected', action_by=? WHERE empID=? AND requested_at=?");
-      $stmt->bind_param('sss', $managername, $emp, $ts);
+      $stmt->bind_param('sss', $role, $emp, $ts);
       $okUpd = $stmt->execute();
       $stmt->close();
       if ($okUpd) {
@@ -430,7 +430,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_reject_request']
     $stmt->close();
     if ($req) {
       $stmt = $conn->prepare("UPDATE general_request SET status='Rejected', action_by=? WHERE request_id=?");
-      $stmt->bind_param('si', $managername, $rid);
+      $stmt->bind_param('si', $role, $rid);
       $okUpd = $stmt->execute();
       $stmt->close();
       if ($okUpd) {

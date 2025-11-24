@@ -14,7 +14,7 @@ $adminnameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin' L
 $adminname = ($adminnameQuery && $row = $adminnameQuery->fetch_assoc()) ? $row['fullname'] : 'Admin';
 
 // Count Employees
-$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
+$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM employee");
 $employees = ($employeeQuery && $row = $employeeQuery->fetch_assoc()) ? $row['count'] : 0;
 
 // Count Applicants

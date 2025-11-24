@@ -113,6 +113,32 @@ if (isset($_POST['change_password'])) {
     .fa-eye-slash {
       display: inline;
     }
+
+body.login-body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.main-content .login-section{
+    margin-top: -70px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #F5F8FF;
+    width: 824px;
+    height: 450px;
+    border-radius: 35px;
+}
+
+/* Fix center alignment for pages without sidebar */
+body.login-body .main-content {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+}
   </style>
 </head>
 

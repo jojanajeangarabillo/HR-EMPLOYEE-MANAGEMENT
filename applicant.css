@@ -38,7 +38,7 @@ img {
    REGISTRATION PAGE
 =========================================== */
 .login-section {
-    margin-top: 80px;
+    margin: 80px auto;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -169,6 +169,7 @@ button:hover {
 .show-password {
     display: flex;
     justify-content: center;
+    align-items: center;
 }
 
 .login-section.login-page {
@@ -346,3 +347,5 @@ button:hover {
 .btn-primary{background-color:var(--primary);border-color:var(--primary)}
 .btn-primary:hover{background-color:var(--primary-600);border-color:var(--primary-600)}
 .badge{border-radius:999px;padding:6px 10px}
+
+

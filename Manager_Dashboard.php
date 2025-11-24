@@ -3,7 +3,7 @@ session_start();
 require 'admin/db.connect.php';
 
 // Count Employees
-$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM user WHERE role = 'Employee'");
+$employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM employee");
 $employees = ($employeeQuery && $row = $employeeQuery->fetch_assoc()) ? $row['count'] : 0;
 
 // Count Applicants
