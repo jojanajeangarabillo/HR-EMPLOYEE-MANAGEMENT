@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_announcement'
       $end_date = $res['end_date'] ?? null;
       $owns = $res['manager_email'] === $manageremail;
       $expired = ($end_date && $end_date < $today);
-      $active = (int) ($res['is_active'] ?? 1) === 1;
+      $active = (int)($res['is_active'] ?? 1) === 1;
       if ($owns && $expired && $active) {
         $upd = $conn->prepare("UPDATE manager_announcement SET is_active = 0 WHERE id = ?");
         $upd->bind_param("i", $announcement_id);
@@ -112,9 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['archive_announcement'
 $announcements = [];
 $aquery = $conn->query("SELECT a.id, a.title, a.message, a.posted_by, a.manager_email, a.date_posted, a.is_active, a.settingID, ls.end_date FROM manager_announcement a LEFT JOIN leave_settings ls ON a.settingID = ls.settingID ORDER BY a.date_posted DESC");
 if ($aquery) {
-  while ($row = $aquery->fetch_assoc()) {
-    $announcements[] = $row;
-  }
+  while ($row = $aquery->fetch_assoc()) { $announcements[] = $row; }
 }
 
 // Manager name
@@ -134,7 +132,6 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
-    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -150,7 +147,6 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
-    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -161,8 +157,6 @@ $menus = [
     "Pending Applicants" => "Manager_PendingApplicants.php",
     "Newly Hired" => "Newly-Hired.php",
     "Vacancies" => "Manager_Vacancies.php",
-    "Requests" => "Manager_Request.php",
-    "Reports" => "Manager_Reports.php",
     "Logout" => "Login.php"
   ],
 
@@ -189,7 +183,6 @@ $icons = [
   "Job Post" => "fa-bullhorn",
   "Calendar" => "fa-calendar-days",
   "Approvals" => "fa-square-check",
-  "Reports" => "fa-chart-column",
   "Settings" => "fa-gear",
   "Logout" => "fa-right-from-bracket"
 ];
@@ -293,8 +286,7 @@ $icons = [
 
     <ul class="nav">
       <?php foreach ($menus[$role] as $label => $link): ?>
-        <li><a href="<?php echo $link; ?>"><i
-              class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
+        <li><a href="<?php echo $link; ?>"><i class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
       <?php endforeach; ?>
     </ul>
   </div>
@@ -348,7 +340,7 @@ $icons = [
             <input type="number" name="employeeLimit" class="form-control" min="1" required>
           </div>
 
-
+          
 
           <div class="mb-4">
             <label class="form-label fw-semibold"><i class="fa-solid fa-user"></i>Created by</label>
@@ -371,12 +363,10 @@ $icons = [
       <div class="alert alert-danger">Failed to delete announcement.</div>
       <?php unset($_SESSION['show_announcement_error']); endif; ?>
     <?php if (!empty($_SESSION['show_announcement_not_allowed'])): ?>
-      <div class="alert alert-warning">Deletion not allowed. Only expired announcements can be deleted by the posting
-        manager.</div>
+      <div class="alert alert-warning">Deletion not allowed. Only expired announcements can be deleted by the posting manager.</div>
       <?php unset($_SESSION['show_announcement_not_allowed']); endif; ?>
 
-    <div class="card shadow-sm p-4 mb-5"
-      style="width: 150% ; margin:auto; border-radius:12px; background-color:#ffffff;">
+    <div class="card shadow-sm p-4 mb-5" style="width: 150% ; margin:auto; border-radius:12px; background-color:#ffffff;">
       <div class="card-body">
         <h5 class="mb-3" style="color:#1E3A8A;">Announcements</h5>
         <?php if (!empty($announcements)): ?>
@@ -395,20 +385,19 @@ $icons = [
               </thead>
               <tbody>
                 <?php foreach ($announcements as $a): ?>
-                  <?php
-                  $expiry = $a['end_date'] ?? null;
-                  $today = date('Y-m-d');
-                  $expired = ($expiry && $expiry < $today);
+                  <?php 
+                    $expiry = $a['end_date'] ?? null; 
+                    $today = date('Y-m-d'); 
+                    $expired = ($expiry && $expiry < $today);
                   ?>
                   <tr>
                     <td><?php echo htmlspecialchars($a['title']); ?></td>
-                    <td style="max-width:400px; white-space:normal;"><?php echo nl2br(htmlspecialchars($a['message'])); ?>
-                    </td>
+                    <td style="max-width:400px; white-space:normal;"><?php echo nl2br(htmlspecialchars($a['message'])); ?></td>
                     <td><?php echo htmlspecialchars($a['posted_by']); ?></td>
                     <td><?php echo htmlspecialchars(date('Y-m-d H:i', strtotime($a['date_posted']))); ?></td>
                     <td><?php echo $expiry ? htmlspecialchars($expiry) : 'N/A'; ?></td>
                     <td>
-                      <?php if ((int) ($a['is_active'] ?? 1) === 0): ?>
+                      <?php if ((int)($a['is_active'] ?? 1) === 0): ?>
                         <span class="badge bg-secondary">Archived</span>
                       <?php elseif ($expired): ?>
                         <span class="badge bg-danger">Expired</span>
@@ -417,9 +406,9 @@ $icons = [
                       <?php endif; ?>
                     </td>
                     <td>
-                      <?php if ($expired && $a['manager_email'] === $manageremail && (int) ($a['is_active'] ?? 1) === 1): ?>
+                      <?php if ($expired && $a['manager_email'] === $manageremail && (int)($a['is_active'] ?? 1) === 1): ?>
                         <form method="POST" style="display:inline-block;">
-                          <input type="hidden" name="announcement_id" value="<?php echo (int) $a['id']; ?>">
+                          <input type="hidden" name="announcement_id" value="<?php echo (int)$a['id']; ?>">
                           <button type="submit" name="archive_announcement" class="btn btn-sm btn-danger">Archive</button>
                         </form>
                       <?php else: ?>

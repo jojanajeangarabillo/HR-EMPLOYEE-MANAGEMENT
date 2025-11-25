@@ -202,232 +202,478 @@ if (isset($_POST['save_skills'])) {
 <head>
 <meta charset="UTF-8">
 <title>Applicant Profile</title>
-<link rel="stylesheet" href="applicant.css">
+<link rel="stylesheet" href="admin-sidebar.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 <style>
-    body {
-        font-family: 'Poppins', 'Roboto', sans-serif;
+    :root {
+        --primary: #1E3A8A;
+        --primary-light: #3B82F6;
+        --primary-dark: #1E40AF;
+        --secondary: #2563EB;
+        --accent: #10B981;
+        --warning: #F59E0B;
+        --danger: #EF4444;
+        --success: #10B981;
+        --light: #F8FAFC;
+        --dark: #111827;
+        --gray: #6B7280;
+        --gray-light: #E5E7EB;
+        --border-radius: 16px;
+        --border-radius-sm: 8px;
+        --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        --box-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.15);
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
         margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Poppins', sans-serif;
         display: flex;
-        background-color: #f4f6f9;
-        color: #111827;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        color: var(--dark);
+        min-height: 100vh;
+        line-height: 1.6;
     }
 
     .main-content {
         flex: 1;
-        padding: 40px 60px;
+        padding: 30px 40px;
         display: flex;
         flex-direction: column;
-        gap: 40px;
+        gap: 30px;
+        margin-left: 260px;
+        transition: var(--transition);
+        width: calc(100% - 260px);
     }
 
-    h1 {
-        color: #1f2937;
-        font-weight: 600;
-        font-size: 2rem;
-    }
-
-    section {
-        background: #ffffff;
-        border-radius: 15px;
-        padding: 30px 40px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        position: relative;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    section:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    }
-
-    section h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #1e3a8a;
-        margin-bottom: 20px;
-        border-bottom: 2px solid #e5e7eb;
-        padding-bottom: 5px;
-    }
-
-    section div {
-        font-size: 1rem;
+    /* Header Section */
+    .profile-header {
+        text-align: center;
         margin-bottom: 10px;
+       
+    }
+
+    .profile-header h1 {
+        font-weight: 700;
+        font-size: 32px;
+        background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 8px;
+    }
+
+    .profile-header p {
+        color: var(--gray);
+        font-size: 16px;
+        font-weight: 400;
+    }
+
+    /* Profile Sections Grid */
+    .profile-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 25px;
+       
+    }
+
+    .profile-section {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border-radius: var(--border-radius);
+        padding: 30px;
+        box-shadow: var(--box-shadow);
+        transition: var(--transition);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        position: relative;
+        overflow: hidden;
+        height: fit-content;
+    }
+
+    .profile-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    }
+
+    .profile-section:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--box-shadow-lg);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--dark);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-title i {
+        color: var(--primary);
+        font-size: 22px;
     }
 
     .edit-btn {
-        position: absolute;
-        bottom: 20px;
-        right: 20px;
-        border: none;
-        background: #1e3a8a;
-        color: #fff;
-        padding: 6px 10px;
-        border-radius: 6px;
+        background: rgba(59, 130, 246, 0.1);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        color: var(--primary);
+        padding: 8px 16px;
+        border-radius: var(--border-radius-sm);
+        font-size: 14px;
+        font-weight: 500;
         cursor: pointer;
-        font-size: 1rem;
-        transition: background 0.2s ease;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
 
     .edit-btn:hover {
-        background: #3b82f6;
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
     }
 
-    .text-center img {
-        border: 3px solid #1e3a8a;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    /* Profile Info Items */
+    .info-grid {
+        display: grid;
+        gap: 16px;
     }
 
- /* Cleaner, modern modal */
-.modal-dialog {
-    max-width: 600px !important;
-}
-
-.modal-content {
-    border-radius: 16px;
-    border: none;
-    padding: 10px 5px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-}
-
-.modal-header {
-    background: #1E3A8A;
-    color: white;
-    border-bottom: none;
-    padding: 18px 24px;
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-}
-
-.modal-title {
-    font-weight: 600;
-    font-size: 1.2rem;
-}
-
-.btn-close {
-    filter: brightness(0) invert(1);
-}
-
-.modal-body {
-    padding: 20px 25px;
-}
-
-.form-label {
-    font-weight: 600;
-    color: #1f2937;
-}
-
-.form-control {
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1px solid #d1d5db;
-    font-size: 0.95rem;
-    transition: all .2s;
-}
-
-.form-control:focus {
-    border-color: #1E3A8A;
-    box-shadow: 0 0 0 3px rgba(30,58,138,0.15);
-}
-
-.modal-footer {
-    padding: 15px 25px;
-    border-top: 1px solid #e5e7eb;
-}
-
-/* Buttons */
-.btn-primary {
-    background-color: #1E3A8A;
-    border-radius: 10px;
-    border: none;
-    padding: 10px 18px;
-    font-weight: 500;
-}
-
-.btn-primary:hover {
-    background-color: #2d4fbf;
-}
-
-.btn-secondary {
-    border-radius: 10px;
-    padding: 10px 18px;
-}
-
-/* Slight spacing fix between fields */
-.mb-3 {
-    margin-bottom: 18px !important;
-}
-
-/* Prevent global SECTION styling from affecting modals */
-.modal section {
-    width: auto !important;
-    max-width: none !important;
-    margin-left: 0 !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-}
-
-
-
-
-/* Section width */
-section {
-    width: 90%; /* fit main-content width */
-    max-width: 100%; /* prevent narrow sections */
-    background: #fff;
-    padding: 25px 30px;
-    border-radius: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    position: relative;
-    margin-left: 220px;
-}
-.edit-btn {
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 1.2em;
-    color: #224288;
-}
-.edit-btn:hover {
-    color: #274ea0;
-}
-
-.sidebar-profile-img {
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 20px;
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar-profile-img:hover {
-            transform: scale(1.05);
-        }
-
-         .sidebar-name {
+    .info-item {
         display: flex;
-        justify-content: center; 
-        align-items: center;      
-        text-align: center;       
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .info-label {
+        font-size: 12px;
+        color: var(--gray);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-value {
+        font-size: 15px;
+        color: var(--dark);
+        font-weight: 500;
+    }
+
+    .empty-value {
+        color: var(--gray);
+        font-style: italic;
+    }
+
+    /* Profile Picture Section */
+    .profile-picture-section {
+        text-align: center;
+        padding: 25px;
+    }
+
+    .profile-picture-container {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 20px;
+    }
+
+    .profile-picture {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid rgba(59, 130, 246, 0.2);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        transition: var(--transition);
+    }
+
+    .profile-picture:hover {
+        border-color: var(--primary);
+        transform: scale(1.05);
+    }
+
+    .upload-overlay {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: var(--primary);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition);
+        opacity: 0;
+    }
+
+    .profile-picture-container:hover .upload-overlay {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    .upload-btn {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: var(--border-radius-sm);
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .upload-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    /* Skills Badges */
+    .skills-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .skill-badge {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+    }
+
+    /* Summary Section */
+    .summary-text {
+        background: var(--light);
+        padding: 16px;
+        border-radius: var(--border-radius-sm);
+        border-left: 4px solid var(--primary);
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--dark);
+    }
+
+    /* Enhanced Modals */
+    .modal-content {
+        border-radius: var(--border-radius);
+        border: none;
+        box-shadow: var(--box-shadow-lg);
+    }
+
+    .modal-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        color: white;
+        border-bottom: none;
+        padding: 20px 25px;
+        border-top-left-radius: var(--border-radius);
+        border-top-right-radius: var(--border-radius);
+    }
+
+    .modal-title {
+        font-weight: 600;
+        font-size: 1.3rem;
+    }
+
+    .btn-close {
+        filter: brightness(0) invert(1);
+    }
+
+    .modal-body {
+        padding: 25px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--dark);
+        margin-bottom: 8px;
+    }
+
+    .form-control {
+        padding: 12px 16px;
+        border-radius: var(--border-radius-sm);
+        border: 1px solid var(--gray-light);
+        font-size: 15px;
+        transition: var(--transition);
+    }
+
+    .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    .modal-footer {
+        padding: 20px 25px;
+        border-top: 1px solid var(--gray-light);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+        border: none;
+        border-radius: var(--border-radius-sm);
+        padding: 10px 24px;
+        font-weight: 500;
+        transition: var(--transition);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+        border-radius: var(--border-radius-sm);
+        padding: 10px 24px;
+    }
+
+    /* Skills Input */
+    .skill-input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .skill-input-group input {
+        flex: 1;
+    }
+
+    .add-skill-btn {
+        background: var(--success);
+        color: white;
+        border: none;
+        border-radius: var(--border-radius-sm);
+        padding: 0 15px;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .add-skill-btn:hover {
+        background: var(--accent);
+        transform: scale(1.05);
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+        .main-content {
+            margin-left: 0;
+            padding: 20px;
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .profile-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+        
+        .profile-section {
+            padding: 20px;
+        }
+        
+        .section-header {
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .edit-btn {
+            align-self: flex-end;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .main-content {
+            padding: 15px;
+        }
+        
+        .profile-header h1 {
+            font-size: 28px;
+        }
+        
+        .profile-picture {
+            width: 120px;
+            height: 120px;
+        }
+    }
+
+    /* Sidebar Styles */
+    .sidebar-profile-img {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid rgba(255, 255, 255, 0.2);
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar-profile-img:hover {
+        transform: scale(1.05);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .sidebar-name {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
         color: white;
         padding: 10px;
         margin-bottom: 30px;
-        font-size: 18px; 
-        flex-direction: column; 
-        }
- .main-content h1 {
-      color: #1E3A8A;
-      font-weight: 700;
-      font-size: 2.2rem;
-      margin-bottom: 20px;
-      margin-left: -690px;
+        font-size: 18px;
+        flex-direction: column;
     }
-
 </style>
 </head>
 <body>
@@ -435,9 +681,8 @@ section {
 <!-- Sidebar -->
 <div class="sidebar">
     <a href="Applicant_Profile.php" class="profile">
-         <img src="<?php echo !empty($profile_picture) ? htmlspecialchars($profile_picture) : 'uploads/employees/default.png'; ?>" 
-     alt="Profile" class="sidebar-profile-img">
-
+        <img src="<?php echo !empty($profile_picture) ? htmlspecialchars($profile_picture) : 'uploads/employees/default.png'; ?>" 
+        alt="Profile" class="sidebar-profile-img">
     </a>
 
     <div class="sidebar-name">
@@ -453,71 +698,154 @@ section {
 </div>
 
 <main class="main-content">
-<h1 class="text-center mb-4">Applicant Profile</h1>
-
-<!-- Personal Info Section -->
-<section>
-<h2>Personal Information</h2>
-<div class="text-center mb-3">
-    <img id="profile-preview" src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="rounded-circle" style="width:130px; height:130px; border:2px solid #224288; object-fit:cover;">
-    <form action="" method="post" enctype="multipart/form-data">
-        <input type="file" name="profile_pic" id="profile-upload" style="display:none;" accept="image/*">
-        <button type="button" class="btn btn-primary btn-sm mt-2" id="upload-btn">Upload Photo</button>
-        <button type="submit" name="upload_pic" id="submit-btn" style="display:none;"></button>
-    </form>
-</div>
-<div><strong>Full Name:</strong> <?php echo displayOrEmpty($applicant['fullName']); ?></div>
-<div><strong>Applicant ID:</strong> <?php echo htmlspecialchars($applicantID); ?></div>
-<div><strong>Contact:</strong> <?php echo displayOrEmpty($applicant['contact_number']); ?></div>
-<div><strong>Email:</strong> <?php echo displayOrEmpty($applicant['email_address']); ?></div>
-<div><strong>Home Address:</strong> <?php echo displayOrEmpty($applicant['home_address']); ?></div>
-<button class="edit-btn" data-bs-toggle="modal" data-bs-target="#personalModal"><i class="fa-solid fa-pen-to-square"></i></button>
-</section>
-
-<!-- Job / Experience Section -->
-<section>
-<h2>Job / Experience</h2>
-<div><strong>Job Title:</strong> <?php echo displayOrEmpty($applicant['job_title']); ?></div>
-<div><strong>Company:</strong> <?php echo displayOrEmpty($applicant['company_name']); ?></div>
-<div><strong>Years Experience:</strong> <?php echo displayOrEmpty($applicant['years_experience']); ?></div>
-<button class="edit-btn" data-bs-toggle="modal" data-bs-target="#jobModal"><i class="fa-solid fa-pen-to-square"></i></button>
-</section>
-
-<!-- Education Section -->
-<section>
-<h2>Education</h2>
-<div><strong>University:</strong> <?php echo displayOrEmpty($applicant['university']); ?></div>
-<div><strong>Course:</strong> <?php echo displayOrEmpty($applicant['course']); ?></div>
-<div><strong>Year Graduated:</strong> <?php echo displayOrEmpty($applicant['year_graduated']); ?></div>
-<button class="edit-btn" data-bs-toggle="modal" data-bs-target="#educationModal"><i class="fa-solid fa-pen-to-square"></i></button>
-</section>
-
-<!-- Skills & Summary Section -->
-<section>
-    <h2>Skills & Summary</h2>
-    <div><strong>Skills:</strong> 
-        <?php
-        $skills_list = array_filter(array_map('trim', explode(',', $applicant['skills'] ?? '')));
-        if (!empty($skills_list)) {
-            foreach ($skills_list as $skill) {
-                echo "<span class='badge bg-primary me-1'>" . htmlspecialchars($skill) . "</span>";
-            }
-        } else {
-            echo "<span style='color:#888;'>Not set</span>";
-        }
-        ?>
+    <!-- Profile Header -->
+    <div class="profile-header">
+        <h1>Applicant Profile</h1>
+        <p>Manage your personal information and professional details</p>
     </div>
-    <div><strong>Summary:</strong> <?php echo displayOrEmpty($applicant['summary']); ?></div>
-    <button class="edit-btn" data-bs-toggle="modal" data-bs-target="#skillsModal"><i class="fa-solid fa-pen-to-square"></i></button>
-</section>
 
+    <!-- Profile Grid -->
+    <div class="profile-grid">
+        <!-- Profile Picture Section -->
+        <div class="profile-section profile-picture-section">
+            <div class="profile-picture-container">
+                <img id="profile-preview" src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="profile-picture">
+                <div class="upload-overlay" onclick="document.getElementById('profile-upload').click()">
+                    <i class="fas fa-camera"></i>
+                </div>
+            </div>
+            <form action="" method="post" enctype="multipart/form-data">
+                <input type="file" name="profile_pic" id="profile-upload" style="display:none;" accept="image/*">
+                <button type="button" class="upload-btn" onclick="document.getElementById('profile-upload').click()">
+                    <i class="fas fa-upload"></i> Upload New Photo
+                </button>
+                <button type="submit" name="upload_pic" id="submit-btn" style="display:none;"></button>
+            </form>
+        </div>
+
+        <!-- Personal Information -->
+        <div class="profile-section">
+            <div class="section-header">
+                <h3 class="section-title"><i class="fas fa-user-circle"></i> Personal Information</h3>
+                <button class="edit-btn" data-bs-toggle="modal" data-bs-target="#personalModal">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Full Name</span>
+                    <span class="info-value"><?php echo displayOrEmpty($applicant['fullName']); ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Applicant ID</span>
+                    <span class="info-value"><?php echo htmlspecialchars($applicantID); ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Contact Number</span>
+                    <span class="info-value"><?php echo displayOrEmpty($applicant['contact_number']); ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email Address</span>
+                    <span class="info-value"><?php echo displayOrEmpty($applicant['email_address']); ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Home Address</span>
+                    <span class="info-value"><?php echo displayOrEmpty($applicant['home_address']); ?></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professional Experience -->
+        <div class="profile-section">
+            <div class="section-header">
+                <h3 class="section-title"><i class="fas fa-briefcase"></i> Professional Experience</h3>
+                <button class="edit-btn" data-bs-toggle="modal" data-bs-target="#jobModal">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Job Title</span>
+                    <span class="info-value"><?php echo displayOrEmpty($applicant['job_title']); ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Company</span>
+                    <span class="info-value"><?php echo displayOrEmpty($applicant['company_name']); ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Years of Experience</span>
+                    <span class="info-value"><?php echo displayOrEmpty($applicant['years_experience']); ?></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Education -->
+        <div class="profile-section">
+            <div class="section-header">
+                <h3 class="section-title"><i class="fas fa-graduation-cap"></i> Education</h3>
+                <button class="edit-btn" data-bs-toggle="modal" data-bs-target="#educationModal">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">University</span>
+                    <span class="info-value"><?php echo displayOrEmpty($applicant['university']); ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Course/Degree</span>
+                    <span class="info-value"><?php echo displayOrEmpty($applicant['course']); ?></span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Year Graduated</span>
+                    <span class="info-value"><?php echo displayOrEmpty($applicant['year_graduated']); ?></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Skills & Summary -->
+        <div class="profile-section">
+            <div class="section-header">
+                <h3 class="section-title"><i class="fas fa-star"></i> Skills & Summary</h3>
+                <button class="edit-btn" data-bs-toggle="modal" data-bs-target="#skillsModal">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">Skills</span>
+                    <div class="skills-container">
+                        <?php
+                        $skills_list = array_filter(array_map('trim', explode(',', $applicant['skills'] ?? '')));
+                        if (!empty($skills_list)) {
+                            foreach ($skills_list as $skill) {
+                                echo '<span class="skill-badge">' . htmlspecialchars($skill) . '</span>';
+                            }
+                        } else {
+                            echo '<span class="empty-value">No skills added</span>';
+                        }
+                        ?>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Professional Summary</span>
+                    <div class="summary-text">
+                        <?php echo displayOrEmpty($applicant['summary']); ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Modals (keep your existing modal code, it will work with the enhanced styling) -->
 <!-- Personal Info Modal -->
 <div class="modal fade" id="personalModal" tabindex="-1" aria-labelledby="personalModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <form method="post">
         <div class="modal-header">
-          <h5 class="modal-title" id="personalModalLabel">Edit Personal Info</h5>
+          <h5 class="modal-title" id="personalModalLabel">Edit Personal Information</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -553,7 +881,7 @@ section {
     <div class="modal-content">
       <form method="post">
         <div class="modal-header">
-          <h5 class="modal-title" id="jobModalLabel">Edit Job / Experience</h5>
+          <h5 class="modal-title" id="jobModalLabel">Edit Professional Experience</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
@@ -622,19 +950,22 @@ section {
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <?php
-            $existing_skills = array_filter(array_map('trim', explode(',', $applicant['skills'] ?? '')));
-            // Show up to 5 skill inputs
-            for ($i = 0; $i < 5; $i++) {
-                $value = $existing_skills[$i] ?? '';
-                echo '<label>Skill ' . ($i + 1) . ':</label>';
-                echo '<input type="text" name="skill[]" class="form-control mb-2" value="' . htmlspecialchars($value) . '">';
-            }
-            ?>
+            <label class="form-label">Skills</label>
+            <div id="skills-container">
+                <?php
+                $existing_skills = array_filter(array_map('trim', explode(',', $applicant['skills'] ?? '')));
+                for ($i = 0; $i < 5; $i++) {
+                    $value = $existing_skills[$i] ?? '';
+                    echo '<div class="skill-input-group">';
+                    echo '<input type="text" name="skill[]" class="form-control" value="' . htmlspecialchars($value) . '" placeholder="Skill ' . ($i + 1) . '">';
+                    echo '</div>';
+                }
+                ?>
+            </div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Summary</label>
-            <textarea class="form-control" name="summary" rows="3"><?php echo htmlspecialchars($applicant['summary']); ?></textarea>
+            <label class="form-label">Professional Summary</label>
+            <textarea class="form-control" name="summary" rows="4" placeholder="Tell us about your professional background and career goals..."><?php echo htmlspecialchars($applicant['summary']); ?></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -646,27 +977,34 @@ section {
   </div>
 </div>
 
-
-
-
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 // Profile Upload
 const fileInput = document.getElementById('profile-upload');
-const uploadBtn = document.getElementById('upload-btn');
 const submitBtn = document.getElementById('submit-btn');
 const imgPreview = document.getElementById('profile-preview');
 
-uploadBtn.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', function() {
     const file = this.files[0];
     if(file){
         const reader = new FileReader();
-        reader.onload = e => imgPreview.src = e.target.result;
+        reader.onload = e => {
+            imgPreview.src = e.target.result;
+            submitBtn.click();
+        };
         reader.readAsDataURL(file);
-        submitBtn.click();
     }
+});
+
+// Add hover effects to profile sections
+document.querySelectorAll('.profile-section').forEach(section => {
+    section.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-5px)';
+    });
+    
+    section.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0)';
+    });
 });
 </script>
 </body>

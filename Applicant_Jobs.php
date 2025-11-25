@@ -381,51 +381,566 @@ if ($search !== '') {
 
 <head>
   <meta charset="UTF-8">
-  <title>Job Listing</title>
+  <title>Job Opportunities</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="applicant.css">
+  <link rel="stylesheet" href="admin-sidebar.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 
   <style>
-    body {
-      font-family: 'Poppins', 'Roboto', sans-serif;
+    :root {
+      --primary: #1E3A8A;
+      --primary-light: #3B82F6;
+      --primary-dark: #1E40AF;
+      --secondary: #2563EB;
+      --accent: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --success: #10B981;
+      --light: #F8FAFC;
+      --dark: #111827;
+      --gray: #6B7280;
+      --gray-light: #E5E7EB;
+      --border-radius: 16px;
+      --border-radius-sm: 8px;
+      --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      --box-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.15);
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
       margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
       display: flex;
-      background-color: #f1f5fc;
-      color: #111827;
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      color: var(--dark);
+      min-height: 100vh;
+      line-height: 1.6;
     }
 
     .main-content {
       flex: 1;
-      padding: 30px 80px;
+      padding: 20px 40px;
       display: flex;
       flex-direction: column;
-      gap: 40px;
-      margin-left: 230px;
+      gap: 24px;
+      margin-left: 260px;
+      transition: var(--transition);
+      width: calc(100% - 260px);
     }
 
+    /* Header Section */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+     
+    }
 
-
-    .main-content h1 {
-      color: #1E3A8A;
+    .header-content h1 {
       font-weight: 700;
-      font-size: 2.2rem;
+      font-size: 32px;
+      background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+    }
+
+    .header-content p {
+      color: var(--gray);
+      font-size: 14px;
+      font-weight: 400;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: var(--border-radius);
+      padding: 12px 20px;
+      width: 320px;
+      box-shadow: var(--box-shadow);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      transition: var(--transition);
+    }
+
+    .search-box:focus-within {
+      box-shadow: var(--box-shadow-lg);
+      transform: translateY(-2px);
+      border-color: var(--primary-light);
+    }
+
+    .search-box input {
+      border: none;
+      outline: none;
+      background: none;
+      width: 100%;
+      padding-left: 12px;
+      font-size: 14px;
+      color: var(--dark);
+      font-weight: 500;
+    }
+
+    .search-box input::placeholder {
+      color: var(--gray);
+      font-weight: 400;
+    }
+
+    .search-box i {
+      color: var(--primary);
+      font-size: 16px;
+    }
+
+    /* Job Cards Grid */
+    .jobs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 24px;
+      
+    }
+
+    .job-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: var(--border-radius);
+      padding: 28px;
+      box-shadow: var(--box-shadow);
+      transition: var(--transition);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .job-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    }
+
+    .job-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--box-shadow-lg);
+    }
+
+    .job-header {
+      display: flex;
+      justify-content: between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .job-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--dark);
+      margin-bottom: 8px;
+      line-height: 1.3;
+      flex: 1;
+    }
+
+    .job-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      white-space: nowrap;
+    }
+
+    .badge-pending { background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%); color: white; }
+    .badge-rejected { background: linear-gradient(135deg, #EF4444 0%, #F87171 100%); color: white; }
+    .badge-success { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); color: white; }
+    .badge-info { background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); color: white; }
+
+    .job-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
       margin-bottom: 20px;
     }
 
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--gray);
+    }
+
+    .meta-item i {
+      color: var(--primary);
+      font-size: 16px;
+      width: 16px;
+      text-align: center;
+    }
+
+    .job-description {
+      flex: 1;
+      margin-bottom: 20px;
+    }
+
+    .job-description p {
+      color: var(--dark);
+      font-size: 14px;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .job-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .job-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .closing-date {
+      font-size: 13px;
+      color: var(--gray);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .closing-date i {
+      color: var(--primary);
+    }
+
+    .action-btn {
+      padding: 10px 20px;
+      border-radius: var(--border-radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-view {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--primary);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .btn-view:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-apply {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+    }
+
+    .btn-apply:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-disabled {
+      background: var(--gray-light);
+      color: var(--gray);
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 80px 40px;
+      color: var(--gray);
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      
+      grid-column: 1 / -1;
+    }
+
+    .empty-icon {
+      font-size: 80px;
+      margin-bottom: 24px;
+      color: var(--gray-light);
+      opacity: 0.7;
+    }
+
+    .empty-state h3 {
+      font-size: 24px;
+      margin-bottom: 12px;
+      color: var(--dark);
+      font-weight: 600;
+    }
+
+    .empty-state p {
+      margin-bottom: 32px;
+      font-size: 16px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
+
+    /* Job Details Modal */
+    .job-details-modal .modal-content {
+      border-radius: var(--border-radius);
+      border: none;
+      box-shadow: var(--box-shadow-lg);
+    }
+
+    .job-details-modal .modal-header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      border-radius: var(--border-radius) var(--border-radius) 0 0;
+      border: none;
+      padding: 24px;
+    }
+
+    .job-details-modal .modal-body {
+      padding: 32px;
+      background: var(--light);
+    }
+
+    .job-details-section {
+      background: white;
+      border-radius: var(--border-radius-sm);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: var(--box-shadow);
+    }
+
+    .job-details-section h5 {
+      color: var(--primary);
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .job-details-section h5 i {
+      font-size: 18px;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .detail-label {
+      font-size: 12px;
+      color: var(--gray);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      color: var(--dark);
+      font-weight: 500;
+    }
+
+    .job-description-full {
+      line-height: 1.7;
+      color: var(--dark);
+    }
+
+    .requirements-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .requirements-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--gray-light);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .requirements-list li:last-child {
+      border-bottom: none;
+    }
+
+    .requirements-list i {
+      color: var(--success);
+      font-size: 14px;
+    }
+
+    /* Animations */
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+      }
+
+      .header-actions {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .search-box {
+        width: 100%;
+      }
+
+      .jobs-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .job-actions {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .job-actions .action-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .main-content {
+        padding: 16px;
+      }
+      
+      .header-content h1 {
+        font-size: 28px;
+      }
+
+      .job-card {
+        padding: 20px;
+      }
+
+      .job-details-modal .modal-body {
+        padding: 20px;
+      }
+
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Loading Animation */
+    .loading {
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .pulse {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+
+    /* Sidebar Styles */
     .sidebar-profile-img {
       width: 130px;
       height: 130px;
       border-radius: 50%;
       object-fit: cover;
+      border: 4px solid rgba(255, 255, 255, 0.2);
       margin-bottom: 20px;
       transition: transform 0.3s ease;
     }
-    
 
     .sidebar-profile-img:hover {
       transform: scale(1.05);
+      border-color: rgba(255, 255, 255, 0.4);
     }
 
     .sidebar-name {
@@ -439,8 +954,7 @@ if ($search !== '') {
       font-size: 18px;
       flex-direction: column;
     }
-    
-</style>
+  </style>
 </head>
 
 <body>
@@ -463,63 +977,194 @@ if ($search !== '') {
   </div>
 
   <div class="main-content">
-    <h1>Job Listing</h1>
-    <hr>
-    <div class="table-responsive mt-5">
-      <table class="table table-bordered table-hover align-middle text-center">
-        <thead class="table-primary">
-          <tr>
-            <th>Job Title</th>
-            <th>Department</th>
-            <th>Type</th>
-            <th>Experience</th>
-            <th>Description</th>
-            <th>Closing Date</th>
-            <th>Action / Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php foreach ($jobs as $job):
-            $jid = (int) $job['jobID'];
-            $status = $all_statuses[$jid] ?? null; ?>
-            <tr>
-              <td><?= htmlspecialchars($job['job_title']) ?></td>
-              <td><?= htmlspecialchars($job['department_name']) ?></td>
-              <td><?= htmlspecialchars($job['employment_type']) ?></td>
-              <td><?= (int) $job['experience_years'] ?> years</td>
-              <td><?= htmlspecialchars(substr($job['job_description'], 0, 80)) ?>...</td>
-              <td><?= !empty($job['closing_date']) ? date('M d, Y', strtotime($job['closing_date'])) : 'N/A' ?></td>
-              <td>
-                <?php if ($status): ?>
-                  <?php if ($status === 'Rejected'): ?>
-                    <button class="btn btn-danger btn-sm" disabled>Rejected</button>
-                  <?php elseif ($status === 'Pending'): ?>
-                    <button class="btn btn-warning btn-sm" disabled>Pending</button>
-                  <?php else: ?>
-                    <button class="btn btn-info btn-sm" disabled><?= htmlspecialchars($status) ?></button>
-                  <?php endif; ?>
+    <!-- Header -->
+    <div class="header">
+      <div class="header-content">
+        <h1>Job Opportunities</h1>
+        <p>Discover your next career move</p>
+      </div>
+      <div class="header-actions">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" placeholder="Search jobs" 
+                 value="<?= htmlspecialchars($search) ?>"
+                 onkeypress="if(event.keyCode==13) searchJobs()">
+        </div>
+        <button class="action-btn btn-apply" onclick="searchJobs()">
+          <i class="fa-solid fa-search"></i> Search
+        </button>
+      </div>
+    </div>
+
+    <!-- Jobs Grid -->
+    <div class="jobs-grid">
+      <?php if (empty($jobs)): ?>
+        <div class="empty-state">
+          <div class="empty-icon">
+            <i class="fa-solid fa-briefcase"></i>
+          </div>
+          <h3>No Jobs Available</h3>
+          <p>There are currently no job openings matching your search criteria. Please check back later or try different search terms.</p>
+        </div>
+      <?php else: ?>
+        <?php foreach ($jobs as $job):
+          $jid = (int) $job['jobID'];
+          $status = $all_statuses[$jid] ?? null; ?>
+          <div class="job-card">
+            <div class="job-header">
+              <h3 class="job-title"><?= htmlspecialchars($job['job_title']) ?></h3>
+              <?php if ($status): ?>
+                <?php if ($status === 'Rejected'): ?>
+                  <span class="job-badge badge-rejected">
+                    <i class="fa-solid fa-xmark"></i> Rejected
+                  </span>
+                <?php elseif ($status === 'Pending'): ?>
+                  <span class="job-badge badge-pending">
+                    <i class="fa-solid fa-clock"></i> Pending
+                  </span>
                 <?php else: ?>
-                  <button class="btn btn-success btn-sm apply-btn" data-jobid="<?= $jid ?>">Apply</button>
+                  <span class="job-badge badge-info">
+                    <i class="fa-solid fa-spinner"></i> <?= htmlspecialchars($status) ?>
+                  </span>
                 <?php endif; ?>
-              </td>
-            </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
+              <?php endif; ?>
+            </div>
+
+            <div class="job-meta">
+              <div class="meta-item">
+                <i class="fa-solid fa-building"></i>
+                <span><?= htmlspecialchars($job['department_name']) ?></span>
+              </div>
+              <div class="meta-item">
+                <i class="fa-solid fa-briefcase"></i>
+                <span><?= htmlspecialchars($job['employment_type']) ?></span>
+              </div>
+              <div class="meta-item">
+                <i class="fa-solid fa-chart-line"></i>
+                <span><?= (int) $job['experience_years'] ?> years experience</span>
+              </div>
+              <div class="meta-item">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span><?= htmlspecialchars($job['educational_level']) ?></span>
+              </div>
+            </div>
+
+            <div class="job-description">
+              <p><?= htmlspecialchars($job['job_description']) ?></p>
+            </div>
+
+            <div class="job-footer">
+              <div class="closing-date">
+                <i class="fa-solid fa-calendar"></i>
+                <?php if (!empty($job['closing_date'])): ?>
+                  Closes <?= date('M d, Y', strtotime($job['closing_date'])) ?>
+                <?php else: ?>
+                  No closing date
+                <?php endif; ?>
+              </div>
+              
+              <div class="job-actions">
+                <button class="action-btn btn-view view-details-btn" data-jobid="<?= $jid ?>">
+                  <i class="fa-solid fa-eye"></i> View Details
+                </button>
+                
+                <?php if ($status): ?>
+                  <button class="action-btn btn-disabled" disabled>
+                    <?php if ($status === 'Rejected'): ?>
+                      <i class="fa-solid fa-xmark"></i> Not Eligible
+                    <?php else: ?>
+                      <i class="fa-solid fa-check"></i> Applied
+                    <?php endif; ?>
+                  </button>
+                <?php else: ?>
+                  <button class="action-btn btn-apply apply-btn" data-jobid="<?= $jid ?>">
+                    <i class="fa-solid fa-paper-plane"></i> Apply Now
+                  </button>
+                <?php endif; ?>
+              </div>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      <?php endif; ?>
     </div>
   </div>
 
+  <!-- Job Details Modal -->
+  <div class="modal fade job-details-modal" id="jobDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="jobDetailsTitle"></h4>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="job-details-section">
+            <h5><i class="fa-solid fa-info-circle"></i> Job Overview</h5>
+            <div class="details-grid">
+              <div class="detail-item">
+                <span class="detail-label">Department</span>
+                <span class="detail-value" id="detailDepartment"></span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Employment Type</span>
+                <span class="detail-value" id="detailEmploymentType"></span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Experience Required</span>
+                <span class="detail-value" id="detailExperience"></span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Education Level</span>
+                <span class="detail-value" id="detailEducation"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="job-details-section">
+            <h5><i class="fa-solid fa-file-lines"></i> Job Description</h5>
+            <div class="job-description-full" id="detailDescription"></div>
+          </div>
+
+          <div class="job-details-section">
+            <h5><i class="fa-solid fa-calendar"></i> Application Details</h5>
+            <div class="details-grid">
+              <div class="detail-item">
+                <span class="detail-label">Closing Date</span>
+                <span class="detail-value" id="detailClosingDate"></span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Status</span>
+                <span class="detail-value" id="detailStatus"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="modalApplyBtn" style="display: none;">
+            <i class="fa-solid fa-paper-plane"></i> Apply Now
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Other Modals (existing ones) -->
   <!-- 🟡 Pending Modal -->
   <div class="modal fade" id="pendingModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-warning">
         <div class="modal-header bg-warning text-dark">
-          <h5 class="modal-title">Pending Application</h5>
+          <h5 class="modal-title"><i class="fa-solid fa-triangle-exclamation"></i> Pending Application</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body text-center">
-          <i class="fa-solid fa-triangle-exclamation fa-2x text-warning mb-3"></i>
-          <p>You still have a pending application. Applicants can only have one application at a time.</p>
+          <i class="fa-solid fa-clock fa-3x text-warning mb-3"></i>
+          <p class="mb-3">You still have a pending application. Applicants can only have one active application at a time.</p>
+          <p class="text-muted small">Please wait for your current application to be processed before applying for new positions.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Understand</button>
         </div>
       </div>
     </div>
@@ -530,12 +1175,16 @@ if ($search !== '') {
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-success">
         <div class="modal-header bg-success text-white">
-          <h5 class="modal-title">Application Submitted</h5>
+          <h5 class="modal-title"><i class="fa-solid fa-check-circle"></i> Application Submitted</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body text-center">
-          <i class="fa-solid fa-check-circle fa-2x text-success mb-3"></i>
-          <p id="successMessage"></p>
+          <i class="fa-solid fa-check-circle fa-3x text-success mb-3"></i>
+          <p id="successMessage" class="mb-3"></p>
+          <p class="text-muted small">We'll review your application and contact you soon.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" data-bs-dismiss="modal">Continue Browsing</button>
         </div>
       </div>
     </div>
@@ -546,12 +1195,16 @@ if ($search !== '') {
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-danger">
         <div class="modal-header bg-danger text-white">
-          <h5 class="modal-title">Application Rejected</h5>
+          <h5 class="modal-title"><i class="fa-solid fa-xmark-circle"></i> Application Rejected</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body text-center">
-          <i class="fa-solid fa-xmark fa-2x text-danger mb-3"></i>
-          <p id="rejectedMessage"></p>
+          <i class="fa-solid fa-xmark-circle fa-3x text-danger mb-3"></i>
+          <p id="rejectedMessage" class="mb-3"></p>
+          <p class="text-muted small">Don't worry! There are plenty of other opportunities that match your qualifications.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Find Other Jobs</button>
         </div>
       </div>
     </div>
@@ -562,11 +1215,15 @@ if ($search !== '') {
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content border-secondary">
         <div class="modal-header bg-secondary text-white">
-          <h5 class="modal-title">Notice</h5>
+          <h5 class="modal-title"><i class="fa-solid fa-exclamation-triangle"></i> Notice</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body text-center">
-          <p id="errorMessage"></p>
+          <i class="fa-solid fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+          <p id="errorMessage" class="mb-3"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
@@ -575,20 +1232,97 @@ if ($search !== '') {
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    // Job data storage
+    const jobData = <?= json_encode($jobs) ?>;
+
+    function searchJobs() {
+      const searchInput = document.querySelector('.search-box input');
+      const searchTerm = searchInput.value.trim();
+      const url = new URL(window.location.href);
+      
+      if (searchTerm) {
+        url.searchParams.set('q', searchTerm);
+      } else {
+        url.searchParams.delete('q');
+      }
+      
+      window.location.href = url.toString();
+    }
+
+    function showJobDetails(jobId) {
+      const job = jobData.find(j => j.jobID == jobId);
+      if (!job) return;
+
+      // Populate modal with job data
+      document.getElementById('jobDetailsTitle').textContent = job.job_title;
+      document.getElementById('detailDepartment').textContent = job.department_name || 'Not specified';
+      document.getElementById('detailEmploymentType').textContent = job.employment_type || 'Not specified';
+      document.getElementById('detailExperience').textContent = job.experience_years + ' years';
+      document.getElementById('detailEducation').textContent = job.educational_level || 'Not specified';
+      document.getElementById('detailDescription').textContent = job.job_description || 'No description available';
+      document.getElementById('detailClosingDate').textContent = job.closing_date ? 
+        new Date(job.closing_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'No closing date';
+
+      // Check if already applied
+      const hasApplied = <?= json_encode($all_statuses) ?>[jobId];
+      document.getElementById('detailStatus').textContent = hasApplied ? 'Already Applied' : 'Open for Applications';
+      
+      // Show/hide apply button in modal
+      const modalApplyBtn = document.getElementById('modalApplyBtn');
+      if (hasApplied) {
+        modalApplyBtn.style.display = 'none';
+      } else {
+        modalApplyBtn.style.display = 'block';
+        modalApplyBtn.onclick = function() {
+          $('#jobDetailsModal').modal('hide');
+          // Trigger apply action
+          $(`.apply-btn[data-jobid="${jobId}"]`).click();
+        };
+      }
+
+      // Show modal
+      new bootstrap.Modal(document.getElementById('jobDetailsModal')).show();
+    }
+
     $(function () {
+      // View details button handler
+      $('.view-details-btn').click(function () {
+        const jobId = $(this).data('jobid');
+        showJobDetails(jobId);
+      });
+
+      // Apply button handler
       $('.apply-btn').click(function () {
         var btn = $(this);
         var jobID = btn.data('jobid');
+        var card = btn.closest('.job-card');
+        
+        // Add loading state
+        btn.addClass('loading pulse');
+        card.addClass('loading');
+        
         $.post('', { ajax_apply_job: 1, job_id: jobID }, function (res) {
+          // Remove loading state
+          btn.removeClass('loading pulse');
+          card.removeClass('loading');
+          
           if (res.status === 'success') {
             $('#successMessage').text("You have successfully applied for " + res.job + ".");
             new bootstrap.Modal($('#successModal')).show();
-            btn.removeClass('btn-success').addClass('btn-warning').text('Pending').prop('disabled', true);
+            
+            // Update UI
+            btn.removeClass('btn-apply').addClass('btn-disabled').prop('disabled', true);
+            btn.html('<i class="fa-solid fa-check"></i> Applied');
+            card.find('.job-header').append('<span class="job-badge badge-pending"><i class="fa-solid fa-clock"></i> Pending</span>');
           }
           else if (res.status === 'rejected') {
             $('#rejectedMessage').text("Your application for " + res.job + " was rejected due to qualification mismatch.");
             new bootstrap.Modal($('#rejectedModal')).show();
-            btn.removeClass('btn-success').addClass('btn-danger').text('Rejected').prop('disabled', true);
+            
+            // Update UI
+            btn.removeClass('btn-apply').addClass('btn-disabled').prop('disabled', true);
+            btn.html('<i class="fa-solid fa-xmark"></i> Not Eligible');
+            card.find('.job-header').append('<span class="job-badge badge-rejected"><i class="fa-solid fa-xmark"></i> Rejected</span>');
           }
           else if (res.status === 'pending_modal') {
             new bootstrap.Modal($('#pendingModal')).show();
@@ -597,10 +1331,26 @@ if ($search !== '') {
             $('#errorMessage').text(res.message);
             new bootstrap.Modal($('#errorModal')).show();
           }
-        }, 'json');
+        }, 'json').fail(function() {
+          // Remove loading state on error
+          btn.removeClass('loading pulse');
+          card.removeClass('loading');
+          
+          $('#errorMessage').text('Network error. Please try again.');
+          new bootstrap.Modal($('#errorModal')).show();
+        });
       });
+
+      // Add hover effects
+      $('.job-card').hover(
+        function() {
+          $(this).css('transform', 'translateY(-5px)');
+        },
+        function() {
+          $(this).css('transform', 'translateY(0)');
+        }
+      );
     });
   </script>
 </body>
-
 </html>

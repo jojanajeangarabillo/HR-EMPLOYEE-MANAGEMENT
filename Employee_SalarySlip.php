@@ -61,157 +61,266 @@ if ($employeeID) {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
   
   <style>
-    h1 {
-      font-family: 'Roboto', sans-serif;
-      font-size: 35px;
-      color: white;
-      text-align: center;
-    }
-    .menu-board-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin: 15px 0 5px 15px;
-      text-transform: uppercase;
-      color: white;
-    }
-
-.sidebar-logo {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 30px;
-      margin-right: 10px;
+    :root {
+      --primary: #6674cc;
+      --primary-dark: #4c5ecf;
+      --primary-light: #f0f2ff;
+      --secondary: #3b82f6;
+      --accent-green: #10b981;
+      --accent-red: #dc2626;
+      --accent-orange: #f59e0b;
+      --text-dark: #111827;
+      --text-light: #6b7280;
+      --bg-light: #f8fafc;
+      --card-bg: #ffffff;
+      --border-color: #e5e7eb;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+      --border-radius: 12px;
     }
 
-    .sidebar-logo img {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      border: 3px solid white;
-    }
-
-    .sidebar-name {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      color: white;
-      padding: 10px;
-      margin-bottom: 30px;
-      font-size: 18px;
-      flex-direction: column;
-    }
-     body {
+    body {
       font-family: 'Poppins', 'Roboto', sans-serif;
       margin: 0;
       display: flex;
-      background-color: #f1f5fc;
-      color: #111827;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+      line-height: 1.6;
     }
-     .main-content {
-      margin-left: 250px;
-      padding: 40px 30px;
-      background-color: #f1f5fc;
+
+
+
+    .sidebar-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      padding: 0 20px;
+    }
+
+    
+.sidebar-profile-img {
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar-profile-img:hover {
+        transform: scale(1.05);
+      }
+
+      h1 {
+        font-family: 'Roboto', sans-serif;
+        font-size: 35px;
+        color: white;
+        text-align: center;
+      }
+
+      .menu-board-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin: 15px 0 5px 15px;
+        text-transform: uppercase;
+        color: white;
+      }
+  
+
+    /* Main Content */
+    .main-content {
+      margin-left: 280px;
+      padding: 30px;
       flex-grow: 1;
       box-sizing: border-box;
+      min-height: 100vh;
     }
 
-  .table-title i {
-      color: #1E3A8A;
-    }
-    
-.salary-overview-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: white;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-}
-
-.salary-overview-table th,
-.salary-overview-table td {
-  padding: 12px 10px;
-  border: 1px solid #ddd;
-  text-align: center;
-}
-
-.salary-overview-table thead th {
-  background-color: #2949d0;
-  color: white;
-  font-weight: bold;
-}
-
-.salary-overview-table tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-.salary-overview-table tbody tr:hover {
-  background-color: #e0e7ff;
-}
-
-.btn-view {
-  background-color: #00c853;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.btn-view:hover {
-  background-color: #009624;
-}
-
-
-    .table-container {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      padding: 20px;
+    /* Page Header */
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
     }
 
-    .table-title {
+    .page-title {
       display: flex;
       align-items: center;
-      gap: 10px;
-      color: #1f3b83;
-      font-weight: bold;
+      gap: 15px;
+    }
+
+    .page-title h1 {
       font-size: 28px;
-      margin-bottom: 20px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin: 0;
     }
 
-    /* Salary Details Page Styles */
-    .details-page {
-      display: none;
+    .page-title i {
+      color: var(--primary);
+      font-size: 28px;
     }
 
-    .details-page.active {
-      display: block;
+    .filter-container {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .filter-select {
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: white;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(102, 116, 204, 0.1);
+    }
+
+    /* Overview Page */
+    .overview-page {
+      transition: all 0.3s ease;
     }
 
     .overview-page.hidden {
       display: none;
     }
 
-    :root {
-      --color-primary: #1f3b83;
-      --color-primary-dark: #142b66;
-      --color-white: #ffffff;
-      --color-bg: #f5f5f5;
-      --color-text: #333333;
-      --color-border: #ddd;
-      --color-success: #00c853;
-      --font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-      --radius-md: 10px;
+    .stats-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 25px;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 20px;
+      font-size: 24px;
+      color: white;
+    }
+
+    .stat-info h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-light);
+      margin: 0 0 5px 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-info p {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-dark);
+      margin: 0;
+    }
+
+    .stat-card.total-earnings .stat-icon { background: linear-gradient(135deg, var(--accent-green), #059669); }
+    .stat-card.average-pay .stat-icon { background: linear-gradient(135deg, var(--secondary), #2563eb); }
+    .stat-card.total-deductions .stat-icon { background: linear-gradient(135deg, var(--accent-red), #b91c1c); }
+    .stat-card.pay-periods .stat-icon { background: linear-gradient(135deg, var(--accent-orange), #d97706); }
+
+    .table-container {
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .salary-overview-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .salary-overview-table thead {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    }
+
+    .salary-overview-table th {
+      padding: 18px 20px;
+      text-align: left;
+      font-weight: 600;
+      color: white;
+      font-size: 15px;
+    }
+
+    .salary-overview-table tbody tr {
+      border-bottom: 1px solid var(--border-color);
+      transition: all 0.2s ease;
+    }
+
+    .salary-overview-table tbody tr:hover {
+      background-color: var(--primary-light);
+    }
+
+    .salary-overview-table td {
+      padding: 16px 20px;
+      color: var(--text-dark);
+    }
+
+    .btn-view {
+      background-color: var(--accent-green);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-view:hover {
+      background-color: #059669;
+      transform: translateY(-2px);
+    }
+
+    /* Details Page */
+    .details-page {
+      display: none;
+      animation: fadeIn 0.5s ease forwards;
+    }
+
+    .details-page.active {
+      display: block;
     }
 
     .details-container {
-      background: var(--color-white);
-      border-radius: var(--radius-md);
-      box-shadow: var(--shadow-md);
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
       overflow: hidden;
     }
 
@@ -220,7 +329,9 @@ if ($employeeID) {
       justify-content: space-between;
       align-items: center;
       padding: 30px;
-      border-bottom: 2px solid var(--color-border);
+      border-bottom: 1px solid var(--border-color);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
     }
 
     .header-title {
@@ -230,46 +341,44 @@ if ($employeeID) {
     }
 
     .header-title h2 {
-      font-size: 32px;
-      color: var(--color-text);
+      font-size: 28px;
       font-weight: 600;
+      margin: 0;
     }
 
     .header-title i {
-      color: var(--color-primary);
-      font-size: 32px;
+      font-size: 28px;
     }
 
     .export-buttons {
       display: flex;
-      gap: 5px;
+      gap: 10px;
       align-items: center;
     }
 
     .export-label {
       font-size: 14px;
-      color: var(--color-text);
       font-weight: 500;
     }
 
     .btn-export {
-      padding: 6px 10px;
-      border: 1px solid var(--color-border);
-      background: var(--color-white);
-      border-radius: 6px;
+      padding: 10px 15px;
+      border: none;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
       cursor: pointer;
       font-size: 16px;
       display: flex;
       align-items: center;
+      gap: 8px;
+      color: white;
       transition: all 0.2s ease;
+      font-weight: 500;
     }
 
     .btn-export:hover {
-      background-color: var(--color-bg);
-    }
-
-    .btn-export i {
-      font-size: 16px;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
     }
 
     .content-wrapper {
@@ -279,25 +388,24 @@ if ($employeeID) {
       gap: 30px;
     }
 
-    /* Left side - Employee Info and Pay Info */
+    /* Left Section */
     .left-section {
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 25px;
     }
 
     .info-card {
-      background: var(--color-white);
-      border: 2px solid var(--color-primary);
-      border-radius: 8px;
-      margin-bottom: 20px;
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
       overflow: hidden;
+      box-shadow: var(--shadow);
     }
 
     .info-card-header {
-      background-color: var(--color-primary);
-      color: var(--color-white);
-      padding: 12px 20px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 15px 20px;
       font-weight: 600;
       font-size: 16px;
     }
@@ -309,8 +417,8 @@ if ($employeeID) {
     .info-row {
       display: flex;
       justify-content: space-between;
-      padding: 10px 0;
-      border-bottom: 1px solid var(--color-border);
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-color);
     }
 
     .info-row:last-child {
@@ -318,29 +426,29 @@ if ($employeeID) {
     }
 
     .info-label {
-      color: #666;
+      color: var(--text-light);
       font-size: 14px;
       font-weight: 500;
-      text-transform: uppercase;
     }
 
     .info-value {
-      color: var(--color-text);
+      color: var(--text-dark);
       font-size: 14px;
       font-weight: 600;
+      text-align: right;
     }
 
     .received-by-card {
-      background: var(--color-white);
-      border: 2px solid var(--color-primary);
-      border-radius: 8px;
+      background: var(--card-bg);
+      border-radius: var(--border-radius);
       overflow: hidden;
+      box-shadow: var(--shadow);
     }
 
     .received-by-header {
-      background-color: var(--color-primary);
-      color: var(--color-white);
-      padding: 12px 20px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
+      padding: 15px 20px;
       font-weight: 600;
       font-size: 16px;
       text-align: center;
@@ -351,21 +459,22 @@ if ($employeeID) {
       text-align: center;
       font-size: 16px;
       font-weight: 600;
-      color: var(--color-text);
+      color: var(--text-dark);
     }
 
-    /* Right side - Salary Slip */
+    /* Right Section */
     .right-section {
-      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 25px;
     }
 
     .salary-slip-card {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-radius: var(--radius-md);
-      padding: 25px;
-      color: var(--color-white);
-      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
-      height: fit-content;
+      border-radius: var(--border-radius);
+      padding: 30px;
+      color: white;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
     }
 
     .slip-header {
@@ -373,7 +482,7 @@ if ($employeeID) {
       justify-content: space-between;
       align-items: center;
       margin-bottom: 25px;
-      padding-bottom: 15px;
+      padding-bottom: 20px;
       border-bottom: 2px solid rgba(255, 255, 255, 0.3);
     }
 
@@ -384,8 +493,7 @@ if ($employeeID) {
     .slip-header h3 {
       font-size: 32px;
       font-weight: 700;
-      margin: 0;
-      margin-bottom: 3px;
+      margin: 0 0 5px 0;
     }
 
     .slip-header p {
@@ -395,22 +503,24 @@ if ($employeeID) {
     }
 
     .slip-header .hospital-logo {
-      background: var(--color-white);
+      background: white;
       border-radius: 50%;
-      width: 55px;
-      height: 55px;
+      width: 60px;
+      height: 60px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
-      color: var(--color-primary);
+      font-size: 24px;
+      color: var(--primary);
       flex-shrink: 0;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
 
     .salary-table {
       background: rgba(255, 255, 255, 0.15);
-      border-radius: 8px;
+      border-radius: 10px;
       overflow: hidden;
+      backdrop-filter: blur(10px);
     }
 
     .salary-table table {
@@ -423,18 +533,18 @@ if ($employeeID) {
     }
 
     .salary-table th {
-      padding: 10px 8px;
+      padding: 14px 12px;
       text-align: center;
       font-weight: 600;
-      font-size: 12px;
+      font-size: 13px;
       text-transform: uppercase;
       border-bottom: 2px solid rgba(255, 255, 255, 0.3);
     }
 
     .salary-table td {
-      padding: 8px;
+      padding: 12px;
       text-align: center;
-      font-size: 13px;
+      font-size: 14px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
@@ -449,149 +559,305 @@ if ($employeeID) {
     .total-row {
       background: rgba(0, 0, 0, 0.25) !important;
       font-weight: 700 !important;
-      font-size: 14px !important;
+      font-size: 15px !important;
     }
 
     .total-row td {
-      padding: 12px 8px !important;
+      padding: 16px 12px !important;
       border-top: 2px solid rgba(255, 255, 255, 0.3) !important;
     }
 
     .btn-back {
-      margin-top: 30px;
+      align-self: flex-start;
       padding: 12px 30px;
-      background-color: var(--color-primary);
-      color: var(--color-white);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       font-size: 16px;
+      font-weight: 500;
       cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: var(--shadow-md);
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .btn-back:hover {
-      background-color: var(--color-primary-dark);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    
+
+    /* Responsive Design */
+    @media (max-width: 1200px) {
+      .content-wrapper {
+        grid-template-columns: 1fr;
+      }
+      
+      .left-section {
+        order: 2;
+      }
+      
+      .right-section {
+        order: 1;
+      }
+    }
+
+    @media (max-width: 992px) {
+   
+      
+      .sidebar .nav li a {
+        justify-content: center;
+        padding: 15px;
+      }
+      
+      .sidebar .nav li a i {
+        margin-right: 0;
+        font-size: 20px;
+      }
+      
+      .main-content {
+        margin-left: 80px;
+      }
+      
+      .stats-cards {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        padding: 20px;
+      }
+      
+      .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+      }
+      
+      .filter-container {
+        width: 100%;
+        justify-content: space-between;
+      }
+      
+      .filter-select {
+        flex: 1;
+      }
+      
+      .header-section {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+      }
+      
+      .export-buttons {
+        align-self: flex-end;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .sidebar {
+        width: 0;
+        transform: translateX(-100%);
+      }
+      
+      .main-content {
+        margin-left: 0;
+      }
+      
+      .stats-cards {
+        grid-template-columns: 1fr;
+      }
+      
+      .salary-overview-table {
+        font-size: 14px;
+      }
+      
+      .salary-overview-table th, 
+      .salary-overview-table td {
+        padding: 12px 10px;
+      }
+      
+      .content-wrapper {
+        padding: 20px;
+      }
     }
 
     @media print {
-
       .sidebar,
       .export-buttons,
-      .btn-back {
+      .btn-back,
+      .page-header,
+      .stats-cards {
         display: none;
       }
-
+      
       .main-content {
         margin-left: 0;
         width: 100%;
+        padding: 0;
+      }
+      
+      .details-container {
+        box-shadow: none;
       }
     }
-
-     .sidebar-profile-img {
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 20px;
-            transition: transform 0.3s ease;
-        }
-
-        .sidebar-profile-img:hover {
-            transform: scale(1.05);
-        }
   </style>
 </head>
 
 <body>
   <!-- Sidebar -->
   <div class="sidebar">
-            <div class="sidebar-logo">
-            <a href="Employee_Profile.php" class="profile">
-             <img src="<?php echo htmlspecialchars($profile_picture); ?>" 
+    <div class="sidebar-logo">
+      <a href="Employee_Profile.php" class="profile">
+        <img src="<?php echo htmlspecialchars($profile_picture); ?>" 
              alt="Profile" class="sidebar-profile-img">
-            </a>
-
-            <div class="sidebar-name"><p><?php echo "Welcome, $employeename"; ?></p></div>
-      </div>
-
+      </a>
+      <div class="sidebar-name"><p><?php echo "Welcome, $employeename"; ?></p></div>
+    </div>
 
     <ul class="nav">
-        <h4 class="menu-board-title">Menu Board</h4>
-        <li ><a href="Employee_Dashboard.php"><i class="fa-solid fa-grip"></i> Dashboard</a></li>
-        <li class="active"><a href="Employee_SalarySlip.php"><i class="fa-solid fa-file-invoice-dollar"></i> Salary Slip</a></li>
-        <li><a href="Employee_Requests.php"><i class="fa-solid fa-code-branch"></i> Requests</a></li>
-        <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
+      <h4 class="menu-board-title">Menu Board</h4>
+      <li><a href="Employee_Dashboard.php"><i class="fa-solid fa-grip"></i> <span>Dashboard</span></a></li>
+      <li class="active"><a href="Employee_SalarySlip.php"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Salary Slip</span></a></li>
+      <li><a href="Employee_Requests.php"><i class="fa-solid fa-code-branch"></i> <span>Requests</span></a></li>
+      <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
     </ul>
-</div>
-<!-- Main Content -->
-<main class="main-content">
-  <!-- Overview Page -->
-  <div class="overview-page" id="overviewPage">
-     <div class="table-title">
-       <h2 style="color: black;">Salary Overview<i class="fa-solid fa-folder"></i> </h2>
-      </div>
-    <div class="table-container">
-     
-
-      <table class="salary-overview-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Basic Pay</th>
-            <th>Overtime Pay</th>
-            <th>Deduction</th>
-            <th>Net Pay</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>October 15, 2025</td>
-            <td>₱60,000.00</td>
-            <td>₱3,500.00</td>
-            <td>₱2,200.00</td>
-            <td>₱61,300.00</td>
-            <td><button class="btn-view" onclick="showDetails()">View</button></td>
-          </tr>
-          <tr>
-            <td>October 30, 2025</td>
-            <td>₱60,000.00</td>
-            <td>₱0.00</td>
-            <td>₱2,200.00</td>
-            <td>₱57,800.00</td>
-            <td><button class="btn-view" onclick="showDetails()">View</button></td>
-          </tr>
-          <tr>
-            <td>September 15, 2025</td>
-            <td>₱58,000.00</td>
-            <td>₱2,800.00</td>
-            <td>₱1,900.00</td>
-            <td>₱58,900.00</td>
-            <td><button class="btn-view" onclick="showDetails()">View</button></td>
-          </tr>
-          <tr>
-            <td>September 30, 2025</td>
-            <td>₱58,000.00</td>
-            <td>₱1,200.00</td>
-            <td>₱1,800.00</td>
-            <td>₱57,400.00</td>
-            <td><button class="btn-view" onclick="showDetails()">View</button></td>
-          </tr>
-          <tr>
-            <td>August 15, 2025</td>
-            <td>₱56,500.00</td>
-            <td>₱2,000.00</td>
-            <td>₱2,100.00</td>
-            <td>₱56,400.00</td>
-            <td><button class="btn-view" onclick="showDetails()">View</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
   </div>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Overview Page -->
+    <div class="overview-page" id="overviewPage">
+      <div class="page-header">
+        <div class="page-title">
+          <h1>Salary Overview</h1>
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+        </div>
+        <div class="filter-container">
+          <select class="filter-select" id="yearFilter">
+            <option value="2025">2025</option>
+            <option value="2024">2024</option>
+            <option value="2023">2023</option>
+          </select>
+          <select class="filter-select" id="monthFilter">
+            <option value="all">All Months</option>
+            <option value="january">January</option>
+            <option value="february">February</option>
+            <option value="march">March</option>
+            <option value="april">April</option>
+            <option value="may">May</option>
+            <option value="june">June</option>
+            <option value="july">July</option>
+            <option value="august">August</option>
+            <option value="september">September</option>
+            <option value="october">October</option>
+            <option value="november">November</option>
+            <option value="december">December</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="stats-cards">
+        <div class="stat-card total-earnings">
+          <div class="stat-icon">
+            <i class="fa-solid fa-money-bill-wave"></i>
+          </div>
+          <div class="stat-info">
+            <h3>Total Earnings</h3>
+            <p>₱295,800.00</p>
+          </div>
+        </div>
+        <div class="stat-card average-pay">
+          <div class="stat-icon">
+            <i class="fa-solid fa-chart-line"></i>
+          </div>
+          <div class="stat-info">
+            <h3>Average Pay</h3>
+            <p>₱59,160.00</p>
+          </div>
+        </div>
+        <div class="stat-card total-deductions">
+          <div class="stat-icon">
+            <i class="fa-solid fa-hand-holding-usd"></i>
+          </div>
+          <div class="stat-info">
+            <h3>Total Deductions</h3>
+            <p>₱10,200.00</p>
+          </div>
+        </div>
+        <div class="stat-card pay-periods">
+          <div class="stat-icon">
+            <i class="fa-solid fa-calendar-alt"></i>
+          </div>
+          <div class="stat-info">
+            <h3>Pay Periods</h3>
+            <p>5</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="salary-overview-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Basic Pay</th>
+              <th>Overtime Pay</th>
+              <th>Deduction</th>
+              <th>Net Pay</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>October 15, 2025</td>
+              <td>₱60,000.00</td>
+              <td>₱3,500.00</td>
+              <td>₱2,200.00</td>
+              <td>₱61,300.00</td>
+              <td><button class="btn-view" onclick="showDetails()"><i class="fa-solid fa-eye"></i> View</button></td>
+            </tr>
+            <tr>
+              <td>October 30, 2025</td>
+              <td>₱60,000.00</td>
+              <td>₱0.00</td>
+              <td>₱2,200.00</td>
+              <td>₱57,800.00</td>
+              <td><button class="btn-view" onclick="showDetails()"><i class="fa-solid fa-eye"></i> View</button></td>
+            </tr>
+            <tr>
+              <td>September 15, 2025</td>
+              <td>₱58,000.00</td>
+              <td>₱2,800.00</td>
+              <td>₱1,900.00</td>
+              <td>₱58,900.00</td>
+              <td><button class="btn-view" onclick="showDetails()"><i class="fa-solid fa-eye"></i> View</button></td>
+            </tr>
+            <tr>
+              <td>September 30, 2025</td>
+              <td>₱58,000.00</td>
+              <td>₱1,200.00</td>
+              <td>₱1,800.00</td>
+              <td>₱57,400.00</td>
+              <td><button class="btn-view" onclick="showDetails()"><i class="fa-solid fa-eye"></i> View</button></td>
+            </tr>
+            <tr>
+              <td>August 15, 2025</td>
+              <td>₱56,500.00</td>
+              <td>₱2,000.00</td>
+              <td>₱2,100.00</td>
+              <td>₱56,400.00</td>
+              <td><button class="btn-view" onclick="showDetails()"><i class="fa-solid fa-eye"></i> View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
     <!-- Details Page -->
     <div class="details-page" id="detailsPage">
@@ -599,15 +865,15 @@ if ($employeeID) {
         <div class="header-section">
           <div class="header-title">
             <h2>Salary Details</h2>
-            <i class="fa-solid fa-folder"></i>
+            <i class="fa-solid fa-file-invoice"></i>
           </div>
           <div class="export-buttons">
             <span class="export-label">Export As</span>
             <button class="btn-export" onclick="window.print()" title="Export as PDF">
-              <i class="fa-solid fa-file-pdf" style="color: #d32f2f;"></i>
+              <i class="fa-solid fa-file-pdf"></i> PDF
             </button>
-            <button class="btn-export" onclick="window.print()" title="Export as Image">
-              <i class="fa-solid fa-image" style="color: #1976d2;"></i>
+            <button class="btn-export" onclick="exportAsImage()" title="Export as Image">
+              <i class="fa-solid fa-image"></i> Image
             </button>
           </div>
         </div>
@@ -791,7 +1057,7 @@ if ($employeeID) {
               </div>
             </div>
 
-            <button class="btn-back" onclick="showOverview()">Back</button>
+            <button class="btn-back" onclick="showOverview()"><i class="fa-solid fa-arrow-left"></i> Back to Overview</button>
           </div>
         </div>
       </div>
@@ -810,14 +1076,27 @@ if ($employeeID) {
       document.getElementById('detailsPage').classList.remove('active');
     }
 
+    function exportAsImage() {
+      alert('Export as Image functionality would be implemented here');
+      // In a real implementation, this would use a library like html2canvas
+      // to capture the salary slip as an image
+    }
+
     // Highlight active sidebar link
-const currentPage = window.location.pathname.split("/").pop();
-document.querySelectorAll(".sidebar .nav li a").forEach(link => {
-  if (link.getAttribute("href") === currentPage) {
-    link.parentElement.classList.add("active");
-  }
-});
+    const currentPage = window.location.pathname.split("/").pop();
+    document.querySelectorAll(".sidebar .nav li a").forEach(link => {
+      if (link.getAttribute("href") === currentPage) {
+        link.parentElement.classList.add("active");
+      }
+    });
+
+    // Add some interactivity to filter selects
+    document.querySelectorAll('.filter-select').forEach(select => {
+      select.addEventListener('change', function() {
+        // In a real implementation, this would filter the salary data
+        console.log(`Filter changed: ${this.id} = ${this.value}`);
+      });
+    });
   </script>
 </body>
-
 </html>
