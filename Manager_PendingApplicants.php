@@ -531,75 +531,177 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Manager - Pending Applicants</title>
 
-  <!-- Bootstrap CSS (keep your theme colors intact) -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity=""
-    crossorigin="anonymous">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
 
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Custom Styles -->
   <link rel="stylesheet" href="manager-sidebar.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
-
+  
   <style>
-    /* keep your styles and small modal additions */
+    :root {
+      --primary: #1E3A8A;
+      --primary-light: #3B82F6;
+      --primary-dark: #1E40AF;
+      --secondary: #10B981;
+      --accent: #F59E0B;
+      --danger: #EF4444;
+      --warning: #F59E0B;
+      --light: #F8FAFC;
+      --dark: #111827;
+      --gray: #6B7280;
+      --gray-light: #E5E7EB;
+      --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      --card-shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
     body {
       font-family: 'Poppins', 'Roboto', sans-serif;
       margin: 0;
       display: flex;
-      background: #f1f5fc;
-      color: #111827;
+      background: #f8fbff;
+      color: var(--dark);
+      line-height: 1.6;
     }
 
     .main-content {
-      padding: 40px 30px;
+      padding: 30px;
       margin-left: 220px;
+      width: calc(100% - 220px);
       display: flex;
       flex-direction: column;
     }
 
-    .main-content-header h1 {
-      margin: 0;
-      font-size: 26px;
-      font-weight: 700;
-      margin-bottom: 40px;
-      color: #1E3A8A;
-      margin-left: 40px;
-    }
-
-    .header {
+    .main-content-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--gray-light);
     }
 
-    .search-filter {
+    .main-content-header h1 {
+      color: var(--primary);
+      font-weight: 700;
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .date-display {
+      color: var(--gray);
+      font-size: 14px;
+      background: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      box-shadow: var(--card-shadow);
+    }
+
+    /* Stats Summary */
+    .stats-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: var(--card-shadow);
+      transition: all 0.3s ease;
+      border-left: 4px solid var(--primary);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .stat-card.pending { border-left-color: var(--warning); }
+    .stat-card.interview { border-left-color: var(--primary-light); }
+    .stat-card.assessment { border-left-color: var(--accent); }
+    .stat-card.requirements { border-left-color: var(--secondary); }
+
+    .stat-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .stat-card-title {
+      font-size: 14px;
+      color: var(--gray);
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .stat-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
-      gap: 15px;
-      margin-left: 40px;
-      width: 100%;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+    }
+
+    .stat-card.pending .stat-card-icon { background: var(--warning); }
+    .stat-card.interview .stat-card-icon { background: var(--primary-light); }
+    .stat-card.assessment .stat-card-icon { background: var(--accent); }
+    .stat-card.requirements .stat-card-icon { background: var(--secondary); }
+
+    .stat-card-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--dark);
+      margin: 0;
+    }
+
+    /* Search and Filter */
+    .search-filter-container {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 30px;
     }
 
     .search-box {
       position: relative;
       flex: 1;
-      max-width: 350px;
     }
 
     .search-box input {
       width: 100%;
-      padding: 10px 40px;
-      border: 1px solid #d1d5db;
-      border-radius: 25px;
+      padding: 12px 45px;
+      border: 1px solid var(--gray-light);
+      border-radius: 10px;
       font-size: 14px;
       background: white;
-      outline: none;
-      transition: all .3s;
+      transition: all 0.3s;
     }
 
     .search-box input:focus {
-      border-color: #1e3a8a;
-      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15);
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
     }
 
     .search-box i {
@@ -607,98 +709,175 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
       left: 15px;
       top: 50%;
       transform: translateY(-50%);
-      color: #6b7280;
-      font-size: 14px;
+      color: var(--gray);
+      font-size: 16px;
     }
 
-    select {
-      border-radius: 25px;
-      padding: 10px 18px;
-      border: 1px solid #d1d5db;
-      background: #fff;
+    .filter-box select {
+      border-radius: 10px;
+      padding: 12px 20px;
+      border: 1px solid var(--gray-light);
+      background: white;
       font-size: 14px;
-      color: #333;
+      color: var(--dark);
+      min-width: 180px;
+      transition: all 0.3s;
+    }
+
+    .filter-box select:focus {
       outline: none;
-      cursor: pointer;
-      transition: all .3s;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
     }
 
+    .search-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 24px;
+      font-weight: 500;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .search-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    /* Table Container */
+    .table-container {
+      background: white;
+      border-radius: 15px;
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+
+    .table-header {
+      padding: 20px 25px;
+      border-bottom: 1px solid var(--gray-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .table-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--primary);
+      margin: 0;
+    }
+
+    .table-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .refresh-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 15px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s;
+    }
+
+    .refresh-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    /* Table Styling */
     .table-custom {
       width: 100%;
       border-collapse: collapse;
-      background: #fff;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
-      margin-left: 100px;
-      margin-left: 40px;
-    }
-
-    .table-custom th,
-    .table-custom td {
-      text-align: center;
-      vertical-align: middle;
-      padding: 18px 30px;
-      border-bottom: 1px solid #e0e0e0;
-      font-size: 14px;
+      margin: 0;
     }
 
     .table-custom thead {
-      background: #1E3A8A;
-      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     }
 
-    tbody tr:hover {
-      background: #f8f9fa;
-    }
-
-    .table-custom {
-      width: 150%;
-      border-collapse: collapse;
-      background: #fff;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
-      table-layout: auto;
-    }
-
-    .table-custom th,
-    .table-custom td {
-      text-align: center;
-      vertical-align: middle;
-      padding: 18px 30px;
-      border-bottom: 1px solid #e0e0e0;
+    .table-custom th {
+      padding: 16px 20px;
+      text-align: left;
+      color: white;
+      font-weight: 600;
       font-size: 14px;
-      word-break: break-word;
-      /* wrap long text */
-      overflow-wrap: break-word;
+      border: none;
     }
 
-    .view-btn {
-      background: #1E3A8A;
-      color: #fff;
+    .table-custom tbody tr {
+      border-bottom: 1px solid var(--gray-light);
+      transition: all 0.3s;
+    }
+
+    .table-custom tbody tr:hover {
+      background-color: rgba(59, 130, 246, 0.05);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .table-custom tbody tr:nth-child(even) {
+      background-color: #fbfdff;
+    }
+
+    .table-custom td {
+      padding: 16px 20px;
+      vertical-align: middle;
       border: none;
-      border-radius: 25px;
+      font-size: 14px;
+    }
+
+    /* Buttons */
+    .view-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
       padding: 8px 16px;
       font-size: 13px;
+      font-weight: 500;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      transition: all 0.3s;
+      text-decoration: none;
     }
 
     .view-btn:hover {
-      background: #1e40af;
+      background: var(--primary-dark);
       transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
     }
 
-    .flash-wrap {
-      margin-left: 200px;
-      max-width: 1200px;
-      width: 100%;
+    .status-select {
+      border: 1px solid var(--gray-light);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      background: white;
+      color: var(--dark);
+      transition: all 0.3s;
+      min-width: 160px;
     }
 
-    /* Modal */
+    .status-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
+    }
+
+    /* Enhanced Modal Styles */
     .modal-custom {
       display: none;
       position: fixed;
@@ -707,82 +886,247 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
       top: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.45);
+      background: rgba(0, 0, 0, 0.5);
       justify-content: center;
       align-items: center;
+      backdrop-filter: blur(4px);
     }
 
     .modal-custom.active {
       display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .modal-content-custom {
-      background: #fff;
-      padding: 18px 20px;
-      border-radius: 10px;
-      width: 480px;
-      max-width: 94%;
-      box-shadow: 0 8px 30px rgba(2, 6, 23, 0.16);
+      background: white;
+      border-radius: 15px;
+      width: 500px;
+      max-width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.3s ease;
     }
 
-    .modal-content-custom h3 {
-      margin: 0 0 8px 0;
-      font-size: 18px;
-      color: #1E3A8A;
+    @keyframes slideUp {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-header-custom {
+      padding: 20px 25px;
+      border-bottom: 1px solid var(--gray-light);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title-custom {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--primary);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .close-btn-custom {
+      background: transparent;
+      border: none;
+      color: var(--gray);
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.3s;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn-custom:hover {
+      background: var(--gray-light);
+      color: var(--dark);
+    }
+
+    .modal-body-custom {
+      padding: 25px;
     }
 
     .modal-row {
       display: flex;
-      gap: 10px;
-      margin-bottom: 10px;
+      gap: 15px;
+      margin-bottom: 15px;
     }
 
     .modal-row .col {
       flex: 1;
     }
 
-    .modal-content-custom label {
-      display: block;
-      font-size: 13px;
-      margin-bottom: 6px;
-      color: #374151;
+    .form-group {
+      margin-bottom: 15px;
     }
 
-    .modal-content-custom input[type="date"],
-    .modal-content-custom input[type="time"],
-    .modal-content-custom input[type="text"],
-    .modal-content-custom textarea {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #d1d5db;
-      border-radius: 6px;
-      box-sizing: border-box;
+    .form-group label {
+      display: block;
       font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--dark);
+    }
+
+    .form-control-custom {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--gray-light);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .form-control-custom:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
     }
 
     .modal-actions {
       display: flex;
       justify-content: flex-end;
-      gap: 8px;
-      margin-top: 12px;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--gray-light);
     }
 
     .cancel-btn {
-      background: #efefef;
-      color: #111827;
-      padding: 8px 14px;
-      border-radius: 6px;
+      background: var(--gray-light);
+      color: var(--dark);
       border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 500;
       cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .cancel-btn:hover {
+      background: #d1d5db;
     }
 
     .send-btn {
-      background: #1E3A8A;
-      color: #fff;
+      background: var(--primary);
+      color: white;
       border: none;
-      padding: 8px 14px;
-      border-radius: 6px;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-weight: 500;
       cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .send-btn:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    /* Success Modal */
+    .success-modal .modal-content {
+      text-align: center;
+      padding: 30px;
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      background: var(--secondary);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      color: white;
+      font-size: 36px;
+    }
+
+    .success-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--secondary);
+      margin-bottom: 10px;
+    }
+
+    .success-message {
+      color: var(--gray);
+      margin-bottom: 25px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--gray);
+    }
+
+    .empty-state i {
+      font-size: 64px;
+      margin-bottom: 20px;
+      color: var(--gray-light);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+      .main-content {
+        margin-left: 0;
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .stats-summary {
+        grid-template-columns: 1fr;
+      }
+      
+      .search-filter-container {
+        padding: 20px;
+      }
+      
+      .table-header {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+      }
+      
+      .modal-row {
+        flex-direction: column;
+        gap: 0;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .main-content {
+        padding: 20px 15px;
+      }
+      
+      .modal-content-custom {
+        width: 95%;
+      }
     }
   </style>
 </head>
@@ -808,100 +1152,257 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
     </ul>
   </div>
 
-
+  <!-- MAIN CONTENT -->
   <div class="main-content">
     <div class="main-content-header">
       <h1>Pending Applicants</h1>
-    </div>
-
-    <div class="flash-wrap" id="flashWrap">
-      <?php if (!empty($flash_success)): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-          <?php echo htmlspecialchars($flash_success); ?>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      <?php endif; ?>
-      <?php if (!empty($flash_error)): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-          <?php echo htmlspecialchars($flash_error); ?>
-          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-      <?php endif; ?>
-    </div>
-
-    <div class="header">
-      <div class="search-filter">
-        <form method="get" id="filterForm" style="display:flex;align-items:center;gap:15px;">
-          <div class="search-box">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input autocomplete="off" type="text" id="searchInput" name="q" placeholder="Search applicants..."
-              value="<?php echo htmlspecialchars($search ?? ''); ?>">
-          </div>
-
-          <select id="statusFilter" name="status">
-            <option value="all" <?php echo (isset($statusFilter) && strtolower($statusFilter) === 'all') ? 'selected' : ''; ?>>All Status</option>
-            <option value="Pending" <?php echo (isset($statusFilter) && $statusFilter === 'Pending') ? 'selected' : ''; ?>>
-              Pending</option>
-            <option value="Initial Interview" <?php echo (isset($statusFilter) && $statusFilter === 'Initial Interview') ? 'selected' : ''; ?>>Initial Interview</option>
-            <option value="Assessment" <?php echo (isset($statusFilter) && $statusFilter === 'Assessment') ? 'selected' : ''; ?>>Assessment</option>
-            <option value="Final Interview" <?php echo (isset($statusFilter) && $statusFilter === 'Final Interview') ? 'selected' : ''; ?>>Final Interview</option>
-            <option value="Requirements" <?php echo (isset($statusFilter) && $statusFilter === 'Requirements') ? 'selected' : ''; ?>>Requirements</option>
-
-          </select>
-
-          <button type="submit" class="btn"
-            style="background:#1E3A8A;color:#fff;border:none;padding:8px 14px;border-radius:8px;">Search</button>
-        </form>
+      <div class="header-actions">
+        <span class="date-display">
+          <i class="far fa-calendar-alt me-2"></i>
+          <?php echo date("F j, Y"); ?>
+        </span>
       </div>
     </div>
 
-    <table class="table table-custom" id="applicantTable">
-      <thead>
-        <tr>
-          <th>Applicant ID</th>
-          <th>Full Name</th>
-          <th>Action</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php if (empty($pendingApplicants)): ?>
-          <tr>
-            <td colspan="4">No applicants found.</td>
-          </tr>
-        <?php else:
-          foreach ($pendingApplicants as $p): ?>
-            <tr id="row-<?php echo htmlspecialchars($p['applicantID']); ?>">
-              <td><?php echo htmlspecialchars($p['applicantID']); ?></td>
-              <td><?php echo htmlspecialchars($p['fullName']); ?></td>
-              <td>
-                <button class="view-btn" data-appid="<?php echo htmlspecialchars($p['applicantID']); ?>"> <i
-                    class="fa-solid fa-eye"></i> View</button>
-              </td>
-              <td>
-                <?php
-                $current = $p['application_status'] ?? '';
-                if (empty($current))
-                  $current = 'Pending';
-                $opts = ['Pending', 'Initial Interview', 'Assessment', 'Final Interview', 'Requirements', 'Hired', 'Rejected'];
-                ?>
+    <!-- Flash Messages -->
+    <?php if (!empty($flash_success)): ?>
+      <div class="alert alert-success alert-dismissible fade show" role="alert" style="max-width: 100%;">
+        <i class="fas fa-check-circle me-2"></i>
+        <?php echo htmlspecialchars($flash_success); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <?php endif; ?>
 
-                <select class="status-select form-select form-select-sm"
-                  data-appid="<?php echo htmlspecialchars($p['applicantID']); ?>"
-                  data-email="<?php echo htmlspecialchars($p['email_address']); ?>"
-                  data-fullname="<?php echo htmlspecialchars($p['fullName']); ?>"
-                  style="max-width:220px; display:inline-block;">
-                  <?php foreach ($opts as $opt): ?>
-                    <option value="<?php echo htmlspecialchars($opt); ?>" <?php echo ($current === $opt) ? 'selected' : ''; ?>>
-                      <?php echo htmlspecialchars($opt); ?>
-                    </option>
-                  <?php endforeach; ?>
-                </select>
-              </td>
+    <?php if (!empty($flash_error)): ?>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert" style="max-width: 100%;">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        <?php echo htmlspecialchars($flash_error); ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    <?php endif; ?>
+
+    <!-- Stats Summary -->
+    <?php
+   
+    // Calculate status counts
+    $pendingCount = 0;
+    $initialInterviewCount = 0;
+    $assessmentCount = 0;
+    $finalInterviewCount = 0;
+    $requirementsCount = 0;
+    $rejectedCount = 0;
+    $hiredCount = 0;
+    
+    foreach ($pendingApplicants as $applicant) {
+      $status = $applicant['application_status'] ?? '';
+      if ($status === 'Pending') $pendingCount++;
+      elseif ($status === 'Initial Interview') $initialInterviewCount++;
+      elseif ($status === 'Assessment') $assessmentCount++;
+      elseif ($status === 'Final Interview') $finalInterviewCount++;
+      elseif ($status === 'Requirements') $requirementsCount++;
+      elseif ($status === 'Rejected') $rejectedCount++;
+      elseif ($status === 'Hired') $hiredCount++;
+    }
+    
+    $totalCount = count($pendingApplicants);
+    ?>
+
+    
+    
+    <div class="stats-summary">
+         <div class="stat-card" style="border-left-color: #1E3A8A;">
+        <div class="stat-card-header">
+          <h3 class="stat-card-title">Total Applicants</h3>
+          <div class="stat-card-icon" style="background: #1E3A8A;">
+            <i class="fas fa-users"></i>
+          </div>
+        </div>
+        <p class="stat-card-value"><?php echo $totalCount; ?></p>
+      </div>
+
+      <div class="stat-card pending">
+        <div class="stat-card-header">
+          <h3 class="stat-card-title">Pending Review</h3>
+          <div class="stat-card-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+        </div>
+        <p class="stat-card-value"><?php echo $pendingCount; ?></p>
+      </div>
+
+      <div class="stat-card interview">
+        <div class="stat-card-header">
+          <h3 class="stat-card-title">Initial Interviews</h3>
+          <div class="stat-card-icon">
+            <i class="fas fa-handshake"></i>
+          </div>
+        </div>
+        <p class="stat-card-value"><?php echo $initialInterviewCount; ?></p>
+      </div>
+
+      <div class="stat-card assessment">
+        <div class="stat-card-header">
+          <h3 class="stat-card-title">Assessments</h3>
+          <div class="stat-card-icon">
+            <i class="fas fa-tasks"></i>
+          </div>
+        </div>
+        <p class="stat-card-value"><?php echo $assessmentCount; ?></p>
+      </div>
+
+      <div class="stat-card requirements">
+        <div class="stat-card-header">
+          <h3 class="stat-card-title">Requirements</h3>
+          <div class="stat-card-icon">
+            <i class="fas fa-file-alt"></i>
+          </div>
+        </div>
+        <p class="stat-card-value"><?php echo $requirementsCount; ?></p>
+      </div>
+
+       <!-- New Stat Cards -->
+      <div class="stat-card" style="border-left-color: #8B5CF6;">
+        <div class="stat-card-header">
+          <h3 class="stat-card-title">Final Interviews</h3>
+          <div class="stat-card-icon" style="background: #8B5CF6;">
+            <i class="fas fa-user-tie"></i>
+          </div>
+        </div>
+        <p class="stat-card-value"><?php echo $finalInterviewCount; ?></p>
+      </div>
+
+      <div class="stat-card" style="border-left-color: #EF4444;">
+        <div class="stat-card-header">
+          <h3 class="stat-card-title">Rejected</h3>
+          <div class="stat-card-icon" style="background: #EF4444;">
+            <i class="fas fa-times-circle"></i>
+          </div>
+        </div>
+        <p class="stat-card-value"><?php echo $rejectedCount; ?></p>
+      </div>
+
+      <div class="stat-card" style="border-left-color: #10B981;">
+        <div class="stat-card-header">
+          <h3 class="stat-card-title">Hired</h3>
+          <div class="stat-card-icon" style="background: #10B981;">
+            <i class="fas fa-user-check"></i>
+          </div>
+        </div>
+        <p class="stat-card-value"><?php echo $hiredCount; ?></p>
+      </div>
+
+   
+    </div>
+
+    
+
+    <!-- Search and Filter -->
+    <div class="search-filter-container">
+      <form method="get" id="filterForm">
+        <div class="row g-3 align-items-center">
+          <div class="col-md-6">
+            <div class="search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input autocomplete="off" type="text" id="searchInput" name="q" placeholder="Search by name, ID, or email..."
+                value="<?php echo htmlspecialchars($search ?? ''); ?>">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="filter-box">
+              <select id="statusFilter" name="status" class="form-select">
+                <option value="all" <?php echo (isset($statusFilter) && strtolower($statusFilter) === 'all') ? 'selected' : ''; ?>>All Status</option>
+                <option value="Pending" <?php echo (isset($statusFilter) && $statusFilter === 'Pending') ? 'selected' : ''; ?>>Pending</option>
+                <option value="Initial Interview" <?php echo (isset($statusFilter) && $statusFilter === 'Initial Interview') ? 'selected' : ''; ?>>Initial Interview</option>
+                <option value="Assessment" <?php echo (isset($statusFilter) && $statusFilter === 'Assessment') ? 'selected' : ''; ?>>Assessment</option>
+                <option value="Final Interview" <?php echo (isset($statusFilter) && $statusFilter === 'Final Interview') ? 'selected' : ''; ?>>Final Interview</option>
+                <option value="Requirements" <?php echo (isset($statusFilter) && $statusFilter === 'Requirements') ? 'selected' : ''; ?>>Requirements</option>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="search-btn w-100">
+              <i class="fas fa-search"></i> Search
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Applicants Table -->
+    <div class="table-container">
+      <div class="table-header">
+        <h3 class="table-title">Applicant Management</h3>
+        <div class="table-actions">
+          <button class="refresh-btn" onclick="refreshTable()">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+        </div>
+      </div>
+      
+      <div class="table-responsive">
+        <table class="table-custom" id="applicantTable">
+          <thead>
+            <tr>
+              <th>Applicant ID</th>
+              <th>Full Name</th>
+              <th>Email</th>
+              <th>Status</th>
+              <th>Actions</th>
             </tr>
-          <?php endforeach; endif; ?>
-      </tbody>
-    </table>
+          </thead>
+          <tbody>
+            <?php if (empty($pendingApplicants)): ?>
+              <tr>
+                <td colspan="5">
+                  <div class="empty-state">
+                    <i class="fas fa-users"></i>
+                    <h4>No applicants found</h4>
+                    <p>Try adjusting your search criteria or check back later.</p>
+                  </div>
+                </td>
+              </tr>
+            <?php else:
+              foreach ($pendingApplicants as $p): ?>
+                <tr id="row-<?php echo htmlspecialchars($p['applicantID']); ?>">
+                  <td>
+                    <span class="fw-bold text-primary"><?php echo htmlspecialchars($p['applicantID']); ?></span>
+                  </td>
+                  <td>
+                    <strong><?php echo htmlspecialchars($p['fullName']); ?></strong>
+                  </td>
+                  <td>
+                    <?php echo htmlspecialchars($p['email_address']); ?>
+                  </td>
+                  <td>
+                    <?php
+                    $current = $p['application_status'] ?? '';
+                    if (empty($current))
+                      $current = 'Pending';
+                    $opts = ['Pending', 'Initial Interview', 'Assessment', 'Final Interview', 'Requirements', 'Hired', 'Rejected'];
+                    ?>
+
+                    <select class="status-select"
+                      data-appid="<?php echo htmlspecialchars($p['applicantID']); ?>"
+                      data-email="<?php echo htmlspecialchars($p['email_address']); ?>"
+                      data-fullname="<?php echo htmlspecialchars($p['fullName']); ?>">
+                      <?php foreach ($opts as $opt): ?>
+                        <option value="<?php echo htmlspecialchars($opt); ?>" <?php echo ($current === $opt) ? 'selected' : ''; ?>>
+                          <?php echo htmlspecialchars($opt); ?>
+                        </option>
+                      <?php endforeach; ?>
+                    </select>
+                  </td>
+                  <td>
+                    <button class="view-btn" data-appid="<?php echo htmlspecialchars($p['applicantID']); ?>">
+                      <i class="fa-solid fa-eye"></i> View Details
+                    </button>
+                  </td>
+                </tr>
+              <?php endforeach; endif; ?>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- Applicant Details Modal -->
@@ -948,7 +1449,86 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
     </div>
   </div>
 
+  <!-- Schedule Modal -->
+  <div id="scheduleModal" class="modal-custom" role="dialog" aria-hidden="true">
+    <div class="modal-content-custom" role="document">
+      <div class="modal-header-custom">
+        <h3 class="modal-title-custom"><i class="fas fa-calendar-alt"></i> Schedule Details</h3>
+        <button class="close-btn-custom" id="modalCancelBtn"><i class="fa-solid fa-xmark"></i></button>
+      </div>
 
+      <div class="modal-body-custom">
+        <p id="modalSub" class="text-muted mb-4">Fill in the details below and click <strong>Send Email</strong> to notify the applicant.</p>
+
+        <form id="modalForm" method="post">
+          <input type="hidden" name="applicantID" id="m_applicantID" value="">
+          <input type="hidden" name="new_status" id="m_new_status" value="">
+          <input type="hidden" name="send_email" value="1">
+          
+          <div class="modal-row">
+            <div class="col">
+              <div class="form-group">
+                <label for="sched_date">Date</label>
+                <input type="date" id="sched_date" name="sched_date" class="form-control-custom" required>
+              </div>
+            </div>
+            <div class="col">
+              <div class="form-group">
+                <label for="sched_time">Time</label>
+                <input type="time" id="sched_time" name="sched_time" class="form-control-custom" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="meet_person">Person to meet</label>
+            <input type="text" id="meet_person" name="meet_person" class="form-control-custom" placeholder="Interviewer name" required>
+          </div>
+
+          <div class="form-group">
+            <label for="reminder_info">Reminder (optional)</label>
+            <input type="text" id="reminder_info" name="reminder_info" class="form-control-custom" placeholder="E.g., 1 day before 9:00 AM">
+          </div>
+
+          <div class="form-group">
+            <label for="extra_notes">Additional notes (optional)</label>
+            <textarea id="extra_notes" name="extra_notes" rows="3" class="form-control-custom" placeholder="Notes for the applicant"></textarea>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="cancel-btn" id="modalCancelBtn2">Cancel</button>
+            <button type="submit" class="send-btn">
+              <i class="fas fa-paper-plane"></i> Send Email & Update
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal fade" id="updateResultModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title"><i class="fas fa-check-circle me-2"></i> Success!</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center py-4">
+          <div class="success-icon">
+            <i class="fas fa-check"></i>
+          </div>
+          <h4 class="success-title">Success!</h4>
+          <p class="success-message" id="successMessage">Operation completed successfully.</p>
+        </div>
+        <div class="modal-footer justify-content-center">
+          <button type="button" class="btn btn-success" data-bs-dismiss="modal">
+            <i class="fas fa-check me-2"></i> Continue
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Hidden quick form is no longer submitted directly; kept for fallback -->
   <form id="quickForm" method="post" style="display:none;">
@@ -958,55 +1538,13 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
     <input type="hidden" name="ajax" value="1">
   </form>
 
-  <!-- Modal (custom but used with AJAX) -->
-  <div id="scheduleModal" class="modal-custom" role="dialog" aria-hidden="true">
-    <div class="modal-content-custom" role="document">
-      <h3 id="modalTitle">Schedule / Details</h3>
-      <p id="modalSub">Fill in the details below and click <strong>Send Email</strong>.</p>
-
-      <form id="modalForm" method="post">
-        <input type="hidden" name="applicantID" id="m_applicantID" value="">
-        <input type="hidden" name="new_status" id="m_new_status" value="">
-        <input type="hidden" name="send_email" value="1">
-        <div class="modal-row">
-          <div class="col">
-            <label for="sched_date">Date</label>
-            <input type="date" id="sched_date" name="sched_date" required>
-          </div>
-          <div class="col">
-            <label for="sched_time">Time</label>
-            <input type="time" id="sched_time" name="sched_time" required>
-          </div>
-        </div>
-
-        <div style="margin-bottom:10px;">
-          <label for="meet_person">Person to meet</label>
-          <input type="text" id="meet_person" name="meet_person" placeholder="Person / Interviewer name" required>
-        </div>
-
-        <div style="margin-bottom:10px;">
-          <label for="reminder_info">Reminder (optional)</label>
-          <input type="text" id="reminder_info" name="reminder_info" placeholder="E.g., 1 day before 9:00 AM">
-        </div>
-
-        <div style="margin-bottom:6px;">
-          <label for="extra_notes">Additional notes (optional)</label>
-          <textarea id="extra_notes" name="extra_notes" rows="3" placeholder="Notes for the applicant"></textarea>
-        </div>
-
-        <div class="modal-actions">
-          <button type="button" class="cancel-btn" id="modalCancelBtn">Cancel</button>
-          <button type="submit" class="send-btn">Send Email & Update</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Bootstrap JS (bundle incl. Popper) -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity=""
-    crossorigin="anonymous"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
   <script>
+    // Your existing JavaScript code remains the same...
+    // (Keep all the JavaScript functions from your previous version)
+    
     // Manager-wide alert / confirm / prompt modals
     (function setupManagerModals() {
       const html = `
@@ -1061,21 +1599,27 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
       const alertModal = new bootstrap.Modal(document.getElementById('mgrAlertModal'));
       const confirmModal = new bootstrap.Modal(document.getElementById('mgrConfirmModal'));
       const promptModal = new bootstrap.Modal(document.getElementById('mgrPromptModal'));
+      
       window.showAlertModal = function (message) {
         document.getElementById('mgrAlertMessage').textContent = message;
         alertModal.show();
       };
+      
       window.showConfirmModal = function (message) {
         return new Promise(resolve => {
           document.getElementById('mgrConfirmMessage').textContent = message;
           const ok = document.getElementById('mgrConfirmOk');
           const cancel = document.getElementById('mgrConfirmCancel');
-          const cleanup = () => { ok.replaceWith(ok.cloneNode(true)); cancel.replaceWith(cancel.cloneNode(true)); };
+          const cleanup = () => { 
+            ok.replaceWith(ok.cloneNode(true)); 
+            cancel.replaceWith(cancel.cloneNode(true)); 
+          };
           confirmModal.show();
           document.getElementById('mgrConfirmOk').addEventListener('click', () => { cleanup(); confirmModal.hide(); resolve(true); });
           document.getElementById('mgrConfirmCancel').addEventListener('click', () => { cleanup(); confirmModal.hide(); resolve(false); });
         });
       };
+      
       window.showPromptModal = function (message, defaultText = '') {
         return new Promise(resolve => {
           document.getElementById('mgrPromptMessage').textContent = message;
@@ -1090,6 +1634,13 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
         });
       };
     })();
+
+    // Function to show success modal
+    function showSuccessModal(message) {
+      const updateResultModal = new bootstrap.Modal(document.getElementById('updateResultModal'));
+      document.getElementById('successMessage').textContent = message;
+      updateResultModal.show();
+    }
 
     // All client-side behavior - use fetch for AJAX
     document.addEventListener('DOMContentLoaded', function () {
@@ -1107,8 +1658,6 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
               this.value = 'Pending';
               return;
             }
-
-
             await updateStatus(appid, newStatus, true, sel);
           } else if (newStatus === 'Rejected') {
             const ok = await showConfirmModal(`Are you sure you want to reject ${fullname}?`);
@@ -1129,7 +1678,6 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
         });
       });
 
-      // <-- Add the helper function below -->
       async function updateStatus(appid, status, sendEmail, selectEl, reason = '') {
         const payload = new URLSearchParams();
         payload.append('applicantID', appid);
@@ -1146,7 +1694,9 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
           });
           const data = await resp.json();
           if (data.success) {
-            showAlertModal(data.message);
+            // Show success modal for ALL successful updates (with or without email)
+            showSuccessModal(data.message);
+            
             if (status === 'Hired' || status === 'Rejected') {
               selectEl.disabled = true;
               selectEl.value = status;
@@ -1158,10 +1708,12 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
           showAlertModal('Network error. Try again.');
         }
       }
-      // modal cancel
-      document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
 
-      // modal form submission: AJAX post
+      // Modal cancel buttons
+      document.getElementById('modalCancelBtn').addEventListener('click', closeModal);
+      document.getElementById('modalCancelBtn2').addEventListener('click', closeModal);
+
+      // Modal form submission: AJAX post
       const modalForm = document.getElementById('modalForm');
       modalForm.addEventListener('submit', async function (evt) {
         evt.preventDefault();
@@ -1183,7 +1735,9 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
           });
           const data = await resp.json();
           if (data.success) {
-            showAlert(data.message || 'Email sent and status updated', 'success');
+            // Show success modal for email sends
+            showSuccessModal(data.message || 'Email sent and status updated');
+            
             // Update the select DOM to the new value for that applicant
             const appid = document.getElementById('m_applicantID').value;
             const newStatus = document.getElementById('m_new_status').value;
@@ -1191,32 +1745,41 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
             if (sel) sel.value = newStatus;
             closeModal();
           } else {
-            showAlert(data.message || 'Failed to send email / update', 'danger');
+            showAlertModal(data.message || 'Failed to send email / update');
           }
         } catch (err) {
-          showAlert('Network error. Try again.', 'danger');
+          showAlertModal('Network error. Try again.');
         }
       });
 
-      // keep search filter auto-submit
+      // Auto-submit filter form when status changes
       const statusFilter = document.getElementById('statusFilter');
       const filterForm = document.getElementById('filterForm');
       if (statusFilter && filterForm) {
         statusFilter.addEventListener('change', () => filterForm.submit());
       }
+
+      // Attach click handler for all view buttons
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.addEventListener('click', () => showApplicantDetails(btn.dataset.appid));
+      });
     });
 
     function openModalFor(appid, status, fullname, email) {
       document.getElementById('m_applicantID').value = appid;
       document.getElementById('m_new_status').value = status;
-      const title = `You will invite ${fullname} for ${status}`;
-      document.getElementById('modalTitle').textContent = title;
+      const title = `Schedule ${status} for ${fullname}`;
+      document.querySelector('#scheduleModal .modal-title-custom').textContent = title;
       document.getElementById('modalSub').textContent = 'Kindly set the date, time, person to meet, and reminders.';
-      document.getElementById('sched_date').value = '';
-      document.getElementById('sched_time').value = '';
+      
+      // Set default values
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('sched_date').value = today;
+      document.getElementById('sched_time').value = '09:00';
       document.getElementById('meet_person').value = '';
       document.getElementById('reminder_info').value = '';
       document.getElementById('extra_notes').value = '';
+      
       const modal = document.getElementById('scheduleModal');
       modal.classList.add('active');
       modal.setAttribute('aria-hidden', 'false');
@@ -1235,7 +1798,10 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
           headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
         const data = await resp.json();
-        if (!data.success) { showAlertModal(data.message || 'Applicant not found'); return; }
+        if (!data.success) { 
+          showAlertModal(data.message || 'Applicant not found'); 
+          return; 
+        }
 
         const d = data.data;
         document.getElementById('applicantModalTitle').textContent = d.fullName;
@@ -1258,18 +1824,25 @@ if ($isAjax && isset($_GET['action']) && $_GET['action'] === 'getApplicantDetail
       }
     }
 
-    // Attach click handler for all view buttons
-    document.querySelectorAll('.view-btn').forEach(btn => {
-      btn.addEventListener('click', () => showApplicantDetails(btn.dataset.appid));
-    });
-
-    function closeApplicantModal() {
-      const modal = document.getElementById('applicantModal');
-      modal.classList.remove('active');
-      modal.setAttribute('aria-hidden', 'true');
+    function refreshTable() {
+      location.reload();
     }
 
+    // Close modals when clicking outside
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('modal-custom')) {
+        e.target.classList.remove('active');
+      }
+    });
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-custom.active').forEach(modal => {
+          modal.classList.remove('active');
+        });
+      }
+    });
   </script>
 </body>
-
 </html>

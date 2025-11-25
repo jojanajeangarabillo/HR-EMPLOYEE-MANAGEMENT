@@ -24,8 +24,6 @@ if ($employeeID) {
     }
 }
 
-
-
 // Fetch employee name and profile picture
 if ($employeeID) {
     $stmt = $conn->prepare("SELECT fullname, profile_pic FROM employee WHERE empID = ?");
@@ -105,10 +103,6 @@ if (isset($_GET['view']) && isset($_GET['id'])) {
     $announcement = mysqli_fetch_assoc($res);
     $openModal = true;
 }
-
-
-
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -122,19 +116,31 @@ if (isset($_GET['view']) && isset($_GET['id'])) {
 
 <style>
 :root {
-  --primary: #6674cc;
-  --primary-dark: #4c5ecf;
-  --primary-light: #f0f2ff;
-  --secondary: #3b82f6;
-  --accent-pink: #ec4899;
-  --accent-red: #dc2626;
-  --accent-green: #10b981;
+  /* Blue color palette */
+  --primary-blue: #1e40af;
+  --primary-blue-light: #3b82f6;
+  --primary-blue-lighter: #60a5fa;
+  --primary-blue-lightest: #dbeafe;
+  
+  --secondary-blue: #1d4ed8;
+  --secondary-blue-light: #2563eb;
+  --secondary-blue-lighter: #3b82f6;
+  
+  --accent-blue: #0284c7;
+  --accent-blue-light: #0ea5e9;
+  
+  --dark-blue: #1e3a8a;
+  --dark-blue-light: #1e40af;
+  
+  --light-blue: #eff6ff;
+  --light-blue-dark: #dbeafe;
+  
   --text-dark: #111827;
   --text-light: #6b7280;
   --bg-light: #f8fafc;
   --card-bg: #ffffff;
-  --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  --shadow-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow: 0 4px 12px rgba(30, 64, 175, 0.1);
+  --shadow-hover: 0 8px 24px rgba(30, 64, 175, 0.15);
   --border-radius: 12px;
 }
 
@@ -149,7 +155,38 @@ body {
 
 
 
+.sidebar-logo {
+  padding: 30px 20px 10px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
 
+
+.sidebar-logo img:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+}
+
+.sidebar-name {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: white;
+  padding: 10px;
+  margin-bottom: 30px;
+  font-size: 18px;
+  flex-direction: column;
+}
+
+.menu-board-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 15px 0 5px 20px;
+  text-transform: uppercase;
+  color: var(--light-blue-dark);
+  letter-spacing: 1px;
+}
 
 
 /* Main Content */
@@ -159,11 +196,12 @@ body {
   flex-grow: 1;
   box-sizing: border-box;
   min-height: 100vh;
+  background-color: var(--bg-light);
 }
 
 /* Welcome Card */
 .welcome-card {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
   color: white;
   padding: 25px 30px;
   border-radius: var(--border-radius);
@@ -244,7 +282,7 @@ body {
   width: 70px;
   height: 70px;
   border-radius: 12px;
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--light-blue);
 }
 
 .card .info {
@@ -270,26 +308,38 @@ body {
   color: var(--text-dark);
 }
 
-/* Card Color Variants */
+/* Card Color Variants - All in blue shades */
 .card.salary { 
-  border-left-color: var(--secondary); 
+  border-left-color: var(--primary-blue); 
 }
-.card.salary i { color: var(--secondary); }
+.card.salary i { 
+  color: var(--primary-blue); 
+  background: var(--light-blue);
+}
 
 .card.attendance { 
-  border-left-color: var(--accent-pink); 
+  border-left-color: var(--secondary-blue-light); 
 }
-.card.attendance i { color: var(--accent-pink); }
+.card.attendance i { 
+  color: var(--secondary-blue-light); 
+  background: var(--light-blue);
+}
 
 .card.requests { 
-  border-left-color: var(--accent-red); 
+  border-left-color: var(--accent-blue); 
 }
-.card.requests i { color: var(--accent-red); }
+.card.requests i { 
+  color: var(--accent-blue); 
+  background: var(--light-blue);
+}
 
 .card.announcements { 
-  border-left-color: var(--accent-green); 
+  border-left-color: var(--dark-blue-light); 
 }
-.card.announcements i { color: var(--accent-green); }
+.card.announcements i { 
+  color: var(--dark-blue-light); 
+  background: var(--light-blue);
+}
 
 /* Announcement Section */
 .announcement-section {
@@ -306,7 +356,7 @@ body {
 }
 
 .announcement-section h1 i {
-  color: var(--primary);
+  color: var(--primary-blue);
   margin-right: 12px;
   font-size: 24px;
 }
@@ -324,7 +374,7 @@ body {
 }
 
 .announcement-table thead {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
 }
 
 .announcement-table th {
@@ -341,7 +391,7 @@ body {
 }
 
 .announcement-table tbody tr:hover {
-  background-color: var(--primary-light);
+  background-color: var(--light-blue);
 }
 
 .announcement-table td {
@@ -350,7 +400,7 @@ body {
 }
 
 .announcement-table button {
-  background-color: var(--primary);
+  background-color: var(--primary-blue);
   border: none;
   color: white;
   padding: 8px 16px;
@@ -358,11 +408,13 @@ body {
   cursor: pointer;
   font-weight: 500;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(30, 64, 175, 0.2);
 }
 
 .announcement-table button:hover {
-  background-color: var(--primary-dark);
+  background-color: var(--secondary-blue);
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(30, 64, 175, 0.3);
 }
 
 /* Modal Styling */
@@ -374,7 +426,7 @@ body {
 }
 
 .modal-header {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
   border-bottom: none;
   padding: 20px 25px;
 }
@@ -382,6 +434,7 @@ body {
 .modal-title {
   font-weight: 600;
   font-size: 20px;
+  color: white;
 }
 
 .modal-body {
@@ -395,6 +448,16 @@ body {
 .modal-footer {
   border-top: 1px solid rgba(0, 0, 0, 0.05);
   padding: 15px 25px;
+}
+
+.btn-primary {
+  background-color: var(--primary-blue);
+  border-color: var(--primary-blue);
+}
+
+.btn-primary:hover {
+  background-color: var(--secondary-blue);
+  border-color: var(--secondary-blue);
 }
 
 /* Responsive Design */
@@ -427,9 +490,25 @@ body {
 }
 
 @media (max-width: 576px) {
+  .sidebar {
+    width: 70px;
+  }
+  
+  .sidebar-name, .menu-board-title, .nav li a span {
+    display: none;
+  }
+  
+  .nav li a {
+    justify-content: center;
+    padding: 15px;
+  }
+  
+  .nav li a i {
+    margin-right: 0;
+  }
   
   .main-content {
-    margin-left: 0;
+    margin-left: 70px;
   }
   
   .announcement-table {
@@ -441,36 +520,6 @@ body {
     padding: 12px 10px;
   }
 }
-
-
-
-.sidebar-logo img {
-      width: 100px;
-      height: 100px;
-      border-radius: 50%;
-      border: 3px solid white;
-    }
-
-    .sidebar-name {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      color: white;
-      padding: 10px;
-      margin-bottom: 30px;
-      font-size: 18px;
-      flex-direction: column;
-    }
-
-    
-      .menu-board-title {
-        font-size: 18px;
-        font-weight: bold;
-        margin: 15px 0 5px 15px;
-        text-transform: uppercase;
-        color: white;
-      }
 </style>
 </head>
 
@@ -496,7 +545,7 @@ body {
 
 <main class="main-content">
   <div class="welcome-card">
-    <h3>Welcome to Employee Dashboard</h3>
+    <h3><?php echo "Welcome to Employee Dashboard, $employeename"; ?></h3>
     <p>Here's a quick summary of your payslip, requests, and announcements.</p>
   </div>
 
@@ -515,7 +564,7 @@ body {
         <p>0</p>
       </div>
     </div>
-    <div class="card requests">
+    <div class="card requests" onclick="window.location.href='Employee_Requests.php'">
       <i class="fa-solid fa-code-branch"></i>
       <div class="info">
         <h2>Requests</h2>

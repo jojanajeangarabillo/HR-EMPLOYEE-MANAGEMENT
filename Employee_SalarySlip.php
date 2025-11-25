@@ -90,27 +90,41 @@ if ($employeeID) {
 
 
 
-    .sidebar-logo {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 20px;
-      padding: 0 20px;
-    }
+ 
+.sidebar-logo {
+  padding: 30px 20px 10px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
 
-    
-.sidebar-profile-img {
-        width: 130px;
-        height: 130px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-bottom: 20px;
-        transition: transform 0.3s ease;
-      }
 
-      .sidebar-profile-img:hover {
-        transform: scale(1.05);
-      }
+.sidebar-logo img:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+}
+
+.sidebar-name {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: white;
+  padding: 10px;
+  margin-bottom: 30px;
+  font-size: 18px;
+  flex-direction: column;
+}
+
+.menu-board-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 15px 0 5px 20px;
+  text-transform: uppercase;
+  color: var(--light-blue-dark);
+  letter-spacing: 1px;
+  color: white;
+}
+
 
       h1 {
         font-family: 'Roboto', sans-serif;
@@ -119,13 +133,7 @@ if ($employeeID) {
         text-align: center;
       }
 
-      .menu-board-title {
-        font-size: 18px;
-        font-weight: bold;
-        margin: 15px 0 5px 15px;
-        text-transform: uppercase;
-        color: white;
-      }
+     
   
 
     /* Main Content */

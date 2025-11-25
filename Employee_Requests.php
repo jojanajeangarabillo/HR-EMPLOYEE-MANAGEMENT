@@ -24,8 +24,6 @@ if ($employeeID) {
   }
 }
 
-
-
 // Fetch employee name and profile picture
 if ($employeeID) {
   $stmt = $conn->prepare("SELECT fullname, profile_pic FROM employee WHERE empID = ?");
@@ -91,7 +89,6 @@ if ($leaveReqTypeId) {
   }
   $lsStmt->close();
 }
-
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $employeeID = $_SESSION['applicant_employee_id'] ?? null;
@@ -246,17 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   header("Location: Employee_Requests.php");
   exit;
 }
-
-
-
-
-
-//check pending request
-
-
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -267,7 +254,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link rel="stylesheet" href="manager-sidebar.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-
 </head>
 
 <body>
@@ -292,7 +278,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i> Logout</a></li>
     </ul>
   </div>
-
 
   <?php
   $modalType = null;
@@ -337,13 +322,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </script>
   <?php endif; ?>
 
-
-
   <main class="main-content">
     <div class="main-box" id="blur-content">
       <div class="main-header">
         <div class="request-title">
-          <h2 style="color:black;">Employee Request <i class="fa-solid fa-code-branch"></i></h2>
+          <h2><i class="fa-solid fa-code-branch"></i> Employee Requests</h2>
         </div>
         <button class="file-request-btn" id="open-modal"><i class="fa-solid fa-plus-circle"></i> File a Request</button>
       </div>
@@ -410,7 +393,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </tbody>
         </table>
       </div>
-
     </div>
 
     <!-- Request Form -->
@@ -480,7 +462,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   <?php endwhile; ?>
                 </select>
               </div>
-
             </div>
 
             <div class="modal-row">
@@ -490,24 +471,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               </div>
             </div>
 
-                      <div class="modal-row" id="leave-dates-container" style="display:none;">
-            <div class="form-group wide">
-              <label>From Date:</label>
-              <input type="date" id="from-date" name="from_date">
+            <div class="modal-row" id="leave-dates-container" style="display:none;">
+              <div class="form-group wide">
+                <label>From Date:</label>
+                <input type="date" id="from-date" name="from_date">
+              </div>
+              <div class="form-group wide">
+                <label>To Date:</label>
+                <input type="date" id="to-date" name="to_date">
+              </div>
+              <div class="form-group wide">
+                <label>Duration (Days):</label>
+                <input type="number" id="duration" name="duration" readonly>
+              </div>
+              <div class="form-group wide">
+                <div id="slot-warning" style="display:none;color:#E63946;font-weight:600;"></div>
+              </div>
             </div>
-            <div class="form-group wide">
-              <label>To Date:</label>
-              <input type="date" id="to-date" name="to_date">
-            </div>
-          <div class="form-group wide">
-            <label>Duration (Days):</label>
-            <input type="number" id="duration" name="duration" readonly>
-          </div>
-          <div class="form-group wide">
-            <div id="slot-warning" style="display:none;color:#E63946;font-weight:600;"></div>
-          </div>
-        </div>
-
 
             <div class="form-group wide">
               <label>Upload E-Signature:</label>
@@ -522,7 +502,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
       </div>
     </div>
-
 
     <div id="view-request-modal" class="modal-overlay">
       <div class="modal-form">
@@ -557,38 +536,241 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
     </div>
 
-
-
     <style>
-      .sidebar-profile-img {
-        width: 130px;
-        height: 130px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-bottom: 20px;
-        transition: transform 0.3s ease;
+      /* Enhanced Blue Color Scheme */
+      :root {
+        --primary-blue: #1e40af;
+        --primary-blue-light: #3b82f6;
+        --primary-blue-lighter: #60a5fa;
+        --primary-blue-lightest: #dbeafe;
+        --secondary-blue: #1d4ed8;
+        --secondary-blue-light: #2563eb;
+        --accent-blue: #0284c7;
+        --dark-blue: #1e3a8a;
+        --light-blue: #eff6ff;
+        --light-blue-dark: #dbeafe;
+        --text-dark: #111827;
+        --text-light: #6b7280;
+        --bg-light: #f8fafc;
+        --card-bg: #ffffff;
+        --shadow: 0 4px 12px rgba(30, 64, 175, 0.1);
+        --shadow-hover: 0 8px 24px rgba(30, 64, 175, 0.15);
+        --border-radius: 12px;
       }
 
-      .sidebar-profile-img:hover {
-        transform: scale(1.05);
+      body {
+        font-family: 'Poppins', 'Roboto', sans-serif;
+        margin: 0;
+        display: flex;
+        background-color: var(--bg-light);
+        color: var(--text-dark);
       }
 
-      h1 {
-        font-family: 'Roboto', sans-serif;
-        font-size: 35px;
+      .main-content {
+        margin-left: 250px;
+        padding: 40px 30px;
+        background-color: var(--bg-light);
+        flex-grow: 1;
+        box-sizing: border-box;
+        min-height: 100vh;
+      }
+      
+.sidebar-logo {
+  padding: 30px 20px 10px;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+
+.sidebar-logo img:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+}
+
+.sidebar-name {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: white;
+  padding: 10px;
+  margin-bottom: 30px;
+  font-size: 18px;
+  flex-direction: column;
+}
+
+.menu-board-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 15px 0 5px 20px;
+  text-transform: uppercase;
+  color: var(--light-blue-dark);
+  letter-spacing: 1px;
+  color: white;
+}
+
+
+
+      /* Main Box Styling */
+      .main-box {
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        padding: 32px 24px 24px 24px;
+        margin-top: 20px;
+        margin-bottom: 32px;
+        transition: all 0.3s ease;
+      }
+
+      .main-box:hover {
+        box-shadow: var(--shadow-hover);
+      }
+
+      .main-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        border-bottom: 2px solid var(--light-blue-dark);
+        padding-bottom: 16px;
+      }
+
+      .main-header h2 {
+        font-size: 1.7rem;
+        color: var(--dark-blue);
+        margin: 0;
+        font-weight: bold;
+        letter-spacing: 0.03em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .file-request-btn {
+        background: var(--primary-blue);
+        border: 2px solid var(--primary-blue);
         color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        cursor: pointer;
+        box-shadow: 0 2px 4px rgba(30, 64, 175, 0.2);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .file-request-btn:hover {
+        background: var(--secondary-blue);
+        border-color: var(--secondary-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(30, 64, 175, 0.3);
+      }
+
+      /* Table Styling */
+      .request-table-container {
+        margin-top: 18px;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: 0 1px 4px rgba(82, 100, 180, 0.06);
+      }
+
+      .request-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        background: var(--card-bg);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+      }
+
+      .request-table thead th {
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+        color: white;
+        font-weight: 600;
+        text-align: center;
+        padding: 16px 12px;
+        font-size: 1rem;
+        letter-spacing: 0.02em;
+      }
+
+      .request-table tbody tr {
+        transition: background 0.2s, box-shadow 0.2s, transform .07s;
+        cursor: pointer;
+      }
+
+      .request-table tbody tr:hover {
+        background: var(--light-blue);
+        box-shadow: 0 2px 12px rgba(82, 120, 220, 0.09);
+        transform: scale(1.012);
+        z-index: 1;
+        position: relative;
+      }
+
+      .request-table td {
+        padding: 14px 12px;
+        font-size: 15px;
+        color: var(--text-dark);
+        border-bottom: 1px solid var(--light-blue-dark);
+        background: none;
         text-align: center;
       }
 
-      .menu-board-title {
-        font-size: 18px;
-        font-weight: bold;
-        margin: 15px 0 5px 15px;
-        text-transform: uppercase;
-        color: white;
+      .request-table tr:last-child td {
+        border-bottom: none;
       }
 
-      /* --- Blur Effect --- */
+      /* Status Styling */
+      .approved {
+        color: #18a140;
+        font-weight: bold;
+        background-color: rgba(24, 161, 64, 0.1);
+        padding: 4px 12px;
+        border-radius: 20px;
+        display: inline-block;
+      }
+
+      .pending {
+        color: #f59e0b;
+        font-weight: bold;
+        background-color: rgba(245, 158, 11, 0.1);
+        padding: 4px 12px;
+        border-radius: 20px;
+        display: inline-block;
+      }
+
+      .rejected {
+        color: #dc2626;
+        font-weight: bold;
+        background-color: rgba(220, 38, 38, 0.1);
+        padding: 4px 12px;
+        border-radius: 20px;
+        display: inline-block;
+      }
+
+      /* Button Styling */
+      .view-btn {
+        background: var(--primary-blue);
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        box-shadow: 0 1.5px 6px rgba(30, 64, 175, 0.08);
+      }
+
+      .view-btn:hover {
+        background: var(--secondary-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(30, 64, 175, 0.2);
+      }
+
+      /* Modal Styling */
       .blurred {
         filter: blur(5px);
         pointer-events: none;
@@ -596,7 +778,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         transition: filter 0.2s;
       }
 
-      /* --- Modal Styles --- */
       .modal-overlay {
         display: none;
         position: fixed;
@@ -615,14 +796,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
 
       .modal-form {
-        background: #1E3A8A;
-        color: #fff;
-        border-radius: 12px;
+        background: var(--card-bg);
+        color: var(--text-dark);
+        border-radius: var(--border-radius);
         padding: 30px 40px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        box-shadow: var(--shadow-hover);
         width: 650px;
         max-width: 90%;
         margin: auto;
+        max-height: 90vh;
+        overflow-y: auto;
       }
 
       .modal-header h2 {
@@ -630,6 +813,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-weight: bold;
         text-align: center;
         margin-bottom: 25px;
+        color: var(--dark-blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
       }
 
       .modal-content {
@@ -642,47 +830,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         display: flex;
         gap: 20px;
         flex-wrap: wrap;
-        /* allow stacking on small screens */
       }
 
       .form-group {
         flex: 1 1 calc(50% - 10px);
-        /* two columns, with a gap accounted for */
         display: flex;
         flex-direction: column;
         min-width: 250px;
-        /* prevents fields from shrinking too much */
       }
 
-
-      #leave-type-container,
-      #other-type {
-        min-height: 60px;
-        /* same height as a normal input */
-        transition: all 0.2s ease;
-      }
-
-      .modal-form {
-        max-height: 90vh;
-        overflow-y: auto;
+      .form-group.wide {
+        flex: 1 1 100%;
       }
 
       .form-group label {
         font-weight: 600;
         margin-bottom: 5px;
         font-size: 0.95rem;
+        color: var(--text-dark);
       }
 
       .form-group input,
       .form-group select,
       .form-group textarea {
-        background: #fff;
-        border: none;
+        background: var(--light-blue);
+        border: 1px solid var(--light-blue-dark);
         border-radius: 6px;
         padding: 10px 12px;
         font-size: 0.95rem;
-        color: #000;
+        color: var(--text-dark);
         outline: none;
+        transition: all 0.2s ease;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus,
+      .form-group textarea:focus {
+        border-color: var(--primary-blue-light);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
       }
 
       .form-group textarea {
@@ -705,6 +890,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-weight: 600;
         cursor: pointer;
         font-size: 1rem;
+        transition: all 0.2s ease;
       }
 
       .cancel-btn {
@@ -714,204 +900,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
       .cancel-btn:hover {
         background: #c9303c;
+        transform: translateY(-2px);
       }
 
       .send-btn {
-        background: #19BB4E;
+        background: var(--primary-blue);
         color: white;
       }
 
       .send-btn:hover {
-        background: #128c3a;
+        background: var(--secondary-blue);
+        transform: translateY(-2px);
       }
 
-      /* Responsive */
-      @media (max-width: 700px) {
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .main-content {
+          padding: 20px;
+          margin-left: 0;
+        }
+        
+        .main-header {
+          flex-direction: column;
+          gap: 15px;
+          align-items: flex-start;
+        }
+        
+        .file-request-btn {
+          align-self: flex-start;
+        }
+        
         .modal-row {
           flex-direction: column;
         }
-      }
-
-      .main-box {
-        background: #fff;
-        border-radius: 14px;
-        box-shadow: 0 6px 30px rgba(30, 70, 140, 0.10), 0 1.5px 4px rgba(30, 70, 140, 0.07);
-        padding: 32px 24px 24px 24px;
-        margin-top: 20px;
-        margin-bottom: 32px;
-      }
-
-      .main-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 24px;
-        border-bottom: 2px solid #e2e7f1;
-        padding-bottom: 16px;
-      }
-
-      .main-header h2 {
-        font-size: 1.7rem;
-        color: #222e50;
-        margin: 0;
-        font-weight: bold;
-        letter-spacing: 0.03em;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-      }
-
-      .file-request-btn {
-        background: #fff;
-        border: 2px solid #2540a8;
-        color: #2540a8;
-        padding: 8px 18px;
-        border-radius: 20px;
-        font-weight: 600;
-        font-size: 1rem;
-        transition: background 0.2s, color 0.2s;
-        cursor: pointer;
-        box-shadow: 0 1px 3px rgba(30, 70, 140, 0.04);
-        margin-left: 24px;
-      }
-
-      .file-request-btn:hover {
-        background: #2540a8;
-        color: #fff;
-      }
-
-      .request-table-container {
-        margin-top: 18px;
-      }
-
-      .request-title i {
-        color: #1E3A8A;
-      }
-
-      .request-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        background: #f3f7ff;
-        border-radius: 12px;
-        overflow: hidden;
-        box-shadow: 0 1px 4px rgba(82, 100, 180, 0.06);
-      }
-
-      .request-table thead th {
-        background: #2949d0;
-        color: #fff;
-        font-weight: 600;
-        text-align: center;
-        padding: 16px 12px;
-        font-size: 1rem;
-        letter-spacing: 0.02em;
-      }
-
-      .request-table tbody tr {
-        transition: background 0.2s, box-shadow 0.2s, transform .07s;
-        cursor: pointer;
-      }
-
-      .request-table tbody tr:hover {
-        background: #e4edff;
-        box-shadow: 0 2px 12px rgba(82, 120, 220, 0.09);
-        transform: scale(1.012);
-        z-index: 1;
-        position: relative;
-      }
-
-      .request-table td {
-        padding: 14px 12px;
-        font-size: 15px;
-        color: #213056;
-        border-bottom: 1px solid #e2e7f1;
-        background: none;
-        text-align: center;
-      }
-
-      .request-table tr:last-child td {
-        border-bottom: none;
-      }
-
-      .approved {
-        color: #18a140;
-        font-weight: bold;
-      }
-
-      .view-btn {
-        background: #18a140;
-        color: #fff;
-        border: none;
-        padding: 6px 18px;
-        border-radius: 12px;
-        font-size: 1rem;
-        cursor: pointer;
-        font-weight: 500;
-        box-shadow: 0 1.5px 6px rgba(24, 161, 64, 0.08);
-        transition: background 0.18s;
-      }
-
-      .view-btn:hover {
-        background: #17a13d;
-      }
-
-      .form-group textarea {
-        padding: 8px 12px;
-        border: none;
-        border-radius: 7px;
-        font-size: 1rem;
-        outline: none;
-        margin-bottom: 4px;
-        background: #f3f5fb;
-        color: black;
-        resize: vertical;
-      }
-
-      .sidebar-logo {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 30px;
-        margin-right: 10px;
-      }
-
-      .sidebar-logo img {
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        border: 3px solid white;
-      }
-
-      .sidebar-name {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        color: white;
-        padding: 10px;
-        margin-bottom: 30px;
-        font-size: 18px;
-        flex-direction: column;
-      }
-
-      body {
-        font-family: 'Poppins', 'Roboto', sans-serif;
-        margin: 0;
-        display: flex;
-        background-color: #f1f5fc;
-        color: #111827;
-      }
-
-      .main-content {
-        margin-left: 250px;
-        padding: 40px 30px;
-        background-color: #f1f5fc;
-        flex-grow: 1;
-        box-sizing: border-box;
+        
+        .form-group {
+          min-width: 100%;
+        }
       }
     </style>
-
   </main>
 
   <script>
@@ -938,7 +965,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       }
     });
 
-
     // Highlight active sidebar link
     const currentPage = window.location.pathname.split("/").pop();
     document.querySelectorAll(".sidebar .nav li a").forEach(link => {
@@ -946,7 +972,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         link.parentElement.classList.add("active");
       }
     });
-
 
     const requestTypeSelect = document.getElementById('request-type');
     const leaveTypeContainer = document.getElementById('leave-type-container');
@@ -965,9 +990,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         leaveTypeContainer.style.display = 'none';
         leaveTypeSelect.value = "";
       }
-
     });
-
 
     const viewButtons = document.querySelectorAll('.view-btn');
     const viewModal = document.getElementById('view-request-modal');
@@ -999,80 +1022,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     });
 
     const leaveDatesContainer = document.getElementById('leave-dates-container');
-const fromDateInput = document.getElementById('from-date');
-const toDateInput = document.getElementById('to-date');
-const durationInput = document.getElementById('duration');
-const sendBtn = document.querySelector('.send-btn');
-const slotWarning = document.getElementById('slot-warning');
-const slotsByMonth = <?php echo json_encode($slotsByMonth); ?>;
+    const fromDateInput = document.getElementById('from-date');
+    const toDateInput = document.getElementById('to-date');
+    const durationInput = document.getElementById('duration');
+    const sendBtn = document.querySelector('.send-btn');
+    const slotWarning = document.getElementById('slot-warning');
+    const slotsByMonth = <?php echo json_encode($slotsByMonth); ?>;
 
-requestTypeSelect.addEventListener('change', () => {
-  const selected = requestTypeSelect.selectedOptions[0].text;
+    requestTypeSelect.addEventListener('change', () => {
+      const selected = requestTypeSelect.selectedOptions[0].text;
 
-  if (selected === 'Leave') {
-    leaveTypeContainer.style.display = 'block';
-    leaveDatesContainer.style.display = 'flex';
-    Array.from(leaveTypeSelect.options).forEach(opt => {
-      opt.style.display = (opt.dataset.request == requestTypeSelect.value || opt.value === "") ? 'block' : 'none';
+      if (selected === 'Leave') {
+        leaveTypeContainer.style.display = 'block';
+        leaveDatesContainer.style.display = 'flex';
+        Array.from(leaveTypeSelect.options).forEach(opt => {
+          opt.style.display = (opt.dataset.request == requestTypeSelect.value || opt.value === "") ? 'block' : 'none';
+        });
+        checkSlots();
+      } else {
+        leaveTypeContainer.style.display = 'none';
+        leaveDatesContainer.style.display = 'none';
+        leaveTypeSelect.value = "";
+        fromDateInput.value = "";
+        toDateInput.value = "";
+        durationInput.value = "";
+        sendBtn.disabled = false;
+        slotWarning.style.display = 'none';
+      }
     });
-    checkSlots();
-  } else {
-    leaveTypeContainer.style.display = 'none';
-    leaveDatesContainer.style.display = 'none';
-    leaveTypeSelect.value = "";
-    fromDateInput.value = "";
-    toDateInput.value = "";
-    durationInput.value = "";
-    sendBtn.disabled = false;
-    slotWarning.style.display = 'none';
-  }
-});
 
-// Auto calculate duration
-function calculateDuration() {
-  if (fromDateInput.value && toDateInput.value) {
-    const from = new Date(fromDateInput.value);
-    const to = new Date(toDateInput.value);
-    const diff = (to - from) / (1000 * 60 * 60 * 24) + 1; // include both start/end
-    durationInput.value = diff > 0 ? diff : 0;
-  } else {
-    durationInput.value = '';
-  }
-}
-
-fromDateInput.addEventListener('change', calculateDuration);
-toDateInput.addEventListener('change', calculateDuration);
-
-function checkSlots() {
-  const selected = requestTypeSelect.selectedOptions[0]?.text;
-  if (selected === 'Leave' && fromDateInput.value) {
-    const m = new Date(fromDateInput.value).getMonth() + 1;
-    const slots = slotsByMonth && slotsByMonth[m] !== undefined ? parseInt(slotsByMonth[m], 10) : null;
-    if (slots !== null && slots <= 0) {
-      sendBtn.disabled = true;
-      leaveTypeSelect.disabled = true;
-      fromDateInput.disabled = true;
-      toDateInput.disabled = true;
-      slotWarning.textContent = 'No slots available for this month.';
-      slotWarning.style.display = 'block';
-    } else {
-      sendBtn.disabled = false;
-      leaveTypeSelect.disabled = false;
-      fromDateInput.disabled = false;
-      toDateInput.disabled = false;
-      slotWarning.style.display = 'none';
+    // Auto calculate duration
+    function calculateDuration() {
+      if (fromDateInput.value && toDateInput.value) {
+        const from = new Date(fromDateInput.value);
+        const to = new Date(toDateInput.value);
+        const diff = (to - from) / (1000 * 60 * 60 * 24) + 1; // include both start/end
+        durationInput.value = diff > 0 ? diff : 0;
+      } else {
+        durationInput.value = '';
+      }
     }
-  }
-}
 
-fromDateInput.addEventListener('change', () => { calculateDuration(); checkSlots(); });
+    fromDateInput.addEventListener('change', calculateDuration);
+    toDateInput.addEventListener('change', calculateDuration);
 
+    function checkSlots() {
+      const selected = requestTypeSelect.selectedOptions[0]?.text;
+      if (selected === 'Leave' && fromDateInput.value) {
+        const m = new Date(fromDateInput.value).getMonth() + 1;
+        const slots = slotsByMonth && slotsByMonth[m] !== undefined ? parseInt(slotsByMonth[m], 10) : null;
+        if (slots !== null && slots <= 0) {
+          sendBtn.disabled = true;
+          leaveTypeSelect.disabled = true;
+          fromDateInput.disabled = true;
+          toDateInput.disabled = true;
+          slotWarning.textContent = 'No slots available for this month.';
+          slotWarning.style.display = 'block';
+        } else {
+          sendBtn.disabled = false;
+          leaveTypeSelect.disabled = false;
+          fromDateInput.disabled = false;
+          toDateInput.disabled = false;
+          slotWarning.style.display = 'none';
+        }
+      }
+    }
 
-
-
-
+    fromDateInput.addEventListener('change', () => { calculateDuration(); checkSlots(); });
   </script>
-
 </body>
-
 </html>
