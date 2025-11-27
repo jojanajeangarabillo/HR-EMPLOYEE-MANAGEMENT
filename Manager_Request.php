@@ -480,7 +480,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       margin-bottom: 32px;
     }
 
-    .main-header {
+    .main-content-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -489,7 +489,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       padding-bottom: 16px;
     }
 
-    .main-header h2 {
+    .main-content-header h2 {
       font-size: 1.7rem;
       color: #222e50;
       margin: 0;
@@ -520,7 +520,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     .request-table-container {
-      margin-top: 18px;
+      margin-top: 10px;
     }
 
     .request-title i {
@@ -720,7 +720,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <main class="main-content">
     <div class="main-box" id="blur-content">
-      <div class="main-header">
+      <div class="main-content-header">
         <div class="request-title">
           <h2 style="color:black;">Employee Request <i class="fa-solid fa-code-branch"></i></h2>
         </div>

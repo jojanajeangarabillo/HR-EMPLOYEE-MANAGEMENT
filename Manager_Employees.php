@@ -104,8 +104,18 @@ $icons = [
   "Logout" => "fa-right-from-bracket"
 ];
 
+$limit = 10;
+$page = isset($_GET['page']) ? max(1, (int) $_GET['page']) : 1;
+$start = ($page - 1) * $limit;
+
+$countRes = $conn->query("SELECT COUNT(*) AS count FROM employee");
+$countRow = $countRes ? $countRes->fetch_assoc() : ['count' => 0];
+$totalEmployees = (int) ($countRow['count'] ?? 0);
+$pages = max(1, (int) ceil($totalEmployees / $limit));
+
 $employee = [];
-$stmt = $conn->prepare("SELECT e.empID, e.fullname, e.department, e.position, e.type_name, e.email_address, u.status FROM employee e LEFT JOIN user u ON u.applicant_employee_id = e.empID");
+$stmt = $conn->prepare("SELECT e.empID, e.fullname, e.department, e.position, e.type_name, e.email_address, u.status FROM employee e LEFT JOIN user u ON u.applicant_employee_id = e.empID ORDER BY e.fullname ASC LIMIT ?, ?");
+$stmt->bind_param("ii", $start, $limit);
 $stmt->execute();
 $result = $stmt->get_result();
 while ($row = $result->fetch_assoc()) {
@@ -269,8 +279,11 @@ if (isset($_POST['send_message'])) {
       padding: 25px 30px;
       margin: 0;
       font-size: 2rem;
-      margin-bottom: 40px;
+      margin-bottom: 16px;
       color: #1E3A8A;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     .job-posts h2 {
@@ -392,7 +405,7 @@ if (isset($_POST['send_message'])) {
     .table-container {
       width: 90%;
       padding: 0 30px;
-      margin-top: 20px;
+      margin-top: 12px;
       box-sizing: border-box;
     }
 
@@ -658,6 +671,21 @@ if (isset($_POST['send_message'])) {
         </table>
       </div>
     </div>
+    <nav aria-label="Employee pagination" class="mt-3">
+      <ul class="pagination justify-content-center">
+        <li class="page-item <?php echo $page <= 1 ? 'disabled' : ''; ?>">
+          <a class="page-link" href="?page=<?php echo max(1, $page - 1); ?>" tabindex="-1">Previous</a>
+        </li>
+        <?php for ($p = 1; $p <= $pages; $p++): ?>
+          <li class="page-item <?php echo $p === $page ? 'active' : ''; ?>">
+            <a class="page-link" href="?page=<?php echo $p; ?>"><?php echo $p; ?></a>
+          </li>
+        <?php endfor; ?>
+        <li class="page-item <?php echo $page >= $pages ? 'disabled' : ''; ?>">
+          <a class="page-link" href="?page=<?php echo min($pages, $page + 1); ?>">Next</a>
+        </li>
+      </ul>
+    </nav>
   </div>
 
   <!-- View Modal -->

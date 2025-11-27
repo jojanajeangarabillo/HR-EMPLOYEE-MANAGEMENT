@@ -502,20 +502,28 @@ render_page:
       flex-direction: column;
     }
 
+    .main-content-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
     .main-content-header h1 {
-      padding: 25px 30px;
       margin: 0;
       font-size: 2rem;
-      margin-bottom: 40px;
       color: #1E3A8A;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
 
     /* --- TABLE & FILTER STYLING --- */
     .table-container {
       max-width: 1220px;
       margin: 0 auto;
-
-
     }
 
     .controls-bar {
@@ -678,7 +686,7 @@ render_page:
   <!-- MAIN CONTENT -->
   <div class="main-content">
     <div class="main-content-header">
-      <h1>Employee Requests</h1>
+      <h1><i class="fa-solid fa-square-check"></i> Employee Requests</h1>
     </div>
 
 
@@ -700,7 +708,7 @@ render_page:
       <?php unset($_SESSION['flash_error']); ?>
     <?php endif; ?>
 
-    <div class="table-container">
+    <div class="table-container" style="margin-top:10px;">
       <div class="controls-bar">
         <div class="search-box">
           <input type="text" id="searchInput" placeholder="Search requests..." onkeyup="filterTable()">

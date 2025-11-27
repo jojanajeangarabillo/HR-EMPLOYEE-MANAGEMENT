@@ -126,7 +126,8 @@ body {
 /* Content area spacing */
 .main-content { margin-left:230px !important; padding: var(--space-6) var(--space-5) !important; min-height:100vh; display:block; }
 .job-postings-container { margin-left:230px !important; padding: var(--space-6) var(--space-5) !important; min-height:100vh; }
-.main-content-header h1 { color: var(--primary); font-weight:700; margin-bottom: var(--space-6); }
+.main-content-header { display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-4); padding-bottom: var(--space-3); border-bottom:1px solid #e5e7eb; }
+.main-content-header h1 { color: var(--primary); font-weight:700; margin:0; display:flex; align-items:center; gap:10px; }
 
 /* Cards */
 .card { border:none; border-radius: var(--radius); box-shadow: var(--shadow); }
@@ -137,6 +138,8 @@ body {
 .table { border-collapse: collapse; border-radius: var(--radius); overflow: hidden; }
 .table th, .table td { padding: var(--space-4) var(--space-5); vertical-align: middle; }
 .table thead { background-color: #e5edfb; }
+/* Common table container spacing */
+.table-container { margin-top: var(--space-3); }
 
 /* Buttons */
 .btn { border-radius: 10px; padding: 10px 16px; }

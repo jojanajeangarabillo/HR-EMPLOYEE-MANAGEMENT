@@ -299,7 +299,9 @@ $nextYear = $month === 12 ? $year + 1 : $year;
 
   <!-- MAIN CONTENT -->
   <div class="main-content">
-    <h1>Manager Calendar</h1>
+    <div class="main-content-header">
+      <h1><i class="fa-solid fa-calendar-days"></i> Manager Calendar</h1>
+    </div>
 
     <form method="GET" class="d-flex align-items-end mb-3" style="gap:12px;">
       <div>

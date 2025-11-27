@@ -463,11 +463,8 @@ if (isset($_GET['export']) && $_GET['export'] == 'pdf') {
             flex-direction: column;
         }
 
-        .main-content h1 {
-            color: #1E3A8A;
-            margin-bottom: 20px;
-            margin-left: 10px;
-        }
+    .main-content-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid #e5e7eb; }
+    .main-content-header h1 { color: #1E3A8A; margin:0; display:flex; align-items:center; gap:10px; }
     </style>
 
 
@@ -499,7 +496,9 @@ if (isset($_GET['export']) && $_GET['export'] == 'pdf') {
 
     <main class="main-content">
         <div class="container-fluid p-4">
-            <h1><i class="fa-solid fa-chart-column"></i> Manager Reports</h1>
+            <div class="main-content-header">
+                <h1><i class="fa-solid fa-chart-column"></i> Manager Reports</h1>
+            </div>
 
             <!-- Filters Card -->
             <div class="card mb-4 shadow-sm border-0">

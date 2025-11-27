@@ -277,14 +277,14 @@ $icons = [
             padding: 40px;
         }
 
-        .job-header {
+        .main-content-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 25px;
         }
 
-        .job-header h2 {
+        .main-content-header h2 {
             font-size: 26px;
             font-weight: 700;
             color: #1f3c88;
@@ -315,7 +315,7 @@ $icons = [
     </div>
 
     <main class="job-postings-container">
-        <div class="job-header">
+        <div class="main-content-header">
             <h2><i class="fa-solid fa-briefcase"></i> Job Posting</h2>
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#jobModal">+ Add New Job</button>
         </div>

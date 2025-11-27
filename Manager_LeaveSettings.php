@@ -293,7 +293,9 @@ $icons = [
 
   <!-- MAIN CONTENT -->
   <div class="main-content">
-    <h2><i class="fa-solid fa-gear"></i> Leave Settings</h2>
+    <div class="main-content-header">
+      <h1><i class="fa-solid fa-gear"></i> Leave Settings</h1>
+    </div>
 
     <!-- Enhanced Leave Form Container -->
     <div class="card shadow-sm p-4 mb-5"
