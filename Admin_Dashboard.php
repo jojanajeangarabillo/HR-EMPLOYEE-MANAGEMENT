@@ -10,8 +10,8 @@ $applicants = 0;
 $pendingApplicants = 0;
 
 // Fetch admin name
-$adminnameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin' LIMIT 1");
-$adminname = ($adminnameQuery && $row = $adminnameQuery->fetch_assoc()) ? $row['fullname'] : 'Admin';
+$adminnameQuery = $conn->query("SELECT fullname FROM user WHERE sub_role = 'Human Resource (HR) Admin' LIMIT 1");
+$adminname = ($adminnameQuery && $row = $adminnameQuery->fetch_assoc()) ? $row['fullname'] : 'Human Resource (HR) Admin';
 
 // Count Employees
 $employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM employee");
@@ -534,7 +534,9 @@ $monthlyHires = $conn->query("
     <!-- Admin Sidebar -->
     <div class="sidebar">
         <div class="sidebar-logo">
+             <a href="Admin_Profile.php" class="sidebar_logo">
             <img src="Images/hospitallogo.png" alt="Hospital Logo">
+             </a>
         </div>
         <div class="sidebar-name">
             <p><?php echo "Welcome Admin, $adminname"; ?></p>

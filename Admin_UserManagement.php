@@ -14,8 +14,8 @@ $error_msg = "";
 $success_msg = "";
 
 // Fetch admin name
-$adminnameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin' LIMIT 1");
-$adminname = ($adminnameQuery && $row = $adminnameQuery->fetch_assoc()) ? $row['fullname'] : 'Admin';
+$adminnameQuery = $conn->query("SELECT fullname FROM user WHERE sub_role = 'Human Resource (HR) Admin' LIMIT 1");
+$adminname = ($adminnameQuery && $row = $adminnameQuery->fetch_assoc()) ? $row['fullname'] : 'Human Resource (HR) Admin';
 
 // --- AJAX: Return Positions based on Department --- //
 if (isset($_GET['ajax']) && $_GET['ajax'] === 'positions' && isset($_GET['deptID'])) {
@@ -363,6 +363,46 @@ body {
     background-color: var(--light); 
     color: var(--dark);
     line-height: 1.6;
+}
+
+/* Specific targeting for fullname and email fields */
+#addUserModal input[name="fullname"],
+#addUserModal input[name="email"],
+#editUserModal input[name="fullname"],
+#editUserModal input[name="email"] {
+    height: 48px;
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    border: 1px solid var(--gray-300);
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+/* Make other fields match the same size */
+#addUserModal .form-control,
+#addUserModal .form-select,
+#editUserModal .form-control,
+#editUserModal .form-select {
+    height: 48px;
+    min-height: 48px;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    border-radius: 10px;
+    border: 1px solid var(--gray-300);
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+/* Ensure consistent focus states */
+#addUserModal .form-control:focus,
+#addUserModal .form-select:focus,
+#editUserModal .form-control:focus,
+#editUserModal .form-select:focus {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
 }
 
 .main-content { 

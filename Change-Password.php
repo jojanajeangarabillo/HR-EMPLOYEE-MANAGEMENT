@@ -2,21 +2,24 @@
 require 'admin/db.connect.php';
 session_start(); 
 
+// Initialize messages
+$error_msg = "";
+$success_msg = "";
+
 if (isset($_POST['change_password'])) {
     $newPass = $_POST['newPass'];
     $confirmPass = $_POST['confirmPass'];
     $currentPass = $_POST['currentPass'] ?? null;
 
-    
     $token = $_GET['token'] ?? null;
 
     if ($newPass !== $confirmPass) {
-        echo "<script>alert('Passwords do not match.');</script>";
+        $error_msg = "Passwords do not match.";
     } elseif (strlen($newPass) < 8) {
-        echo "<script>alert('Password must be at least 8 characters.');</script>";
+        $error_msg = "Password must be at least 8 characters.";
     } else {
-       
         if ($token) {
+            // Token-based password reset
             $stmt = $conn->prepare("SELECT email FROM user WHERE reset_token=? AND token_expiry>NOW()");
             $stmt->bind_param("s", $token);
             $stmt->execute();
@@ -29,45 +32,63 @@ if (isset($_POST['change_password'])) {
 
                 $update = $conn->prepare("UPDATE user SET password=?, reset_token=NULL, token_expiry=NULL WHERE email=?");
                 $update->bind_param("ss", $hashed, $email);
-                $update->execute();
-
-                echo "<script>alert('Password changed successfully!');window.location='Login.php';</script>";
+                
+                if ($update->execute()) {
+                    $success_msg = "Password changed successfully!";
+                    // Redirect after 2 seconds to show the success message
+                    echo "<script>
+                        setTimeout(function() {
+                            window.location.href = 'Login.php';
+                        }, 2000);
+                    </script>";
+                } else {
+                    $error_msg = "Error updating password. Please try again.";
+                }
             } else {
-                echo "<script>alert('Invalid or expired reset link.');</script>";
+                $error_msg = "Invalid or expired reset link.";
             }
-        } 
-        
-        else {
-            
+        } else {
+            // Regular password change (user is logged in)
             $email = $_SESSION['email'] ?? null;
 
             if (!$email) {
-                echo "<script>alert('User not logged in.');window.location='Login.php';</script>";
-                exit;
-            }
-
-            
-            $check = $conn->prepare("SELECT password FROM user WHERE email=?");
-            $check->bind_param("s", $email);
-            $check->execute();
-            $result = $check->get_result();
-            $user = $result->fetch_assoc();
-
-            if (!password_verify($currentPass, $user['password'])) {
-                echo "<script>alert('Current password is incorrect.');</script>";
+                $error_msg = "User not logged in.";
+                echo "<script>
+                    setTimeout(function() {
+                        window.location.href = 'Login.php';
+                    }, 2000);
+                </script>";
             } else {
-                $hashed = password_hash($newPass, PASSWORD_DEFAULT);
-                $update = $conn->prepare("UPDATE user SET password=? WHERE email=?");
-                $update->bind_param("ss", $hashed, $email);
-                $update->execute();
-                echo "<script>alert('Password changed successfully!');window.location='Login.php';</script>";
+                $check = $conn->prepare("SELECT password FROM user WHERE email=?");
+                $check->bind_param("s", $email);
+                $check->execute();
+                $result = $check->get_result();
+                $user = $result->fetch_assoc();
+
+                if (!password_verify($currentPass, $user['password'])) {
+                    $error_msg = "Current password is incorrect.";
+                } else {
+                    $hashed = password_hash($newPass, PASSWORD_DEFAULT);
+                    $update = $conn->prepare("UPDATE user SET password=? WHERE email=?");
+                    $update->bind_param("ss", $hashed, $email);
+                    
+                    if ($update->execute()) {
+                        $success_msg = "Password changed successfully!";
+                        // Redirect after 2 seconds to show the success message
+                        echo "<script>
+                            setTimeout(function() {
+                                window.location.href = 'Login.php';
+                            }, 2000);
+                        </script>";
+                    } else {
+                        $error_msg = "Error updating password. Please try again.";
+                    }
+                }
             }
         }
     }
 }
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -76,36 +97,134 @@ if (isset($_POST['change_password'])) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Change Password</title>
-  <link rel="stylesheet" href="applicant.css">
-  
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
 
   <style>
-    .error-msg {
-      color: red;
-      margin-top: 10px;
+    :root {
+      --primary-blue: #1E3A8A;
+      --light-blue: #F5F8FF;
+      --border-color: #D9D9D9;
+      --text-dark: #333333;
+      --white: #FFFFFF;
+      --success-green: #059669;
+      --success-light: #D1FAE5;
+      --success-border: #10B981;
+      --error-red: #DC2626;
+      --error-light: #FEF2F2;
+      --error-border: #EF4444;
     }
 
-    .success-msg {
-      color: green;
-      margin-top: 10px;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    /*  Eye icon styling */
+    body.login-body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--light-blue);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-bar {
+      background-color: var(--primary-blue);
+      padding: 1.5rem 2rem;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .logo-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-header img {
+      height: 60px;
+      width: auto;
+    }
+
+    .top-bar-text h1 {
+      font-weight: 700;
+      font-size: 1.5rem;
+      margin: 0;
+      color: var(--white);
+      line-height: 1.2;
+    }
+
+    .main-content {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .login-section {
+      background-color: var(--white);
+      width: 100%;
+      max-width: 500px;
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .login-input h1 {
+      color: var(--primary-blue);
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      font-size: 1.75rem;
+    }
+
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .input-group label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--text-dark);
+      font-size: 0.95rem;
+    }
+
     .input-container {
       position: relative;
     }
 
+    .input-container input {
+      width: 100%;
+      padding: 0.875rem 3rem 0.875rem 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      background-color: var(--light-blue);
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .input-container input:focus {
+      outline: none;
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    }
+
     .show-pass {
       position: absolute;
-      right: 10px;
+      right: 1rem;
       top: 50%;
       transform: translateY(-50%);
       cursor: pointer;
       color: #555;
+      font-size: 1rem;
     }
 
-   
     .fa-eye {
       display: none;
     }
@@ -114,31 +233,172 @@ if (isset($_POST['change_password'])) {
       display: inline;
     }
 
-body.login-body {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-}
+    .confirm-button {
+      margin: 2rem 0 1rem;
+    }
 
-.main-content .login-section{
-    margin-top: -70px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #F5F8FF;
-    width: 824px;
-    height: 450px;
-    border-radius: 35px;
-}
+    .confirm-button button {
+      width: 100%;
+      background-color: var(--primary-blue);
+      color: var(--white);
+      border: none;
+      padding: 0.875rem;
+      border-radius: 10px;
+      font-weight: 500;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'Poppins', sans-serif;
+    }
 
-/* Fix center alignment for pages without sidebar */
-body.login-body .main-content {
-    margin-left: 0 !important;
-    padding: 0 !important;
-    display: flex !important;
-    justify-content: center;
-    align-items: center;
-}
+    .confirm-button button:hover {
+      background-color: #172B69;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+    }
+
+    /* Enhanced Error Message Styling */
+    .error-msg {
+      color: var(--error-red);
+      margin: 1rem 0;
+      padding: 1rem 1rem 1rem 3.5rem;
+      background-color: var(--error-light);
+      border-radius: 12px;
+      border: 1px solid var(--error-border);
+      font-size: 0.9rem;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(220, 38, 38, 0.1);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .error-msg::before {
+      content: '\f06a';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      color: var(--error-red);
+    }
+
+    /* Enhanced Success Message Styling */
+    .success-msg {
+      color: var(--success-green);
+      margin: 1rem 0;
+      padding: 1rem 1rem 1rem 3.5rem;
+      background-color: var(--success-light);
+      border-radius: 12px;
+      border: 1px solid var(--success-border);
+      font-size: 0.9rem;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.1);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    .success-msg::before {
+      content: '\f058';
+      font-family: 'Font Awesome 6 Free';
+      font-weight: 900;
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      color: var(--success-green);
+      animation: checkmark 0.5s ease-in-out;
+    }
+
+    /* Slide in animation for messages */
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Checkmark animation */
+    @keyframes checkmark {
+      0% {
+        transform: translateY(-50%) scale(0);
+        opacity: 0;
+      }
+      50% {
+        transform: translateY(-50%) scale(1.2);
+      }
+      100% {
+        transform: translateY(-50%) scale(1);
+        opacity: 1;
+      }
+    }
+
+    /* Success message with progress bar */
+    .success-msg.with-progress {
+      overflow: hidden;
+    }
+
+    .success-msg.with-progress::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--success-green), #34D399);
+      animation: progress 2s linear;
+    }
+
+    @keyframes progress {
+      from {
+        width: 100%;
+      }
+      to {
+        width: 0%;
+      }
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 576px) {
+      .main-content {
+        padding: 1rem;
+      }
+      
+      .login-section {
+        padding: 2rem 1.5rem;
+      }
+      
+      .top-bar {
+        padding: 1rem;
+      }
+      
+      .logo-header img {
+        height: 50px;
+      }
+      
+      .top-bar-text h1 {
+        font-size: 1.25rem;
+      }
+
+      .success-msg,
+      .error-msg {
+        padding: 0.875rem 0.875rem 0.875rem 3rem;
+        font-size: 0.85rem;
+      }
+
+      .success-msg::before,
+      .error-msg::before {
+        left: 0.875rem;
+        font-size: 1.1rem;
+      }
+    }
   </style>
 </head>
 
@@ -153,11 +413,10 @@ body.login-body .main-content {
     </div>
   </header>
 
- 
   <main class="main-content">
     <section class="login-section">
       <form class="login-input" method="POST">
-        <h1 style="font-size: 40px;"><b>Change Password</b></h1>
+        <h1>Change Password</h1>
 
         <!-- Current Password -->
         <div class="input-group">
@@ -192,15 +451,16 @@ body.login-body .main-content {
         <!-- Confirm Button -->
         <div class="confirm-button">
           <button type="submit" name="change_password">
-            <i class="fa-solid fa-right-to-bracket"></i> Confirm
+            <i class="fa-solid fa-key"></i> Confirm
           </button>
         </div>
 
         <?php if (!empty($error_msg)): ?>
         <div class="error-msg"><?php echo $error_msg; ?></div>
         <?php endif; ?>
+        
         <?php if (!empty($success_msg)): ?>
-        <div class="success-msg"><?php echo $success_msg; ?></div>
+        <div class="success-msg with-progress"><?php echo $success_msg; ?></div>
         <?php endif; ?>
       </form>
     </section>
@@ -217,8 +477,6 @@ body.login-body .main-content {
       const isPassword = input.type === "password";
       input.type = isPassword ? "text" : "password";
 
-      
-     
       if (isPassword) {
         eyeSlash.style.display = "none";
         eye.style.display = "inline";

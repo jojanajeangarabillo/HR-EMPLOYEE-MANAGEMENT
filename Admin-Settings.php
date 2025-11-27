@@ -11,9 +11,9 @@ $logoImg = "";
 $workWithUs = "";
 $msg = "";
 
-// GET ADMIN NAME
-$adminQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin' LIMIT 1");
-$adminname = ($adminQuery && $row = $adminQuery->fetch_assoc()) ? $row['fullname'] : 'Admin';
+// Fetch admin name
+$adminnameQuery = $conn->query("SELECT fullname FROM user WHERE sub_role = 'Human Resource (HR) Admin' LIMIT 1");
+$adminname = ($adminnameQuery && $row = $adminnameQuery->fetch_assoc()) ? $row['fullname'] : 'Human Resource (HR) Admin';
 
 // GET EXISTING SETTINGS
 $settingsQuery = $conn->query("SELECT * FROM system_settings LIMIT 1");

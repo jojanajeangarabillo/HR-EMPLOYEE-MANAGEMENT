@@ -99,9 +99,172 @@ if (isset($_POST['register'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Applicant Registration</title>
-    <link rel="stylesheet" href="applicant.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
+        :root {
+            --primary-blue: #1E3A8A;
+            --light-blue: #F5F8FF;
+            --border-color: #D9D9D9;
+            --text-dark: #333333;
+            --white: #FFFFFF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body.login-body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-blue);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-bar {
+            background-color: var(--primary-blue);
+            padding: 1.5rem 2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-header img {
+            height: 60px;
+            width: auto;
+        }
+
+        .top-bar-text h1 {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--white);
+            line-height: 1.2;
+        }
+
+        .top-bar-text h4 {
+            font-weight: 300;
+            font-size: 0.9rem;
+            margin: 0;
+            color: var(--white);
+            opacity: 0.9;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .login-section {
+            background-color: var(--white);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .login-input h1 {
+            color: var(--primary-blue);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            font-size: 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-dark);
+            font-size: 0.95rem;
+        }
+
+        .input-container {
+            position: relative;
+        }
+
+        .input-container input {
+            width: 100%;
+            padding: 0.875rem 1rem 0.875rem 3rem;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background-color: var(--light-blue);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .input-container input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+
+        .input-container .fa-solid {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-blue);
+            font-size: 1rem;
+        }
+
+        .register-button {
+            margin: 2rem 0 1rem;
+        }
+
+        .register-button button {
+            width: 100%;
+            background-color: var(--primary-blue);
+            color: var(--white);
+            border: none;
+            padding: 0.875rem;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .register-button button:hover {
+            background-color: #172B69;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+        }
+
+        .error-msg {
+            color: #DC2626;
+            margin-top: 10px;
+            padding: 0.75rem;
+            background-color: #FEF2F2;
+            border-radius: 8px;
+            border-left: 4px solid #DC2626;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -114,33 +277,71 @@ if (isset($_POST['register'])) {
             justify-content: center;
             align-items: center;
         }
+
         .modal-content {
-            background-color: #fff;
-            padding: 30px;
-            border-radius: 10px;
+            background-color: var(--white);
+            padding: 2rem;
+            border-radius: 15px;
             text-align: center;
             max-width: 400px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
-        .modal-content h2 { color: #333; }
-        .close-btn {
-            background-color: #007bff;
-            color: #fff;
-            padding: 10px 20px;
-            border: none;
-            margin-top: 15px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .error-msg { color: red; margin-top: 10px; }
 
-        input[type="text"]  {
-        width: 500px;   
-        padding: 16px 16px 16px 45px;
-        border-radius: 10px;
-        border: 1px solid #D9D9D9;
-        font-family: "Roboto", sans-serif;
-        font-size: 16px;
-    }
+        .modal-content h2 {
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .modal-content p {
+            color: var(--text-dark);
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .close-btn {
+            background-color: var(--primary-blue);
+            color: var(--white);
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .close-btn:hover {
+            background-color: #172B69;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 576px) {
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .login-section {
+                padding: 2rem 1.5rem;
+            }
+            
+            .top-bar {
+                padding: 1rem;
+            }
+            
+            .logo-header img {
+                height: 50px;
+            }
+            
+            .top-bar-text h1 {
+                font-size: 1.25rem;
+            }
+            
+            .login-input h1 {
+                font-size: 1.75rem;
+            }
+        }
     </style>
 </head>
 <body class="login-body">
@@ -157,23 +358,27 @@ if (isset($_POST['register'])) {
     <main class="main-content">
         <section class="login-section">
             <form class="login-input" method="POST">
-                <h1 style="font-size: 50px;"><b>Register</b></h1>
+                <h1>Register</h1>
 
-                <label for="fullname">Full Name</label>
-                <div class="input-container">
-                    <i class="fa-solid fa-user"></i>
-                    <input type="text" name="fullname" id="fullname" placeholder="Enter your Full Name" required>
+                <div class="input-group">
+                    <label for="fullname">Full Name</label>
+                    <div class="input-container">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" name="fullname" id="fullname" placeholder="Enter your Full Name" required>
+                    </div>
                 </div>
 
-                <label for="email">Email</label>
-                <div class="input-container">
-                    <i class="fa-solid fa-envelope"></i>
-                    <input type="email" name="email" id="email" placeholder="Enter your Email" required>
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <div class="input-container">
+                        <i class="fa-solid fa-envelope"></i>
+                        <input type="email" name="email" id="email" placeholder="Enter your Email" required>
+                    </div>
                 </div>
 
                 <div class="register-button">
                     <button type="submit" name="register">
-                        <i class="fa-solid fa-right-to-bracket"></i> Register
+                        <i class="fa-solid fa-user-plus"></i> Register
                     </button>
                 </div>
 
@@ -194,10 +399,11 @@ if (isset($_POST['register'])) {
 
     <script>
     function showModal() {
-    document.getElementById("successModal").style.display = "flex";
+        document.getElementById("successModal").style.display = "flex";
     }
+    
     function closeModal() {
-    document.getElementById("successModal").style.display = "none";
+        document.getElementById("successModal").style.display = "none";
     }
 
     // Only show modal if registration actually succeeded and POST request was made
@@ -205,7 +411,5 @@ if (isset($_POST['register'])) {
     showModal();
     <?php endif; ?>
     </script>
-
-
 </body>
 </html>

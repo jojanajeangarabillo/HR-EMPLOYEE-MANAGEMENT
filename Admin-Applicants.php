@@ -2,10 +2,9 @@
 session_start();
 require 'admin/db.connect.php';
 
-$adminanmeQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin'");
-if ($adminanmeQuery && $row = $adminanmeQuery->fetch_assoc()) {
-  $adminname = $row['fullname'];
-}
+// Fetch admin name
+$adminnameQuery = $conn->query("SELECT fullname FROM user WHERE sub_role = 'Human Resource (HR) Admin' LIMIT 1");
+$adminname = ($adminnameQuery && $row = $adminnameQuery->fetch_assoc()) ? $row['fullname'] : 'Human Resource (HR) Admin';
 
 $applicant_id = '';
 $fullname = '';

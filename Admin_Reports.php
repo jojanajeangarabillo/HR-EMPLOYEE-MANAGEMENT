@@ -30,9 +30,9 @@ if(isset($_GET['ajax']) && $_GET['ajax'] == 1 && isset($_GET['dept'])){
     exit; // important: stop further execution for AJAX
 }
 
-// --- Fetch admin name ---
-$adminnameQuery = $conn->query("SELECT fullname FROM user WHERE role = 'Admin' LIMIT 1");
-$adminname = ($adminnameQuery && $row = $adminnameQuery->fetch_assoc()) ? $row['fullname'] : 'Admin';
+// Fetch admin name
+$adminnameQuery = $conn->query("SELECT fullname FROM user WHERE sub_role = 'Human Resource (HR) Admin' LIMIT 1");
+$adminname = ($adminnameQuery && $row = $adminnameQuery->fetch_assoc()) ? $row['fullname'] : 'Human Resource (HR) Admin';
 
 // --- Get filters ---
 $report_type = $_GET['report'] ?? 'department-summary';
