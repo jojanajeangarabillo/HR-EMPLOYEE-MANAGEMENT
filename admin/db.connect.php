@@ -1,14 +1,21 @@
 <?php
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+
 $host = "localhost";
 $username = "root";
 $password = "";
 $database = "employee_management_db";
+$port = 3306;
 
-// Create connection
-$conn = new mysqli($host, $username, $password, $database);
-
-// Check connection
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+try {
+    $conn = new mysqli($host, $username, $password, $database, $port);
+} catch (mysqli_sql_exception $e) {
+    try {
+        // Fallback to IPv4 literal
+        $conn = new mysqli("127.0.0.1", $username, $password, $database, $port);
+    } catch (mysqli_sql_exception $e2) {
+        http_response_code(500);
+        die("Database connection failed: " . $e2->getMessage());
+    }
 }
 ?>
