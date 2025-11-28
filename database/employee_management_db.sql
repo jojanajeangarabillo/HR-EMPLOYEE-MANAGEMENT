@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 23, 2025 at 12:09 PM
+-- Generation Time: Nov 28, 2025 at 05:49 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -91,8 +91,8 @@ CREATE TABLE `applicant` (
 
 INSERT INTO `applicant` (`applicantID`, `fullName`, `position_applied`, `department`, `type_name`, `date_applied`, `contact_number`, `email_address`, `home_address`, `job_title`, `company_name`, `date_started`, `years_experience`, `in_role`, `university`, `course`, `year_graduated`, `skills`, `summary`, `status`, `hired_at`, `profile_pic`) VALUES
 ('HOS-002', 'Nelly Bousted', 'N/A', 'N/A', NULL, '2025-11-22', '0101', 'n0305933@gmail.com', 'Pasig', 'CEO', 'concentrix', '2025-11-22', 10, 'No', 'PLP', 'BSA', '2010', 'SAMPLE, SAMPLE, SAMPLE, SAMPLE, SAMPLE', 'SAMPLESAMPLESAMPLESAMPLE', 'Pending', NULL, 'applicant_HOS-002.jpg'),
-('HOS-003', 'Joepat Lacerna', 'Radiology Assistant', 'Breast Screening Department', 'Contractual', '2025-11-22', '0909', 'opat09252005@gmail.com', 'Taguig', 'Ceo', 'Microsoft', '0000-00-00', 15, '', 'PLP', 'BSN', '2010', 'sample, sample, sample, sample, sample', 'samplesamplesamplesample\r\n', 'Archived', '2025-11-22', NULL),
-('HOS-004', 'Jean Baglan', '', '', NULL, '2025-11-22', '', 'garabillo_jojanajean@plpasig.edu.ph', '', NULL, '', '0000-00-00', NULL, '', '', '', NULL, '', '', 'Pending', NULL, NULL);
+('HOS-003', 'Joepat Lacerna', 'Radiology Assistant', 'Breast Screening Department', 'Contractual', '2025-11-25', '', 'opat09252005@gmail.com', '', NULL, '', '0000-00-00', NULL, '', 'Harvard', 'BSN', '2010', '', '', 'Archived', '2025-11-25', 'applicant_HOS-003.jpg'),
+('HOS-004', 'Amihan Dimaguiba', 'Radiology Assistant', 'Breast Screening Department', 'Contractual', '2025-11-27', '', 'ruberducky032518@gmail.com', '', 'CEO', 'concentrix', '0000-00-00', 10, '', 'PLP', 'BSN', '2010', 'SAMPLE, SAMPLE, SAMPLE, SAMPLE, SAMPLE', 'asdfghj', 'Archived', '2025-11-28', 'applicant_HOS-004.jpg');
 
 -- --------------------------------------------------------
 
@@ -180,7 +180,12 @@ INSERT INTO `department` (`deptID`, `deptName`) VALUES
 (9, 'Hematology Department'),
 (10, 'Human Resources (HR) Department'),
 (15, 'IT Department'),
-(16, 'Utility Department');
+(17, 'Finance Department'),
+(18, 'Sales and Operation Department'),
+(19, 'Warehouse and Supply Department'),
+(20, 'Records Management Department'),
+(21, 'Medical and Health Services Department'),
+(22, 'Marketing Department');
 
 -- --------------------------------------------------------
 
@@ -217,7 +222,6 @@ INSERT INTO `employee` (`empID`, `fullname`, `department`, `position`, `type_nam
 ('EMP-004', 'Jhanna Jaroda', 'Human Resources (HR) Department', 'Recruitment Manager', 'Full Time', 'jaroda_jhanna_rhaynne@plpasig.edu.ph', '', '', NULL, NULL, '', '', '', '', '', NULL, '2025-11-18'),
 ('EMP-005', 'Shane Ella Cacho', 'Human Resources (HR) Department', 'Training and Development Coordinator', 'Full Time', 'cacho_shaneellamae@plpasig.edu.ph', '', '', NULL, NULL, '', '', '', '', '', NULL, '2025-11-18'),
 ('EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', 'Full Time', 'gutierrez_jodielynn@plpasig.edu.ph', 'Pasig\r\n', '0303', '2001-11-24', '', '015', '', '', '', '', 'employee_EMP-006.jpg', '2025-11-18'),
-('EMP-007', 'Joepat Lacerna', 'Breast Screening Department', 'Radiology Assistant', 'Contractual', 'opat09252005@gmail.com', 'Taguig', '0909', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-22'),
 ('EMP-009', 'Carlos Mendoza', 'Cardiology Department', 'Cardiac Technologist', 'Full Time', 'carlos_mendoza@plpasig.edu.ph', 'Pasig City', '09171234567', '1990-03-15', 'Male', '09981234567', '111-2222-333', '444-5555-666', '777-8888-999', '1234-5678-9012', 'employee_EMP-009.jpg', '2025-11-20'),
 ('EMP-011', 'Miguel Santos', 'Utility Department', 'Utility Head', 'Contractual', 'miguel_santos@plpasig.edu.ph', 'Taguig', '09081239876', '1985-01-20', 'Male', '09221239876', '333-4444-555', '666-7777-888', '999-0000-111', '6789-1234-5678', 'employee_EMP-011.jpg', '2025-11-21'),
 ('EMP-012', 'Patricia Gomez', 'Gastroenterology Department', 'Endoscopy Nurse', 'Regular', 'patricia_gomez@plpasig.edu.ph', 'Quezon City', '09273451234', '1996-05-02', 'Female', '09573451234', '444-5555-666', '777-8888-999', '000-1111-222', '9876-5432-1011', 'employee_EMP-012.jpg', '2025-11-21'),
@@ -246,7 +250,16 @@ INSERT INTO `employee` (`empID`, `fullname`, `department`, `position`, `type_nam
 ('EMP-036', 'Daniel Reyes', 'Elderly Services (Geriatrics)', 'Geriatric Nurse', 'Full Time', 'daniel_reyes@plpasig.edu.ph', 'Pasig', '09881234567', '1988-11-11', 'Male', '09881239876', '888-999-000', '111-222-333', '444-555-666', '890-123-456', 'employee_EMP-036.jpg', '2025-11-22'),
 ('EMP-037', 'Angela Santos', 'ENT Department', 'Audiologist', 'Contractual', 'angela_santos@plpasig.edu.ph', 'Quezon City', '09991234567', '1991-05-20', 'Female', '09991239876', '999-000-111', '222-333-444', '555-666-777', '901-234-567', 'employee_EMP-037.jpg', '2025-11-22'),
 ('EMP-038', 'Luis Fernando Cruz', 'Utility Department', 'Utility Head', 'Part Time', 'luis_cruz@plpasig.edu.ph', 'Taguig', '09011234567', '1985-01-15', 'Male', '09011239876', '111-222-333', '444-555-666', '777-888-999', '012-345-678', 'employee_EMP-038.jpg', '2025-11-22'),
-('EMP-039', 'Jean Garabillo', 'Human Resources (HR) Department', 'HR Director', 'Full Time', 'jojanajeangarabillo@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'employee_EMP-039.jpg', '2025-11-23');
+('EMP-039', 'Jean Garabillo', 'Human Resources (HR) Department', 'HR Director', 'Full Time', 'jojanajeangarabillo@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'employee_EMP-039.jpg', '2025-11-23'),
+('EMP-041', 'Lark Bolotaolo', 'Sales and Operation Department', 'Point of Sales Admin', 'Full Time', 'bolotaolo_lark@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24'),
+('EMP-042', 'Marvin Gallardo', 'Records Management Department', 'Document Management Admin', 'Full Time', 'gallardo_marvin@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-25'),
+('EMP-043', 'Ariuz Dean Guerrero', 'Medical and Health Services Department', 'Patient Management Admin', 'Full Time', 'guerrero_ariuzdean@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-25'),
+('EMP-044', 'Klarenz Cobie O. Manrique', 'Finance Department', 'Payroll Admin', 'Full Time', 'manrique_klarenzcobie@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-25'),
+('EMP-045', 'Joepat Lacerna', 'Breast Screening Department', 'Radiology Assistant', 'Contractual', 'opat09252005@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'employee_EMP-045.jpeg', '2025-11-25'),
+('EMP-046', 'Patricia Swing', 'Records Management Department', 'Document Management Admin', 'Full Time', 'pam066198@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-27'),
+('EMP-047', 'Jojana Garabillo', 'Human Resources (HR) Department', 'Human Resource (HR) Admin', 'Regular', 'garabillo_jojanajean@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-27'),
+('EMP-048', 'Amihan Dimaguiba', 'Breast Screening Department', 'Radiology Assistant', 'Contractual', 'ruberducky032518@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'employee_EMP-048.png', '2025-11-28'),
+('EMP-049', 'Leonor Rivera', 'Records Management Department', 'Document Management Admin', 'Full Time', 'noonajeogyo@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-28');
 
 -- --------------------------------------------------------
 
@@ -296,8 +309,7 @@ CREATE TABLE `general_request` (
 --
 
 INSERT INTO `general_request` (`request_id`, `empID`, `fullname`, `department`, `position`, `email`, `request_type_id`, `reason`, `status`, `action_by`, `requested_at`, `pickup_date`) VALUES
-(2, 'EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', 'gutierrez_jodielynn@plpasig.edu.ph', 2, 'awadrgbk', 'Approved', 'Rhoanne Nicole Antonio', '2025-11-23 15:03:02', NULL),
-(5, 'EMP-007', 'Joepat Lacerna', 'Breast Screening Department', 'Radiology Assistant', 'opat09252005@gmail.com', 2, 'asd', 'Pending', NULL, '2025-11-23 18:48:09', NULL);
+(2, 'EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', 'gutierrez_jodielynn@plpasig.edu.ph', 2, 'awadrgbk', 'Approved', 'Rhoanne Nicole Antonio', '2025-11-23 15:03:02', NULL);
 
 -- --------------------------------------------------------
 
@@ -351,7 +363,7 @@ CREATE TABLE `leave_pay_categories` (
 INSERT INTO `leave_pay_categories` (`id`, `category_name`) VALUES
 (1, 'Paid'),
 (2, 'Unpaid'),
-(3, 'Partially Paid');
+(3, 'Partially');
 
 -- --------------------------------------------------------
 
@@ -387,10 +399,11 @@ CREATE TABLE `leave_request` (
 --
 
 INSERT INTO `leave_request` (`request_id`, `empID`, `fullname`, `department`, `position`, `type_name`, `email_address`, `e_signature`, `request_type_id`, `request_type_name`, `reason`, `status`, `action_by`, `requested_at`, `leave_type_id`, `pay_category_id`, `leave_type_name`, `from_date`, `to_date`, `duration`) VALUES
-(35, 'EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', 'Full Time', 'gutierrez_jodielynn@plpasig.edu.ph', '', 1, 'Leave', 'asd', 'Approved', 'Rhoanne Nicole Antonio', '2025-11-23 16:31:45', 3, 1, 'Maternity Leave', '2025-11-24', '2025-11-27', 4),
-(38, 'EMP-007', 'Joepat Lacerna', 'Breast Screening Department', 'Radiology Assistant', 'Contractual', 'opat09252005@gmail.com', '', 1, 'Leave', 'ASDF', 'Approved', 'Rhoanne Nicole Antonio', '2025-11-23 17:20:19', 4, 1, 'Paternity Leave', '2025-11-29', '2025-12-08', 10),
-(39, 'EMP-007', 'Joepat Lacerna', 'Breast Screening Department', 'Radiology Assistant', 'Contractual', 'opat09252005@gmail.com', '', 1, 'Leave', 'xxsdcfv', 'Approved', 'Rhoanne Nicole Antonio', '2025-11-23 18:17:01', 2, 1, 'Vacation Leave', '2025-11-25', '2025-11-28', 4),
-(40, 'EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', 'Full Time', 'gutierrez_jodielynn@plpasig.edu.ph', '', 1, 'Leave', 'asdf', 'Approved', 'Rhoanne Nicole Antonio', '2025-11-23 18:18:58', 1, 1, 'Sick Leave', '2025-11-28', '2025-11-30', 3);
+(40, 'EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', 'Full Time', 'gutierrez_jodielynn@plpasig.edu.ph', '', 1, 'Leave', 'asdf', 'Approved', 'Rhoanne Nicole Antonio', '2025-11-23 18:18:58', 1, 1, 'Sick Leave', '2025-11-28', '2025-11-30', 3),
+(42, 'EMP-001', 'Rhoanne Nicole Antonio', 'Human Resources (HR) Department', 'HR Manager', 'Full Time', 'antonio_rhoannenicole@plpasig.edu.ph', '', 1, 'Leave', 'vacation', 'Pending', NULL, '2025-11-24 12:37:54', 2, 1, 'Vacation Leave', '2025-12-01', '2025-12-04', 4),
+(43, 'EMP-039', 'Jean Garabillo', 'Human Resources (HR) Department', 'HR Director', 'Full Time', 'jojanajeangarabillo@gmail.com', '', 1, 'Leave', 'asd', 'Pending', NULL, '2025-11-24 12:38:37', 2, 1, 'Vacation Leave', '2025-12-06', '2025-12-09', 4),
+(44, 'EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', 'Full Time', 'gutierrez_jodielynn@plpasig.edu.ph', '', 1, 'Leave', 'sample', 'Pending', NULL, '2025-11-25 20:18:10', 2, 1, 'Vacation Leave', '2025-12-01', '2025-12-04', 4),
+(45, 'EMP-048', 'Amihan Dimaguiba', 'Breast Screening Department', 'Radiology Assistant', 'Contractual', 'ruberducky032518@gmail.com', 'uploads/signatures/1764303076_sample-esign.png', 1, 'Leave', 'sdfghju', 'Approved', 'HR Manager', '2025-11-28 12:11:16', 2, 1, 'Vacation Leave', '2025-12-04', '2025-12-08', 5);
 
 -- --------------------------------------------------------
 
@@ -420,6 +433,13 @@ CREATE TABLE `leave_request_archive` (
   `to_date` date DEFAULT NULL,
   `duration` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `leave_request_archive`
+--
+
+INSERT INTO `leave_request_archive` (`request_id`, `empID`, `fullname`, `department`, `position`, `type_name`, `email_address`, `e_signature`, `request_type_id`, `request_type_name`, `reason`, `status`, `action_by`, `requested_at`, `leave_type_id`, `pay_category_id`, `leave_type_name`, `from_date`, `to_date`, `duration`) VALUES
+(35, 'EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', 'Full Time', 'gutierrez_jodielynn@plpasig.edu.ph', '', 1, 'Leave', 'asd', 'Approved', 'Rhoanne Nicole Antonio', '2025-11-23 16:31:45', 3, 1, 'Maternity Leave', '2025-11-24', '2025-11-27', 4);
 
 -- --------------------------------------------------------
 
@@ -611,7 +631,19 @@ INSERT INTO `position` (`positionID`, `departmentID`, `emtypeID`, `position_titl
 (88, 10, NULL, 'HR Director'),
 (89, 10, NULL, 'Recruitment Manager'),
 (92, 10, NULL, 'Training and Development Coordinator'),
-(100, 16, NULL, 'Utility Head');
+(101, 17, NULL, 'Payroll Admin'),
+(102, 17, NULL, 'Payroll Manager'),
+(103, 17, NULL, 'Payroll Officer'),
+(104, 18, NULL, 'Point of Sales Admin'),
+(105, 19, NULL, 'Inventory Admin'),
+(106, 20, NULL, 'Document Management Admin'),
+(107, 21, NULL, 'Patient Management Admin'),
+(108, 22, NULL, 'Content Management Admin'),
+(109, 10, NULL, 'Human Resource (HR) Admin'),
+(110, 15, NULL, 'IT Manager'),
+(111, 15, NULL, 'IT Associate'),
+(112, 15, NULL, 'IT Associate Jr'),
+(113, 15, NULL, 'IT Head');
 
 -- --------------------------------------------------------
 
@@ -633,9 +665,12 @@ CREATE TABLE `rejected_applications` (
 
 INSERT INTO `rejected_applications` (`id`, `applicantID`, `jobID`, `reason`, `rejected_at`) VALUES
 (94, 'HOS-002', 35, 'Qualification mismatch', '2025-11-22 06:17:32'),
-(95, 'HOS-003', 35, 'Qualification mismatch', '2025-11-22 08:45:18'),
-(96, 'HOS-003', 36, 'Qualification mismatch', '2025-11-22 08:45:21'),
-(97, 'HOS-003', 34, 'Qualification mismatch', '2025-11-22 08:45:24');
+(98, 'HOS-003', 34, 'Qualification mismatch', '2025-11-25 14:53:34'),
+(99, 'HOS-003', 36, 'Qualification mismatch', '2025-11-25 14:53:36'),
+(100, 'HOS-003', 35, 'Qualification mismatch', '2025-11-25 14:53:38'),
+(101, 'HOS-004', 36, 'Qualification mismatch', '2025-11-28 12:07:15'),
+(102, 'HOS-004', 35, 'Qualification mismatch', '2025-11-28 12:07:29'),
+(103, 'HOS-004', 34, 'Qualification mismatch', '2025-11-28 12:07:34');
 
 -- --------------------------------------------------------
 
@@ -659,7 +694,7 @@ CREATE TABLE `system_settings` (
 --
 
 INSERT INTO `system_settings` (`system_id`, `system_name`, `email`, `contact`, `about`, `cover_image`, `logo`, `work_with_us`) VALUES
-(1, 'Employee Management', 'employeemanagement@gmail.com', '09214235', 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum', 'uploads/1763771757_6921056d38950.jpg', 'uploads/1763744701_69209bbd21d7e.png', '[{\"title\":\"Meaningful Work\",\"icon\":\"fa-heart-pulse\",\"description\":\"asdfghj\"},{\"title\":\"Collaboration\",\"icon\":\"fa-clock\",\"description\":\"cxvbn\"},{\"title\":\"Innovation and Creativity\",\"icon\":\"fa-arrow-up-right-dots\",\"description\":\"gcxthjytk\"}]');
+(1, 'Employee Management', 'employeemanagement@gmail.com', '09214235', 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum', 'uploads/1764062036_692573549edfe.jpg', 'uploads/1764062036_69257354a4a91.png', '[{\"title\":\"Meaningful Work\",\"icon\":\"fa-heart-pulse\",\"description\":\"asdfghj\"},{\"title\":\"Collaboration\",\"icon\":\"fa-clock\",\"description\":\"cxvbn\"},{\"title\":\"Innovation and Creativity\",\"icon\":\"fa-arrow-up-right-dots\",\"description\":\"gcxthjytk\"}]');
 
 -- --------------------------------------------------------
 
@@ -678,7 +713,8 @@ CREATE TABLE `types_of_requests` (
 
 INSERT INTO `types_of_requests` (`id`, `request_type_name`) VALUES
 (1, 'Leave'),
-(2, 'Certificate of Employment');
+(2, 'Certificate of Employment'),
+(4, 'Training');
 
 -- --------------------------------------------------------
 
@@ -708,13 +744,20 @@ CREATE TABLE `user` (
 INSERT INTO `user` (`user_id`, `applicant_employee_id`, `email`, `password`, `role`, `fullname`, `status`, `created_at`, `profile_pic`, `reset_token`, `token_expiry`, `sub_role`) VALUES
 ('', 'ADM-001', 'admin_jojanajean@plpasig.edu.ph', '$2y$10$wXATHyunepSPHPGolMHnqe54maqVldT7WMxe3XbPB8vwvjPxehk/y', 'Admin', 'Jojana Jean', 'Active', '2025-11-07 23:53:43', NULL, '', '', NULL),
 ('', 'EMP-001', 'antonio_rhoannenicole@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Rhoanne Nicole Antonio', 'Active', '2025-10-25 10:38:47', NULL, '', '', 'HR Manager'),
+('', 'EMP-041', 'bolotaolo_lark@plpasig.edu.ph', '$2y$10$0MLZpGr8laSUPGGPig.87.Lx9ozOuApmaSDu.FI95eOjL0TMuIWNq', 'Employee', 'Lark Bolotaolo', 'Active', '2025-11-24 14:59:39', NULL, '5cb327175ef63f558eb234fff22db076', '2025-11-25 07:59:39', 'Point of Sales Admin'),
 ('USR-006', 'EMP-005', 'cacho_shaneellamae@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Shane Ella Cacho', 'Active', '2025-11-18 16:53:26', NULL, '', '', NULL),
-('', 'HOS-004', 'garabillo_jojanajean@plpasig.edu.ph', '$2y$10$hG1.dmRaChqcFACEuNI32OE/3OKb3xRfN3PQ5c6chqz.KEUSeKBvu', 'Applicant', 'Jean Baglan', 'Pending', '0000-00-00 00:00:00', NULL, '', '', NULL),
+('', 'EMP-042', 'gallardo_marvin@plpasig.edu.ph', '$2y$10$w25jPJZNJML7Xv7uyhqO.uBvBhR5DBP0nW1O7y1Y/uDYmoJT6Xdfa', 'Employee', 'Marvin Gallardo', 'Active', '2025-11-25 14:05:28', NULL, 'b66d30583006856f7bdc0c8881484e93', '2025-11-26 07:05:28', 'Document Management Admin'),
+('', 'EMP-047', 'garabillo_jojanajean@plpasig.edu.ph', '$2y$10$Hd75TeKazwdE0p.OtI2D8Oz08Ox48DLUVq1OCrXSzrGdR9fBcu0em', 'Employee', 'Jojana Garabillo', 'Active', '2025-11-27 19:56:26', NULL, '', '', 'Human Resource (HR) Admin'),
+('', 'EMP-043', 'guerrero_ariuzdean@plpasig.edu.ph', '$2y$10$2ikPbGx0woBWeBF4DCgOYOxZ22aA8Jq.Er2DCltW8o1KoYSL/LeM2', 'Employee', 'Ariuz Dean Guerrero', 'Active', '2025-11-25 14:06:50', NULL, 'ac1a506f369b9a89a5fceb698d8f393c', '2025-11-26 07:06:50', 'Patient Management Admin'),
 ('USR-007', 'EMP-006', 'gutierrez_jodielynn@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Jodie Lyn Gutierrez', 'Active', '2025-11-18 16:53:26', NULL, '', '', NULL),
 ('USR-005', 'EMP-004', 'jaroda_jhanna_rhaynne@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Jhanna Jaroda', 'Active', '2025-11-18 16:53:26', NULL, '', '', 'Recruitment Manager'),
-('', 'EMP-039', 'jojanajeangarabillo@gmail.com', '$2y$10$dpjXpB09v2hA.mid64gViusF9uTn6jf.xS4QfnPCFYTPgMCvH4cNy', 'Employee', 'Jean Garabillo', 'Active', '2025-11-23 19:06:50', NULL, '', '', 'HR Director'),
+('', 'EMP-039', 'jojanajeangarabillo@gmail.com', '$2y$10$ECd2.hwlGfvWTTP89npMUOkB8LmJ7Ers.s0uBLPKEwRzJnGLNKjT2', 'Employee', 'Jean Garabillo', 'Active', '2025-11-23 19:06:50', NULL, '', '', 'HR Director'),
+('', 'EMP-044', 'manrique_klarenzcobie@plpasig.edu.ph', '$2y$10$5EW46NwY9IMJlwdXlgeF6elvpp/ZWSI4RV8E6DCGEJvMmas.4.Aum', 'Employee', 'Klarenz Cobie O. Manrique', 'Active', '2025-11-25 14:08:06', NULL, 'e99a5dd36bab7c26537bd5b611b89270', '2025-11-26 07:08:06', 'Payroll Admin'),
 ('USR-002', 'HOS-002', 'n0305933@gmail.com', '$2y$10$uZauCbxJX84e0TSrqZ6Wp.92LcWgE5dZBSa/Se9uKgFPknRigl1ZK', 'Applicant', 'Nelly Bousted', 'Active', '2025-11-22 06:13:45', NULL, '', '', NULL),
-('', 'EMP-007', 'opat09252005@gmail.com', '$2y$10$VnVYwJ4uMtJzIx3LYUdxHuX3mQDCCQS.4cONLO1hs466gWGItDc9G', 'Employee', 'Joepat Lacerna', 'Active', '0000-00-00 00:00:00', NULL, '', '', NULL);
+('', 'EMP-049', 'noonajeogyo@gmail.com', '$2y$10$O8.H2g5cW05BEOWcZJyFyumGEG43f8PtuQBMnYchV.PHFqCF8k5Z6', 'Employee', 'Leonor Rivera', 'Active', '2025-11-28 12:14:06', NULL, '', '', 'Document Management Admin'),
+('', 'EMP-045', 'opat09252005@gmail.com', '$2y$10$Unfz75rCYF6S9R6eAnBhe.OJbSvDHHesakHf9EDfpiN9n/RMgRTie', 'Employee', 'Joepat Lacerna', 'Active', '0000-00-00 00:00:00', NULL, '', '', NULL),
+('', 'EMP-046', 'pam066198@gmail.com', '$2y$10$rn9F/gwE3LSqKaOCZ3HiOed2YUD1ZaLuEJv42dI.N2iAjMQm/y5sW', 'Employee', 'Patricia Swing', 'Active', '2025-11-27 18:51:12', NULL, '', '', 'Document Management Admin'),
+('', 'EMP-048', 'ruberducky032518@gmail.com', '$2y$10$83zATZWowUwclO8adNIGU.IXPGCVQQ.Dwn/NTTVstU0VoJogYsZAi', 'Employee', 'Amihan Dimaguiba', 'Active', '0000-00-00 00:00:00', NULL, '', '', NULL);
 
 -- --------------------------------------------------------
 
@@ -996,7 +1039,7 @@ ALTER TABLE `announcement`
 -- AUTO_INCREMENT for table `applications`
 --
 ALTER TABLE `applications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `calendar`
@@ -1008,7 +1051,7 @@ ALTER TABLE `calendar`
 -- AUTO_INCREMENT for table `department`
 --
 ALTER TABLE `department`
-  MODIFY `deptID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `deptID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `employment_type`
@@ -1038,13 +1081,13 @@ ALTER TABLE `leave_pay_categories`
 -- AUTO_INCREMENT for table `leave_request`
 --
 ALTER TABLE `leave_request`
-  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
 
 --
 -- AUTO_INCREMENT for table `leave_request_archive`
 --
 ALTER TABLE `leave_request_archive`
-  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `leave_settings`
@@ -1056,7 +1099,7 @@ ALTER TABLE `leave_settings`
 -- AUTO_INCREMENT for table `leave_types`
 --
 ALTER TABLE `leave_types`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `manager_announcement`
@@ -1068,13 +1111,13 @@ ALTER TABLE `manager_announcement`
 -- AUTO_INCREMENT for table `position`
 --
 ALTER TABLE `position`
-  MODIFY `positionID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
+  MODIFY `positionID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
 
 --
 -- AUTO_INCREMENT for table `rejected_applications`
 --
 ALTER TABLE `rejected_applications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=98;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=104;
 
 --
 -- AUTO_INCREMENT for table `system_settings`
@@ -1086,7 +1129,7 @@ ALTER TABLE `system_settings`
 -- AUTO_INCREMENT for table `types_of_requests`
 --
 ALTER TABLE `types_of_requests`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `vacancies`
