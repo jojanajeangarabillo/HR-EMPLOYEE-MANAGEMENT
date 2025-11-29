@@ -214,7 +214,7 @@ if ($hrPositionsQuery) {
 
 // Handle Edit User
 if (isset($_POST['action']) && $_POST['action'] === 'edit_user') {
-    $user_id = $_POST['user_id'];
+
     $email = $_POST['email'] ?? null;
     $empID = $_POST['applicant_employee_id'] ?? null;
     $sub_role_id = $_POST['sub_role'] ?? null;
@@ -895,8 +895,7 @@ body {
                             <td>" . date('M j, Y', strtotime($row['created_at'])) . "</td>
                             <td>
                                 <div class='action-buttons'>
-                                    <button class='btn btn-sm btn-warning editBtn' 
-                                        data-id='{$row['user_id']}' 
+                                    <button class='btn btn-sm btn-warning editBtn'  
                                         data-fullname='{$row['fullname']}' 
                                         data-email='{$row['email']}' 
                                         data-role='{$row['role']}' 
@@ -1003,7 +1002,6 @@ body {
       </div>
       <form action="" method="POST">
         <input type="hidden" name="action" value="edit_user">
-        <input type="hidden" name="user_id" id="edit_user_id">
         <input type="hidden" name="applicant_employee_id" id="edit_empid">
         <div class="modal-body">
           <div class="row g-3">
@@ -1084,7 +1082,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById("edit_email").value = btn.dataset.email;
             document.getElementById("edit_role").value = btn.dataset.role;
             document.getElementById("edit_status").value = btn.dataset.status;
-            document.getElementById("edit_user_id").value = btn.dataset.id;
             document.getElementById("edit_empid").value = btn.dataset.empid;
 
             const deptSelect = document.getElementById("edit_department");
