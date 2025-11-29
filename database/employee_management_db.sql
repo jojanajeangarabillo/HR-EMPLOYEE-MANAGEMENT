@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 28, 2025 at 03:21 PM
+-- Generation Time: Nov 29, 2025 at 03:32 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -723,7 +723,6 @@ INSERT INTO `types_of_requests` (`id`, `request_type_name`) VALUES
 --
 
 CREATE TABLE `user` (
-  `user_id` varchar(100) NOT NULL,
   `applicant_employee_id` varchar(100) DEFAULT NULL,
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
@@ -741,50 +740,50 @@ CREATE TABLE `user` (
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`user_id`, `applicant_employee_id`, `email`, `password`, `role`, `fullname`, `status`, `created_at`, `profile_pic`, `reset_token`, `token_expiry`, `sub_role`) VALUES
-('', 'EMP-019', 'anna_mendoza@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Anna Mendoza', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-001', 'antonio_rhoannenicole@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Rhoanne Nicole Antonio', 'Active', '2025-10-25 10:38:47', NULL, '', '', 'HR Manager'),
-('', 'EMP-029', 'bella_ramirez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Bella Ramirez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-041', 'bolotaolo_lark@plpasig.edu.ph', '$2y$10$0MLZpGr8laSUPGGPig.87.Lx9ozOuApmaSDu.FI95eOjL0TMuIWNq', 'Employee', 'Lark Bolotaolo', 'Active', '2025-11-24 14:59:39', NULL, '5cb327175ef63f558eb234fff22db076', '2025-11-25 07:59:39', 'Point of Sales Admin'),
-('', 'EMP-005', 'cacho_shaneellamae@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Shane Ella Cacho', 'Active', '2025-11-18 16:53:26', NULL, '', '', NULL),
-('', 'EMP-027', 'carla_santos@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Carla Santos', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-009', 'carlos_mendoza@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Carlos Mendoza', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-014', 'cheska_ramirez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Cheska Ramirez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-017', 'danica_flores@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Danica Joy Flores', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-037', 'diana_lopez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Diana Lopez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-026', 'edward_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Edward Reyes', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-036', 'fiona_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Fiona Reyes', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-042', 'gallardo_marvin@plpasig.edu.ph', '$2y$10$w25jPJZNJML7Xv7uyhqO.uBvBhR5DBP0nW1O7y1Y/uDYmoJT6Xdfa', 'Employee', 'Marvin Gallardo', 'Active', '2025-11-25 14:05:28', NULL, 'b66d30583006856f7bdc0c8881484e93', '2025-11-26 07:05:28', 'Document Management Admin'),
-('', 'EMP-047', 'garabillo_jojanajean@plpasig.edu.ph', '$2y$10$Hd75TeKazwdE0p.OtI2D8Oz08Ox48DLUVq1OCrXSzrGdR9fBcu0em', 'Employee', 'Jojana Garabillo', 'Active', '2025-11-27 19:56:26', NULL, '', '', 'Human Resource (HR) Admin'),
-('', 'EMP-021', 'george_cruz@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'George Cruz', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-043', 'guerrero_ariuzdean@plpasig.edu.ph', '$2y$10$2ikPbGx0woBWeBF4DCgOYOxZ22aA8Jq.Er2DCltW8o1KoYSL/LeM2', 'Employee', 'Ariuz Dean Guerrero', 'Active', '2025-11-25 14:06:50', NULL, 'ac1a506f369b9a89a5fceb698d8f393c', '2025-11-26 07:06:50', 'Patient Management Admin'),
-('', 'EMP-006', 'gutierrez_jodielynn@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Jodie Lyn Gutierrez', 'Active', '2025-11-18 16:53:26', NULL, '', '', NULL),
-('', 'EMP-015', 'hannah_villanueva@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Hannah Nicole Villanueva', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-031', 'helena_cruz@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Helena Cruz', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-025', 'isabel_flores@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Isabel Flores', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-004', 'jaroda_jhanna_rhaynne@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Jhanna Jaroda', 'Active', '2025-11-18 16:53:26', NULL, '', '', 'Recruitment Manager'),
-('', 'EMP-016', 'jerome_alcantara@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Jerome Alcantara', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-013', 'johnf_velasquez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'John Francis Velasquez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-039', 'jojanajeangarabillo@gmail.com', '$2y$10$ECd2.hwlGfvWTTP89npMUOkB8LmJ7Ers.s0uBLPKEwRzJnGLNKjT2', 'Employee', 'Jean Garabillo', 'Active', '2025-11-23 19:06:50', NULL, '', '', 'HR Director'),
-('', 'EMP-035', 'julian_flores@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Julian Flores', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-022', 'kevin_tan@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Kevin Tan', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-032', 'lance_tan@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Lance Tan', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-044', 'manrique_klarenzcobie@plpasig.edu.ph', '$2y$10$5EW46NwY9IMJlwdXlgeF6elvpp/ZWSI4RV8E6DCGEJvMmas.4.Aum', 'Employee', 'Klarenz Cobie O. Manrique', 'Active', '2025-11-25 14:08:06', NULL, 'e99a5dd36bab7c26537bd5b611b89270', '2025-11-26 07:08:06', 'Payroll Admin'),
-('', 'EMP-038', 'marco.alcantara@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Marco Alcantara', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-024', 'maria_deguzman@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Maria De Guzman', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-030', 'mark_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Mark Joseph Reyes', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-011', 'miguel_santos@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Miguel Santos', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'HOS-002', 'n0305933@gmail.com', '$2y$10$uZauCbxJX84e0TSrqZ6Wp.92LcWgE5dZBSa/Se9uKgFPknRigl1ZK', 'Applicant', 'Nelly Bousted', 'Active', '2025-11-22 06:13:45', NULL, '', '', NULL),
-('', 'EMP-034', 'nathan_deguzman@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Nathan De Guzman', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-049', 'noonajeogyo@gmail.com', '$2y$10$O8.H2g5cW05BEOWcZJyFyumGEG43f8PtuQBMnYchV.PHFqCF8k5Z6', 'Employee', 'Leonor Rivera', 'Active', '2025-11-28 12:14:06', NULL, '', '', 'Document Management Admin'),
-('', 'EMP-023', 'olivia_lim@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Olivia Lim', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-045', 'opat09252005@gmail.com', '$2y$10$Unfz75rCYF6S9R6eAnBhe.OJbSvDHHesakHf9EDfpiN9n/RMgRTie', 'Employee', 'Joepat Lacerna', 'Active', '0000-00-00 00:00:00', NULL, '', '', NULL),
-('', 'EMP-046', 'pam066198@gmail.com', '$2y$10$rn9F/gwE3LSqKaOCZ3HiOed2YUD1ZaLuEJv42dI.N2iAjMQm/y5sW', 'Employee', 'Patricia Swing', 'Active', '2025-11-27 18:51:12', NULL, '', '', 'Document Management Admin'),
-('', 'EMP-012', 'patricia_gomez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Patricia Gomez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-033', 'paul_lim@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Paul Lim', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-028', 'renato.villanueva@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Renato Villanueva', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-018', 'ricardo_manalo@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Ricardo Manalo', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('', 'EMP-048', 'ruberducky032518@gmail.com', '$2y$10$83zATZWowUwclO8adNIGU.IXPGCVQQ.Dwn/NTTVstU0VoJogYsZAi', 'Employee', 'Amihan Dimaguiba', 'Active', '0000-00-00 00:00:00', NULL, '', '', NULL);
+INSERT INTO `user` (`applicant_employee_id`, `email`, `password`, `role`, `fullname`, `status`, `created_at`, `profile_pic`, `reset_token`, `token_expiry`, `sub_role`) VALUES
+('EMP-019', 'anna_mendoza@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Anna Mendoza', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-001', 'antonio_rhoannenicole@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Rhoanne Nicole Antonio', 'Active', '2025-10-25 10:38:47', NULL, '', '', 'HR Manager'),
+('EMP-029', 'bella_ramirez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Bella Ramirez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-041', 'bolotaolo_lark@plpasig.edu.ph', '$2y$10$0MLZpGr8laSUPGGPig.87.Lx9ozOuApmaSDu.FI95eOjL0TMuIWNq', 'Employee', 'Lark Bolotaolo', 'Active', '2025-11-24 14:59:39', NULL, '5cb327175ef63f558eb234fff22db076', '2025-11-25 07:59:39', 'Point of Sales Admin'),
+('EMP-005', 'cacho_shaneellamae@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Shane Ella Cacho', 'Active', '2025-11-18 16:53:26', NULL, '', '', NULL),
+('EMP-027', 'carla_santos@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Carla Santos', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-009', 'carlos_mendoza@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Carlos Mendoza', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-014', 'cheska_ramirez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Cheska Ramirez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-017', 'danica_flores@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Danica Joy Flores', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-037', 'diana_lopez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Diana Lopez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-026', 'edward_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Edward Reyes', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-036', 'fiona_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Fiona Reyes', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-042', 'gallardo_marvin@plpasig.edu.ph', '$2y$10$w25jPJZNJML7Xv7uyhqO.uBvBhR5DBP0nW1O7y1Y/uDYmoJT6Xdfa', 'Employee', 'Marvin Gallardo', 'Active', '2025-11-25 14:05:28', NULL, 'b66d30583006856f7bdc0c8881484e93', '2025-11-26 07:05:28', 'Document Management Admin'),
+('EMP-047', 'garabillo_jojanajean@plpasig.edu.ph', '$2y$10$Hd75TeKazwdE0p.OtI2D8Oz08Ox48DLUVq1OCrXSzrGdR9fBcu0em', 'Employee', 'Jojana Garabillo', 'Active', '2025-11-27 19:56:26', NULL, '', '', 'Human Resource (HR) Admin'),
+('EMP-021', 'george_cruz@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'George Cruz', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-043', 'guerrero_ariuzdean@plpasig.edu.ph', '$2y$10$2ikPbGx0woBWeBF4DCgOYOxZ22aA8Jq.Er2DCltW8o1KoYSL/LeM2', 'Employee', 'Ariuz Dean Guerrero', 'Active', '2025-11-25 14:06:50', NULL, 'ac1a506f369b9a89a5fceb698d8f393c', '2025-11-26 07:06:50', 'Patient Management Admin'),
+('EMP-006', 'gutierrez_jodielynn@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Jodie Lyn Gutierrez', 'Active', '2025-11-18 16:53:26', NULL, '', '', NULL),
+('EMP-015', 'hannah_villanueva@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Hannah Nicole Villanueva', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-031', 'helena_cruz@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Helena Cruz', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-025', 'isabel_flores@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Isabel Flores', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-004', 'jaroda_jhanna_rhaynne@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Jhanna Jaroda', 'Active', '2025-11-18 16:53:26', NULL, '', '', 'Recruitment Manager'),
+('EMP-016', 'jerome_alcantara@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Jerome Alcantara', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-013', 'johnf_velasquez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'John Francis Velasquez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-039', 'jojanajeangarabillo@gmail.com', '$2y$10$ECd2.hwlGfvWTTP89npMUOkB8LmJ7Ers.s0uBLPKEwRzJnGLNKjT2', 'Employee', 'Jean Garabillo', 'Active', '2025-11-23 19:06:50', NULL, '', '', 'HR Director'),
+('EMP-035', 'julian_flores@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Julian Flores', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-022', 'kevin_tan@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Kevin Tan', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-032', 'lance_tan@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Lance Tan', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-044', 'manrique_klarenzcobie@plpasig.edu.ph', '$2y$10$5EW46NwY9IMJlwdXlgeF6elvpp/ZWSI4RV8E6DCGEJvMmas.4.Aum', 'Employee', 'Klarenz Cobie O. Manrique', 'Active', '2025-11-25 14:08:06', NULL, 'e99a5dd36bab7c26537bd5b611b89270', '2025-11-26 07:08:06', 'Payroll Admin'),
+('EMP-038', 'marco.alcantara@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Marco Alcantara', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-024', 'maria_deguzman@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Maria De Guzman', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-030', 'mark_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Mark Joseph Reyes', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-011', 'miguel_santos@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Miguel Santos', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('HOS-002', 'n0305933@gmail.com', '$2y$10$uZauCbxJX84e0TSrqZ6Wp.92LcWgE5dZBSa/Se9uKgFPknRigl1ZK', 'Applicant', 'Nelly Bousted', 'Active', '2025-11-22 06:13:45', NULL, '', '', NULL),
+('EMP-034', 'nathan_deguzman@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Nathan De Guzman', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-049', 'noonajeogyo@gmail.com', '$2y$10$O8.H2g5cW05BEOWcZJyFyumGEG43f8PtuQBMnYchV.PHFqCF8k5Z6', 'Employee', 'Leonor Rivera', 'Active', '2025-11-28 12:14:06', NULL, '', '', 'Document Management Admin'),
+('EMP-023', 'olivia_lim@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Olivia Lim', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-045', 'opat09252005@gmail.com', '$2y$10$Unfz75rCYF6S9R6eAnBhe.OJbSvDHHesakHf9EDfpiN9n/RMgRTie', 'Employee', 'Joepat Lacerna', 'Active', '0000-00-00 00:00:00', NULL, '', '', NULL),
+('EMP-046', 'pam066198@gmail.com', '$2y$10$rn9F/gwE3LSqKaOCZ3HiOed2YUD1ZaLuEJv42dI.N2iAjMQm/y5sW', 'Employee', 'Patricia Swing', 'Active', '2025-11-27 18:51:12', NULL, '', '', 'Document Management Admin'),
+('EMP-012', 'patricia_gomez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Patricia Gomez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-033', 'paul_lim@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Paul Lim', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-028', 'renato.villanueva@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Renato Villanueva', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-018', 'ricardo_manalo@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Ricardo Manalo', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-048', 'ruberducky032518@gmail.com', '$2y$10$83zATZWowUwclO8adNIGU.IXPGCVQQ.Dwn/NTTVstU0VoJogYsZAi', 'Employee', 'Amihan Dimaguiba', 'Active', '0000-00-00 00:00:00', NULL, '', '', NULL);
 
 -- --------------------------------------------------------
 
