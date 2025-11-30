@@ -30,9 +30,28 @@ if(isset($_GET['ajax']) && $_GET['ajax'] == 1 && isset($_GET['dept'])){
     exit; // important: stop further execution for AJAX
 }
 
-// Fetch admin name
-$adminnameQuery = $conn->query("SELECT fullname FROM user WHERE sub_role = 'Human Resource (HR) Admin' LIMIT 1");
-$adminname = ($adminnameQuery && $row = $adminnameQuery->fetch_assoc()) ? $row['fullname'] : 'Human Resource (HR) Admin';
+// Admin name
+$adminname = $_SESSION['fullname'] ?? "Human Resource (HR) Admin";
+$employeeID = $_SESSION['applicant_employee_id'] ?? null;
+if ($employeeID) {
+    $stmt = $conn->prepare("SELECT profile_pic FROM employee WHERE empID = ?");
+    $stmt->bind_param("s", $employeeID);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $profile_picture = !empty($row['profile_pic'])
+            ? "uploads/employees/" . $row['profile_pic']
+            : "uploads/employees/default.png";
+    } else {
+
+        $profile_picture = "uploads/employees/default.png";
+    }
+} else {
+    $adminname = $_SESSION['fullname'] ?? "Employee";
+    $profile_picture = "uploads/employees/default.png";
+}
 
 // --- Get filters ---
 $report_type = $_GET['report'] ?? 'department-summary';
@@ -600,10 +619,16 @@ body {
 </style>
 </head>
 <body>
-<!-- Sidebar -->
-<div class="sidebar">
-    <div class="sidebar-logo"><img src="Images/hospitallogo.png" alt="Hospital Logo"></div>
-    <div class="sidebar-name"><p><?php echo "Welcome Admin, $adminname"; ?></p></div>
+    <!-- Admin Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+             <a href="Admin_Profile.php" class="sidebar_logo">
+             <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="sidebar-profile-img">
+             </a>
+        </div>
+        <div class="sidebar-name">
+            <p><?php echo "Welcome Admin, $adminname"; ?></p>
+        </div>
     <ul class="nav flex-column">
         <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i> Dashboard</a></li>
         <li><a href="Admin_UserManagement.php"><i class="fa-solid fa-users"></i> User Management</a></li>

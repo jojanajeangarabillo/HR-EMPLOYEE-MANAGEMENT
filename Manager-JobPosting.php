@@ -164,6 +164,8 @@ $conn->close();
 
 
 // MENUS
+
+// MENUS
 $menus = [
     "HR Director" => [
         "Dashboard" => "Manager_Dashboard.php",
@@ -172,6 +174,7 @@ $menus = [
         "Newly Hired" => "Newly-Hired.php",
         "Employees" => "Manager_Employees.php",
         "Requests" => "Manager_Request.php",
+        "Shift Scheduling"  => "Manager_Scheduling.php",
         "Vacancies" => "Manager_Vacancies.php",
         "Job Post" => "Manager-JobPosting.php",
         "Calendar" => "Manager_Calendar.php",
@@ -188,6 +191,7 @@ $menus = [
         "Newly Hired" => "Newly-Hired.php",
         "Employees" => "Manager_Employees.php",
         "Requests" => "Manager_Request.php",
+        "Shift Scheduling"  => "Manager_Scheduling.php",
         "Vacancies" => "Manager_Vacancies.php",
         "Job Post" => "Manager-JobPosting.php",
         "Calendar" => "Manager_Calendar.php",
@@ -203,8 +207,6 @@ $menus = [
         "Pending Applicants" => "Manager_PendingApplicants.php",
         "Newly Hired" => "Newly-Hired.php",
         "Vacancies" => "Manager_Vacancies.php",
-        "Requests" => "Manager_Request.php",
-        "Reports" => "Manager_Reports.php",
         "Logout" => "Login.php"
     ],
 
@@ -217,6 +219,7 @@ $menus = [
         "Logout" => "Login.php"
     ],
 
+
 ];
 
 $role = $_SESSION['sub_role'] ?? "HR Manager";
@@ -227,10 +230,12 @@ $icons = [
     "Newly Hired" => "fa-user-check",
     "Employees" => "fa-users",
     "Requests" => "fa-file-lines",
+    "Shift Scheduling" => "fa-clock-rotate-left",
     "Vacancies" => "fa-briefcase",
     "Job Post" => "fa-bullhorn",
     "Calendar" => "fa-calendar-days",
     "Approvals" => "fa-square-check",
+    "Reports" => "fa-chart-column",
     "Settings" => "fa-gear",
     "Logout" => "fa-right-from-bracket"
 ];

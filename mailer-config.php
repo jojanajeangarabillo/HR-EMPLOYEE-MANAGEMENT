@@ -7,6 +7,8 @@ return [
     'port' => 587,
     'encryption' => 'tls',
     'from_email' => 'hr.plpemployeemanagementsystem@gmail.com',
-    'from_name' => 'Employee Management System'
+    'from_name' => 'Employee Management System',
+    'reply_to' => 'hr.plpemployeemanagementsystem@gmail.com'
+    
 ];
 ?>
