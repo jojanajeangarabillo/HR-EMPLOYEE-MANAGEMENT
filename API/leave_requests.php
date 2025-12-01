@@ -26,63 +26,61 @@ try {
     if (!is_array($body))
         $body = ($_SERVER['REQUEST_METHOD'] === 'POST') ? $_POST : $_GET;
 
-    $limit = isset($body['limit']) ? (int) $body['limit'] : 25;
-    if ($limit < 1)
-        $limit = 25;
-    if ($limit > 100)
-        $limit = 100;
-    $page = isset($body['page']) ? (int) $body['page'] : 1;
-    if ($page < 1)
-        $page = 1;
-    $offset = ($page - 1) * $limit;
-
     $search = isset($body['search']) ? trim($body['search']) : '';
-    $department = isset($body['department']) ? trim($body['department']) : '';
-    $position = isset($body['position']) ? trim($body['position']) : '';
+    $empID = isset($body['empID']) ? trim($body['empID']) : '';
     $status = isset($body['status']) ? trim($body['status']) : '';
+    $department = isset($body['department']) ? trim($body['department']) : '';
+    $leave_type = isset($body['leave_type']) ? trim($body['leave_type']) : '';
+    $date_from = isset($body['date_from']) ? trim($body['date_from']) : ''; // YYYY-MM-DD
+    $date_to = isset($body['date_to']) ? trim($body['date_to']) : '';       // YYYY-MM-DD
 
     $where = [];
     $params = [];
 
     if ($search !== '') {
-        $where[] = "(fullname LIKE :q OR empID LIKE :q OR email_address LIKE :q)";
+        $where[] = "(fullname LIKE :q OR empID LIKE :q OR leave_type_name LIKE :q OR department LIKE :q OR position LIKE :q)";
         $params[':q'] = "%" . $search . "%";
+    }
+    if ($empID !== '') {
+        $where[] = "empID = :emp";
+        $params[':emp'] = $empID;
+    }
+    if ($status !== '') {
+        $where[] = "LOWER(status) = LOWER(:st)";
+        $params[':st'] = $status;
     }
     if ($department !== '') {
         $where[] = "department = :dept";
         $params[':dept'] = $department;
     }
-    if ($position !== '') {
-        $where[] = "position = :pos";
-        $params[':pos'] = $position;
+    if ($leave_type !== '') {
+        $where[] = "leave_type_name = :lt";
+        $params[':lt'] = $leave_type;
     }
-    if ($status !== '') {
-        $where[] = "EXISTS (SELECT 1 FROM user u WHERE u.applicant_employee_id = employee.empID AND LOWER(u.status) = LOWER(:st))";
-        $params[':st'] = $status;
+    if ($date_from !== '' && $date_to !== '') {
+        $where[] = "requested_at BETWEEN :df AND :dt";
+        $params[':df'] = $date_from . " 00:00:00";
+        $params[':dt'] = $date_to . " 23:59:59";
+    } elseif ($date_from !== '') {
+        $where[] = "requested_at >= :df";
+        $params[':df'] = $date_from . " 00:00:00";
+    } elseif ($date_to !== '') {
+        $where[] = "requested_at <= :dt";
+        $params[':dt'] = $date_to . " 23:59:59";
     }
 
     $whereSql = count($where) ? (" WHERE " . implode(" AND ", $where)) : "";
 
-    $countSql = "SELECT COUNT(*) AS cnt FROM employee" . $whereSql;
-    $countStmt = $pdo->prepare($countSql);
-    foreach ($params as $k => $v)
-        $countStmt->bindValue($k, $v);
-    $countStmt->execute();
-    $total = (int) $countStmt->fetchColumn();
-    $pages = $total > 0 ? (int) ceil($total / $limit) : 1;
-
-    $sql = "SELECT * FROM employee" . $whereSql . " ORDER BY empID ASC LIMIT :limit OFFSET :offset";
+    $sql = "SELECT * FROM leave_request" . $whereSql . " ORDER BY requested_at DESC";
     $stmt = $pdo->prepare($sql);
     foreach ($params as $k => $v)
         $stmt->bindValue($k, $v);
-    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode([
         'status' => 'success',
-        'employees' => $rows,
+        'requests' => $rows,
     ]);
 } catch (Throwable $e) {
     http_response_code(500);
