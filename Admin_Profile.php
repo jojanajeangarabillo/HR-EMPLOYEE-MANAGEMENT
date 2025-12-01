@@ -2,26 +2,27 @@
 session_start();
 require 'admin/db.connect.php';
 
-// Fetch employee name
-$employeenameQuery = $conn->query("
-    SELECT fullname 
-    FROM user 
-    WHERE role = 'Employee' AND (sub_role IS NULL OR sub_role != 'HR Manager')
-");
-$employeename = ($employeenameQuery && $row = $employeenameQuery->fetch_assoc()) ? $row['fullname'] : 'Employee';
-
+// Admin name
+$adminname = $_SESSION['fullname'] ?? "Human Resource (HR) Admin";
 $employeeID = $_SESSION['applicant_employee_id'] ?? null;
-$employeename = "Employee";
-
 if ($employeeID) {
-    $stmt = $conn->prepare("SELECT fullname FROM user WHERE applicant_employee_id = ?");
+    $stmt = $conn->prepare("SELECT profile_pic FROM employee WHERE empID = ?");
     $stmt->bind_param("s", $employeeID);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($row = $result->fetch_assoc()) {
-        $employeename = $row['fullname'];
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $profile_picture = !empty($row['profile_pic'])
+            ? "uploads/employees/" . $row['profile_pic']
+            : "uploads/employees/default.png";
+    } else {
+
+        $profile_picture = "uploads/employees/default.png";
     }
+} else {
+    $adminname = $_SESSION['fullname'] ?? "Employee";
+    $profile_picture = "uploads/employees/default.png";
 }
 
 
@@ -393,15 +394,15 @@ section h2 {
 </head>
 
 <body>
-<!-- Admin Sidebar -->
+    <!-- Admin Sidebar -->
     <div class="sidebar">
         <div class="sidebar-logo">
              <a href="Admin_Profile.php" class="sidebar_logo">
-            <img src="Images/hospitallogo.png" alt="Hospital Logo">
+             <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="sidebar-profile-img">
              </a>
         </div>
         <div class="sidebar-name">
-            <p><?php echo "Welcome Admin, $employeename"; ?></p>
+            <p><?php echo "Welcome Admin, $adminname"; ?></p>
         </div>
         <ul class="nav flex-column">
             <li class="active"><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i> Dashboard</a></li>

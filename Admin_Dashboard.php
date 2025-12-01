@@ -9,9 +9,29 @@ $hirings = 0;
 $applicants = 0;
 $pendingApplicants = 0;
 
-// Fetch admin name
-$adminnameQuery = $conn->query("SELECT fullname FROM user WHERE sub_role = 'Human Resource (HR) Admin' LIMIT 1");
-$adminname = ($adminnameQuery && $row = $adminnameQuery->fetch_assoc()) ? $row['fullname'] : 'Human Resource (HR) Admin';
+
+// Admin name
+$adminname = $_SESSION['fullname'] ?? "Human Resource (HR) Admin";
+$employeeID = $_SESSION['applicant_employee_id'] ?? null;
+if ($employeeID) {
+    $stmt = $conn->prepare("SELECT profile_pic FROM employee WHERE empID = ?");
+    $stmt->bind_param("s", $employeeID);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $profile_picture = !empty($row['profile_pic'])
+            ? "uploads/employees/" . $row['profile_pic']
+            : "uploads/employees/default.png";
+    } else {
+
+        $profile_picture = "uploads/employees/default.png";
+    }
+} else {
+    $adminname = $_SESSION['fullname'] ?? "Employee";
+    $profile_picture = "uploads/employees/default.png";
+}
 
 // Count Employees
 $employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM employee");
@@ -535,7 +555,7 @@ $monthlyHires = $conn->query("
     <div class="sidebar">
         <div class="sidebar-logo">
              <a href="Admin_Profile.php" class="sidebar_logo">
-            <img src="Images/hospitallogo.png" alt="Hospital Logo">
+             <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="sidebar-profile-img">
              </a>
         </div>
         <div class="sidebar-name">

@@ -75,6 +75,8 @@ if ($employeeID) {
 }
 
 // MENUS
+
+// MENUS
 $menus = [
     "HR Director" => [
         "Dashboard" => "Manager_Dashboard.php",
@@ -83,6 +85,7 @@ $menus = [
         "Newly Hired" => "Newly-Hired.php",
         "Employees" => "Manager_Employees.php",
         "Requests" => "Manager_Request.php",
+        "Shift Scheduling"  => "Manager_Scheduling.php",
         "Vacancies" => "Manager_Vacancies.php",
         "Job Post" => "Manager-JobPosting.php",
         "Calendar" => "Manager_Calendar.php",
@@ -91,6 +94,7 @@ $menus = [
         "Settings" => "Manager_LeaveSettings.php",
         "Logout" => "Login.php"
     ],
+
     "HR Manager" => [
         "Dashboard" => "Manager_Dashboard.php",
         "Applicants" => "Manager_Applicants.php",
@@ -98,6 +102,7 @@ $menus = [
         "Newly Hired" => "Newly-Hired.php",
         "Employees" => "Manager_Employees.php",
         "Requests" => "Manager_Request.php",
+        "Shift Scheduling"  => "Manager_Scheduling.php",
         "Vacancies" => "Manager_Vacancies.php",
         "Job Post" => "Manager-JobPosting.php",
         "Calendar" => "Manager_Calendar.php",
@@ -106,16 +111,16 @@ $menus = [
         "Settings" => "Manager_LeaveSettings.php",
         "Logout" => "Login.php"
     ],
+
     "Recruitment Manager" => [
         "Dashboard" => "Manager_Dashboard.php",
         "Applicants" => "Manager_Applicants.php",
         "Pending Applicants" => "Manager_PendingApplicants.php",
         "Newly Hired" => "Newly-Hired.php",
-        "Vacancies" => "Admin_Vacancies.php",
-        "Requests" => "Manager_Request.php",
-        "Reports" => "Manager_Reports.php",
+        "Vacancies" => "Manager_Vacancies.php",
         "Logout" => "Login.php"
     ],
+
     "HR Officer" => [
         "Dashboard" => "Manager_Dashboard.php",
         "Applicants" => "Manager_Applicants.php",
@@ -124,6 +129,8 @@ $menus = [
         "Employees" => "Manager_Employees.php",
         "Logout" => "Login.php"
     ],
+
+
 ];
 
 $role = $_SESSION['sub_role'] ?? "HR Manager";
@@ -134,6 +141,7 @@ $icons = [
     "Newly Hired" => "fa-user-check",
     "Employees" => "fa-users",
     "Requests" => "fa-file-lines",
+    "Shift Scheduling" => "fa-clock-rotate-left",
     "Vacancies" => "fa-briefcase",
     "Job Post" => "fa-bullhorn",
     "Calendar" => "fa-calendar-days",
@@ -142,6 +150,7 @@ $icons = [
     "Settings" => "fa-gear",
     "Logout" => "fa-right-from-bracket"
 ];
+
 $posted_by = $_SESSION['fullname'] ?? "Manager";
 $message = '';
 $messageType = '';

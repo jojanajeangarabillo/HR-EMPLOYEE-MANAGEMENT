@@ -13,9 +13,29 @@ $config = require 'mailer-config.php';
 $error_msg = "";
 $success_msg = "";
 
-// Fetch admin name
-$adminnameQuery = $conn->query("SELECT fullname FROM user WHERE sub_role = 'Human Resource (HR) Admin' LIMIT 1");
-$adminname = ($adminnameQuery && $row = $adminnameQuery->fetch_assoc()) ? $row['fullname'] : 'Human Resource (HR) Admin';
+// Admin name
+$adminname = $_SESSION['fullname'] ?? "Human Resource (HR) Admin";
+$employeeID = $_SESSION['applicant_employee_id'] ?? null;
+if ($employeeID) {
+    $stmt = $conn->prepare("SELECT profile_pic FROM employee WHERE empID = ?");
+    $stmt->bind_param("s", $employeeID);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $row = $result->fetch_assoc();
+        $profile_picture = !empty($row['profile_pic'])
+            ? "uploads/employees/" . $row['profile_pic']
+            : "uploads/employees/default.png";
+    } else {
+
+        $profile_picture = "uploads/employees/default.png";
+    }
+} else {
+    $adminname = $_SESSION['fullname'] ?? "Employee";
+    $profile_picture = "uploads/employees/default.png";
+}
+
 
 // --- AJAX: Return Positions based on Department --- //
 if (isset($_GET['ajax']) && $_GET['ajax'] === 'positions' && isset($_GET['deptID'])) {
@@ -214,7 +234,7 @@ if ($hrPositionsQuery) {
 
 // Handle Edit User
 if (isset($_POST['action']) && $_POST['action'] === 'edit_user') {
-    $user_id = $_POST['user_id'];
+
     $email = $_POST['email'] ?? null;
     $empID = $_POST['applicant_employee_id'] ?? null;
     $sub_role_id = $_POST['sub_role'] ?? null;
@@ -799,10 +819,17 @@ body {
 </head>
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar">
-    <div class="sidebar-logo"><img src="Images/hospitallogo.png" alt="Hospital Logo"></div>
-    <div class="sidebar-name"><p><?php echo "Welcome Admin, $adminname"; ?></p></div>
+    <!-- Admin Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+             <a href="Admin_Profile.php" class="sidebar_logo">
+             <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="sidebar-profile-img">
+             </a>
+        </div>
+        <div class="sidebar-name">
+            <p><?php echo "Welcome Admin, $adminname"; ?></p>
+        </div>
+        
     <ul class="nav flex-column">
         <li><a href="Admin_Dashboard.php"><i class="fa-solid fa-table-columns"></i> Dashboard</a></li>
         <li class="active"><a href="Admin_UserManagement.php"><i class="fa-solid fa-users"></i> User Management</a></li>
@@ -895,8 +922,7 @@ body {
                             <td>" . date('M j, Y', strtotime($row['created_at'])) . "</td>
                             <td>
                                 <div class='action-buttons'>
-                                    <button class='btn btn-sm btn-warning editBtn' 
-                                        data-id='{$row['user_id']}' 
+                                    <button class='btn btn-sm btn-warning editBtn'  
                                         data-fullname='{$row['fullname']}' 
                                         data-email='{$row['email']}' 
                                         data-role='{$row['role']}' 
@@ -1003,7 +1029,6 @@ body {
       </div>
       <form action="" method="POST">
         <input type="hidden" name="action" value="edit_user">
-        <input type="hidden" name="user_id" id="edit_user_id">
         <input type="hidden" name="applicant_employee_id" id="edit_empid">
         <div class="modal-body">
           <div class="row g-3">
@@ -1084,7 +1109,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById("edit_email").value = btn.dataset.email;
             document.getElementById("edit_role").value = btn.dataset.role;
             document.getElementById("edit_status").value = btn.dataset.status;
-            document.getElementById("edit_user_id").value = btn.dataset.id;
             document.getElementById("edit_empid").value = btn.dataset.empid;
 
             const deptSelect = document.getElementById("edit_department");

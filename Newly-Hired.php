@@ -39,6 +39,7 @@ if ($employeeID) {
 }
 
 
+
 // MENUS
 $menus = [
     "HR Director" => [
@@ -48,7 +49,8 @@ $menus = [
         "Newly Hired" => "Newly-Hired.php",
         "Employees" => "Manager_Employees.php",
         "Requests" => "Manager_Request.php",
-        "Vacancies" => "Admin_Vacancies.php",
+        "Shift Scheduling"  => "Manager_Scheduling.php",
+        "Vacancies" => "Manager_Vacancies.php",
         "Job Post" => "Manager-JobPosting.php",
         "Calendar" => "Manager_Calendar.php",
         "Approvals" => "Manager_Approvals.php",
@@ -64,7 +66,8 @@ $menus = [
         "Newly Hired" => "Newly-Hired.php",
         "Employees" => "Manager_Employees.php",
         "Requests" => "Manager_Request.php",
-        "Vacancies" => "Admin_Vacancies.php",
+        "Shift Scheduling"  => "Manager_Scheduling.php",
+        "Vacancies" => "Manager_Vacancies.php",
         "Job Post" => "Manager-JobPosting.php",
         "Calendar" => "Manager_Calendar.php",
         "Approvals" => "Manager_Approvals.php",
@@ -78,9 +81,7 @@ $menus = [
         "Applicants" => "Manager_Applicants.php",
         "Pending Applicants" => "Manager_PendingApplicants.php",
         "Newly Hired" => "Newly-Hired.php",
-        "Vacancies" => "Admin_Vacancies.php",
-        "Requests" => "Manager_Request.php",
-        "Reports" => "Manager_Reports.php",
+        "Vacancies" => "Manager_Vacancies.php",
         "Logout" => "Login.php"
     ],
 
@@ -93,24 +94,10 @@ $menus = [
         "Logout" => "Login.php"
     ],
 
-    "HR Assistant" => [
-        "Dashboard" => "Manager_Dashboard.php",
-        "Applicants" => "Manager_Applicants.php",
-        "Pending Applicants" => "Manager_PendingApplicants.php",
-        "Newly Hired" => "Newly-Hired.php",
-        "Employees" => "Manager_Employees.php",
-        "Logout" => "Login.php"
-    ],
 
-    "Training and Development Coordinator" => [
-        "Dashboard" => "Manager_Dashboard.php",
-        "Employees" => "Manager_Employees.php",
-        "Calendar" => "Manager_Calendar.php",
-        "Requests" => "Manager_Request.php",
-        "Logout" => "Login.php"
-    ]
 ];
 
+//MENUS
 $role = $_SESSION['sub_role'] ?? "HR Manager";
 $icons = [
     "Dashboard" => "fa-table-columns",
@@ -119,15 +106,15 @@ $icons = [
     "Newly Hired" => "fa-user-check",
     "Employees" => "fa-users",
     "Requests" => "fa-file-lines",
+    "Shift Scheduling" => "fa-clock-rotate-left",
     "Vacancies" => "fa-briefcase",
     "Job Post" => "fa-bullhorn",
     "Calendar" => "fa-calendar-days",
     "Approvals" => "fa-square-check",
-    "Reports" => "fa-chart-line",
+    "Reports" => "fa-chart-column",
     "Settings" => "fa-gear",
     "Logout" => "fa-right-from-bracket"
 ];
-
 // Count employees
 $employeeQuery = $conn->query("SELECT COUNT(*) AS count FROM employee");
 if ($employeeQuery && $row = $employeeQuery->fetch_assoc()) {
