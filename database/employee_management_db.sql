@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 30, 2025 at 03:28 PM
+-- Generation Time: Dec 01, 2025 at 09:30 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -241,17 +241,17 @@ INSERT INTO `employee` (`empID`, `fullname`, `department`, `position`, `type_nam
 ('EMP-023', 'Olivia Lim', 'Gynecology Department', 'Senior Midwife', 'Full Time', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'olivia_lim@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
 ('EMP-024', 'Maria De Guzman', 'Cardiology Department', 'ECG Technician', 'Full Time', 'Rotational', 2, 40, 'Jean Garabillo', 'maria_deguzman@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
 ('EMP-025', 'Isabel Flores', 'Elderly Services (Geriatrics)', 'Healthcare Assistant', 'Part Time', 'Rotational', 1, 40, 'Jean Garabillo', 'isabel_flores@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-026', 'Edward Reyes', 'Anesthetics Department', 'Consultant Anesthesiologist', 'Full Time', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'edward_reyes@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-026', 'Edward Reyes', 'Anesthetics Department', 'Consultant Anesthesiologist', 'Full Time', 'Fixed', 3, 40, 'Jean Garabillo', 'edward_reyes@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
 ('EMP-027', 'Carla Santos', 'Cardiology Department', 'Cardiology Unit Manager', 'Regular', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'carla_santos@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
 ('EMP-028', 'Renato Villanueva', 'Gastroenterology Department', 'Consultant Gastroenterologist', 'Full Time', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'renato.villanueva@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-029', 'Bella Ramirez', 'Breast Screening Department', 'Screening Coordinator', 'Contractual', 'Rotational', 1, 40, 'Rhoanne Nicole Antonio', 'bella_ramirez@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-029', 'Bella Ramirez', 'Breast Screening Department', 'Screening Coordinator', 'Contractual', 'Fixed', 1, 40, 'Jean Garabillo', 'bella_ramirez@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
 ('EMP-030', 'Mark Joseph Reyes', 'General Surgery Department', 'Scrub Nurse', 'Full Time', 'Rotational', 2, 40, 'Rhoanne Nicole Antonio', 'mark_reyes@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
 ('EMP-031', 'Helena Cruz', 'IT Department', 'IT Head', 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'helena_cruz@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
 ('EMP-032', 'Lance Tan', 'Cardiology Department', 'Senior Cardiac Nurse', 'Full Time', 'Rotational', 1, 40, 'Rhoanne Nicole Antonio', 'lance_tan@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
 ('EMP-033', 'Paul Lim', 'Gynecology Department', 'Labor and Delivery Supervisor', 'Regular', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'paul_lim@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
 ('EMP-034', 'Nathan De Guzman', 'Cardiology Department', 'Consultant Cardiologist', 'Full Time', 'Rotational', 2, 40, 'Rhoanne Nicole Antonio', 'nathan_deguzman@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
 ('EMP-035', 'Julian Flores', 'Elderly Services (Geriatrics)', 'Unit Head', 'Full Time', 'Rotational', 2, 40, 'Rhoanne Nicole Antonio', 'julian_flores@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-036', 'Fiona Reyes', 'Anesthetics Department', 'Senior PACU Nurse', 'Full Time', 'Rotational', 1, 40, 'Rhoanne Nicole Antonio', 'fiona_reyes@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-036', 'Fiona Reyes', 'Anesthetics Department', 'Senior PACU Nurse', 'Full Time', 'Rotational', 3, 40, 'Jean Garabillo', 'fiona_reyes@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
 ('EMP-037', 'Diana Lopez', 'Cardiology Department', 'Cardiac Rehabilitation Specialist', 'Regular', 'Rotational', 2, 40, 'Jean Garabillo', 'diana_lopez@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
 ('EMP-038', 'Marco Alcantara', 'Gastroenterology Department', 'Endoscopy Technician', 'Full Time', 'Rotational', 3, 40, 'Jean Garabillo', 'marco.alcantara@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
 ('EMP-039', 'Jean Garabillo', 'Human Resources (HR) Department', 'HR Director', 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'jojanajeangarabillo@gmail.com', 'Taytay Rizal', '1234', '2005-09-25', 'Female', '0984', '12345-87654-432', '12345-87654-432', '12345-87654-432', '12345-87654-432', 'employee_EMP-039.jpg', '2025-11-23'),
@@ -260,11 +260,12 @@ INSERT INTO `employee` (`empID`, `fullname`, `department`, `position`, `type_nam
 ('EMP-043', 'Ariuz Dean Guerrero', 'Medical and Health Services Department', 'Patient Management Admin', 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'guerrero_ariuzdean@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-25'),
 ('EMP-044', 'Klarenz Cobie O. Manrique', 'Finance Department', 'Payroll Admin', 'Full Time', 'Rotational', 3, 40, 'Jean Garabillo', 'manrique_klarenzcobie@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-25'),
 ('EMP-045', 'Joepat Lacerna', 'Breast Screening Department', 'Radiology Assistant', 'Contractual', 'Rotational', 2, 40, 'Jean Garabillo', 'opat09252005@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'employee_EMP-045.jpeg', '2025-11-25'),
-('EMP-046', 'Patricia Swing', 'Marketing Department', 'Content Management Admin', 'Full Time', 'Rotational', 1, 40, 'Rhoanne Nicole Antonio', 'pam066198@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-27'),
 ('EMP-047', 'Jojana Garabillo', 'Human Resources (HR) Department', 'Human Resource (HR) Admin', 'Regular', 'Rotational', 1, 40, 'Jean Garabillo', 'garabillo_jojanajean@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'employee_EMP-047.jpg', '2025-11-27'),
 ('EMP-048', 'Amihan Dimaguiba', 'Breast Screening Department', 'Radiology Assistant', 'Contractual', 'Rotational', 1, 40, 'Jean Garabillo', 'ruberducky032518@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'employee_EMP-048.png', '2025-11-28'),
 ('EMP-049', 'Leonor Rivera', 'Records Management Department', 'Document Management Admin', 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'noonajeogyo@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-28'),
-('EMP-050', 'Alexander Cajurao', 'Warehouse and Supply Department', 'Inventory Admin', 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'cajurao_alexanderjr@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-29');
+('EMP-050', 'Alexander Cajurao', 'Warehouse and Supply Department', 'Inventory Admin', 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'cajurao_alexanderjr@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-29'),
+('EMP-051', 'Mico Bermudez', 'Marketing Department', 'Content Management Admin', 'Regular', 'Rotational', NULL, 40, NULL, 'bermudez_miguelcarlos@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-01'),
+('EMP-052', 'Pepito Manaloto', 'Marketing Department', 'System Staff', 'Full Time', 'Rotational', NULL, 40, NULL, 'freeyt.zy@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-01');
 
 -- --------------------------------------------------------
 
@@ -301,7 +302,6 @@ INSERT INTO `employee_shift_pattern` (`emp_pattern_id`, `empID`, `pattern_id`, `
 (14, 'EMP-036', 1, '2025-12-01', '2026-01-31', 'System', '2025-11-30 14:05:54'),
 (15, 'EMP-039', 1, '2025-12-01', '2026-01-31', 'System', '2025-11-30 14:05:54'),
 (16, 'EMP-043', 1, '2025-12-01', '2026-01-31', 'System', '2025-11-30 14:05:54'),
-(17, 'EMP-046', 1, '2025-12-01', '2026-01-31', 'System', '2025-11-30 14:05:54'),
 (18, 'EMP-047', 1, '2025-12-01', '2026-01-31', 'System', '2025-11-30 14:05:54'),
 (19, 'EMP-048', 1, '2025-12-01', '2026-01-31', 'System', '2025-11-30 14:05:54'),
 (20, 'EMP-049', 1, '2025-12-01', '2026-01-31', 'System', '2025-11-30 14:05:54'),
@@ -370,7 +370,6 @@ INSERT INTO `employee_shift_schedule` (`schedule_id`, `empID`, `shift_id`, `sche
 (404, 'EMP-036', 1, '2025-12-01', 'Scheduled', '2025-11-30 14:25:53'),
 (405, 'EMP-039', 1, '2025-12-01', 'Scheduled', '2025-11-30 14:25:53'),
 (406, 'EMP-043', 1, '2025-12-01', 'Scheduled', '2025-11-30 14:25:53'),
-(407, 'EMP-046', 1, '2025-12-01', 'Scheduled', '2025-11-30 14:25:53'),
 (408, 'EMP-047', 1, '2025-12-01', 'Scheduled', '2025-11-30 14:25:53'),
 (409, 'EMP-048', 1, '2025-12-01', 'Scheduled', '2025-11-30 14:25:53'),
 (410, 'EMP-049', 1, '2025-12-01', 'Scheduled', '2025-11-30 14:25:53'),
@@ -388,7 +387,6 @@ INSERT INTO `employee_shift_schedule` (`schedule_id`, `empID`, `shift_id`, `sche
 (422, 'EMP-036', 1, '2025-12-02', 'Scheduled', '2025-11-30 14:25:53'),
 (423, 'EMP-039', 1, '2025-12-02', 'Scheduled', '2025-11-30 14:25:53'),
 (424, 'EMP-043', 1, '2025-12-02', 'Scheduled', '2025-11-30 14:25:53'),
-(425, 'EMP-046', 1, '2025-12-02', 'Scheduled', '2025-11-30 14:25:53'),
 (426, 'EMP-047', 1, '2025-12-02', 'Scheduled', '2025-11-30 14:25:53'),
 (427, 'EMP-048', 1, '2025-12-02', 'Scheduled', '2025-11-30 14:25:53'),
 (428, 'EMP-049', 1, '2025-12-02', 'Scheduled', '2025-11-30 14:25:53'),
@@ -406,7 +404,6 @@ INSERT INTO `employee_shift_schedule` (`schedule_id`, `empID`, `shift_id`, `sche
 (440, 'EMP-036', 1, '2025-12-03', 'Scheduled', '2025-11-30 14:25:53'),
 (441, 'EMP-039', 1, '2025-12-03', 'Scheduled', '2025-11-30 14:25:53'),
 (442, 'EMP-043', 1, '2025-12-03', 'Scheduled', '2025-11-30 14:25:53'),
-(443, 'EMP-046', 1, '2025-12-03', 'Scheduled', '2025-11-30 14:25:53'),
 (444, 'EMP-047', 1, '2025-12-03', 'Scheduled', '2025-11-30 14:25:53'),
 (445, 'EMP-048', 1, '2025-12-03', 'Scheduled', '2025-11-30 14:25:53'),
 (446, 'EMP-049', 1, '2025-12-03', 'Scheduled', '2025-11-30 14:25:53'),
@@ -424,7 +421,6 @@ INSERT INTO `employee_shift_schedule` (`schedule_id`, `empID`, `shift_id`, `sche
 (458, 'EMP-036', 1, '2025-12-04', 'Scheduled', '2025-11-30 14:25:53'),
 (459, 'EMP-039', 1, '2025-12-04', 'Scheduled', '2025-11-30 14:25:53'),
 (460, 'EMP-043', 1, '2025-12-04', 'Scheduled', '2025-11-30 14:25:53'),
-(461, 'EMP-046', 1, '2025-12-04', 'Scheduled', '2025-11-30 14:25:53'),
 (462, 'EMP-047', 1, '2025-12-04', 'Scheduled', '2025-11-30 14:25:53'),
 (463, 'EMP-048', 1, '2025-12-04', 'Scheduled', '2025-11-30 14:25:53'),
 (464, 'EMP-049', 1, '2025-12-04', 'Scheduled', '2025-11-30 14:25:53'),
@@ -442,7 +438,6 @@ INSERT INTO `employee_shift_schedule` (`schedule_id`, `empID`, `shift_id`, `sche
 (476, 'EMP-036', 1, '2025-12-05', 'Scheduled', '2025-11-30 14:25:53'),
 (477, 'EMP-039', 1, '2025-12-05', 'Scheduled', '2025-11-30 14:25:53'),
 (478, 'EMP-043', 1, '2025-12-05', 'Scheduled', '2025-11-30 14:25:53'),
-(479, 'EMP-046', 1, '2025-12-05', 'Scheduled', '2025-11-30 14:25:53'),
 (480, 'EMP-047', 1, '2025-12-05', 'Scheduled', '2025-11-30 14:25:53'),
 (481, 'EMP-048', 1, '2025-12-05', 'Scheduled', '2025-11-30 14:25:53'),
 (482, 'EMP-049', 1, '2025-12-05', 'Scheduled', '2025-11-30 14:25:53'),
@@ -641,7 +636,55 @@ INSERT INTO `employee_shift_schedule` (`schedule_id`, `empID`, `shift_id`, `sche
 (675, 'EMP-033', 3, '2025-12-19', 'Scheduled', '2025-11-30 14:25:53'),
 (676, 'EMP-038', 3, '2025-12-19', 'Scheduled', '2025-11-30 14:25:53'),
 (677, 'EMP-042', 3, '2025-12-19', 'Scheduled', '2025-11-30 14:25:53'),
-(678, 'EMP-044', 3, '2025-12-19', 'Scheduled', '2025-11-30 14:25:53');
+(678, 'EMP-044', 3, '2025-12-19', 'Scheduled', '2025-11-30 14:25:53'),
+(905, 'EMP-036', 1, '2025-11-30', 'Scheduled', '2025-11-30 14:32:23'),
+(906, 'EMP-019', 2, '2025-12-01', 'Scheduled', '2025-11-30 14:52:31'),
+(907, 'EMP-019', 2, '2025-12-02', 'Scheduled', '2025-11-30 14:52:31'),
+(908, 'EMP-019', 2, '2025-12-03', 'Scheduled', '2025-11-30 14:52:31'),
+(909, 'EMP-019', 2, '2025-12-04', 'Scheduled', '2025-11-30 14:52:31'),
+(910, 'EMP-019', 2, '2025-12-05', 'Scheduled', '2025-11-30 14:52:31'),
+(911, 'EMP-019', 2, '2025-12-06', 'Scheduled', '2025-11-30 14:52:31'),
+(912, 'EMP-019', 2, '2025-12-08', 'Scheduled', '2025-11-30 14:52:31'),
+(913, 'EMP-019', 2, '2025-12-09', 'Scheduled', '2025-11-30 14:52:31'),
+(914, 'EMP-019', 2, '2025-12-10', 'Scheduled', '2025-11-30 14:52:31'),
+(915, 'EMP-019', 2, '2025-12-11', 'Scheduled', '2025-11-30 14:52:31'),
+(916, 'EMP-019', 2, '2025-12-12', 'Scheduled', '2025-11-30 14:52:31'),
+(917, 'EMP-019', 2, '2025-12-13', 'Scheduled', '2025-11-30 14:52:31'),
+(918, 'EMP-019', 2, '2025-12-15', 'Scheduled', '2025-11-30 14:52:31'),
+(919, 'EMP-019', 2, '2025-12-16', 'Scheduled', '2025-11-30 14:52:31'),
+(920, 'EMP-019', 2, '2025-12-17', 'Scheduled', '2025-11-30 14:52:31'),
+(921, 'EMP-019', 2, '2025-12-18', 'Scheduled', '2025-11-30 14:52:31'),
+(922, 'EMP-019', 2, '2025-12-19', 'Scheduled', '2025-11-30 14:52:31'),
+(923, 'EMP-019', 2, '2025-12-20', 'Scheduled', '2025-11-30 14:52:31'),
+(924, 'EMP-019', 2, '2025-12-22', 'Scheduled', '2025-11-30 14:52:31'),
+(925, 'EMP-019', 2, '2025-12-23', 'Scheduled', '2025-11-30 14:52:31'),
+(926, 'EMP-019', 2, '2025-12-24', 'Scheduled', '2025-11-30 14:52:31'),
+(927, 'EMP-019', 2, '2025-12-25', 'Scheduled', '2025-11-30 14:52:31'),
+(928, 'EMP-019', 2, '2025-12-26', 'Scheduled', '2025-11-30 14:52:31'),
+(929, 'EMP-019', 2, '2025-12-27', 'Scheduled', '2025-11-30 14:52:31'),
+(930, 'EMP-019', 2, '2025-12-29', 'Scheduled', '2025-11-30 14:52:31'),
+(931, 'EMP-019', 2, '2025-12-30', 'Scheduled', '2025-11-30 14:52:31'),
+(932, 'EMP-032', 1, '2025-12-06', 'Scheduled', '2025-11-30 14:55:54'),
+(933, 'EMP-032', 1, '2025-12-08', 'Scheduled', '2025-11-30 14:55:54'),
+(934, 'EMP-032', 1, '2025-12-09', 'Scheduled', '2025-11-30 14:55:54'),
+(935, 'EMP-032', 1, '2025-12-10', 'Scheduled', '2025-11-30 14:55:54'),
+(936, 'EMP-032', 1, '2025-12-11', 'Scheduled', '2025-11-30 14:55:54'),
+(937, 'EMP-032', 1, '2025-12-12', 'Scheduled', '2025-11-30 14:55:54'),
+(938, 'EMP-032', 1, '2025-12-13', 'Scheduled', '2025-11-30 14:55:54'),
+(939, 'EMP-032', 1, '2025-12-15', 'Scheduled', '2025-11-30 14:55:54'),
+(940, 'EMP-032', 1, '2025-12-16', 'Scheduled', '2025-11-30 14:55:54'),
+(941, 'EMP-032', 1, '2025-12-17', 'Scheduled', '2025-11-30 14:55:54'),
+(942, 'EMP-032', 1, '2025-12-18', 'Scheduled', '2025-11-30 14:55:54'),
+(943, 'EMP-032', 1, '2025-12-19', 'Scheduled', '2025-11-30 14:55:54'),
+(944, 'EMP-032', 1, '2025-12-20', 'Scheduled', '2025-11-30 14:55:54'),
+(945, 'EMP-032', 1, '2025-12-22', 'Scheduled', '2025-11-30 14:55:54'),
+(946, 'EMP-032', 1, '2025-12-23', 'Scheduled', '2025-11-30 14:55:54'),
+(947, 'EMP-032', 1, '2025-12-24', 'Scheduled', '2025-11-30 14:55:54'),
+(948, 'EMP-032', 1, '2025-12-25', 'Scheduled', '2025-11-30 14:55:54'),
+(949, 'EMP-032', 1, '2025-12-26', 'Scheduled', '2025-11-30 14:55:54'),
+(950, 'EMP-032', 1, '2025-12-27', 'Scheduled', '2025-11-30 14:55:54'),
+(951, 'EMP-032', 1, '2025-12-29', 'Scheduled', '2025-11-30 14:55:54'),
+(952, 'EMP-032', 1, '2025-12-30', 'Scheduled', '2025-11-30 14:55:54');
 
 -- --------------------------------------------------------
 
@@ -1040,7 +1083,8 @@ INSERT INTO `position` (`positionID`, `departmentID`, `emtypeID`, `position_titl
 (110, 15, NULL, 'IT Manager'),
 (111, 15, NULL, 'IT Associate'),
 (112, 15, NULL, 'IT Associate Jr'),
-(113, 15, NULL, 'IT Head');
+(113, 15, NULL, 'IT Head'),
+(115, 22, NULL, 'System Staff');
 
 -- --------------------------------------------------------
 
@@ -1232,6 +1276,7 @@ INSERT INTO `user` (`applicant_employee_id`, `email`, `password`, `role`, `fulln
 ('EMP-019', 'anna_mendoza@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Anna Mendoza', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-001', 'antonio_rhoannenicole@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Rhoanne Nicole Antonio', 'Active', '2025-10-25 10:38:47', NULL, '', '', 'HR Manager'),
 ('EMP-029', 'bella_ramirez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Bella Ramirez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-051', 'bermudez_miguelcarlos@plpasig.edu.ph', '$2y$10$ndLP5DvR6o4iKOiupqYsBObh75pBrs0gSeZGwfBfFPeeaWUPg2vsC', 'Employee', 'Mico Bermudez', 'Active', '2025-12-01 16:21:27', NULL, '0266ef147ae09e5c27d6cbd3777efd30', '2025-12-02 09:21:27', 'Content Management Admin'),
 ('EMP-041', 'bolotaolo_lark@plpasig.edu.ph', '$2y$10$0MLZpGr8laSUPGGPig.87.Lx9ozOuApmaSDu.FI95eOjL0TMuIWNq', 'Employee', 'Lark Bolotaolo', 'Active', '2025-11-24 14:59:39', NULL, '5cb327175ef63f558eb234fff22db076', '2025-11-25 07:59:39', 'Point of Sales Admin'),
 ('EMP-005', 'cacho_shaneellamae@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Shane Ella Cacho', 'Active', '2025-11-18 16:53:26', NULL, '', '', NULL),
 ('EMP-050', 'cajurao_alexanderjr@plpasig.edu.ph', '$2y$10$AvYVNJQhwUTCCcd5nmFnnOwRMgcE9Awlf30BdwMwTRQk0ew5q6emC', 'Employee', 'Alexander Cajurao', 'Active', '2025-11-29 10:57:09', NULL, '651d3c8e06c391f4990c809a3c8ccac1', '2025-11-30 03:57:09', 'Inventory Admin'),
@@ -1242,6 +1287,7 @@ INSERT INTO `user` (`applicant_employee_id`, `email`, `password`, `role`, `fulln
 ('EMP-037', 'diana_lopez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Diana Lopez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-026', 'edward_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Edward Reyes', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-036', 'fiona_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Fiona Reyes', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-052', 'freeyt.zy@gmail.com', '$2y$10$RkwbtpEJleBCztfntsqy/uSvslsKkOAdF7yL76SD501Tn9M839YYu', 'Employee', 'Pepito Manaloto', 'Active', '2025-12-01 16:22:26', NULL, 'cf11d66ee42696a5a27b6855554b343a', '2025-12-02 09:22:26', 'System Staff'),
 ('EMP-042', 'gallardo_marvin@plpasig.edu.ph', '$2y$10$w25jPJZNJML7Xv7uyhqO.uBvBhR5DBP0nW1O7y1Y/uDYmoJT6Xdfa', 'Employee', 'Marvin Gallardo', 'Active', '2025-11-25 14:05:28', NULL, 'b66d30583006856f7bdc0c8881484e93', '2025-11-26 07:05:28', 'Document Management Admin'),
 ('EMP-047', 'garabillo_jojanajean@plpasig.edu.ph', '$2y$10$Hd75TeKazwdE0p.OtI2D8Oz08Ox48DLUVq1OCrXSzrGdR9fBcu0em', 'Employee', 'Jojana Garabillo', 'Active', '2025-11-27 19:56:26', NULL, '', '', 'Human Resource (HR) Admin'),
 ('EMP-021', 'george_cruz@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'George Cruz', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
@@ -1267,7 +1313,6 @@ INSERT INTO `user` (`applicant_employee_id`, `email`, `password`, `role`, `fulln
 ('EMP-049', 'noonajeogyo@gmail.com', '$2y$10$O8.H2g5cW05BEOWcZJyFyumGEG43f8PtuQBMnYchV.PHFqCF8k5Z6', 'Employee', 'Leonor Rivera', 'Active', '2025-11-28 12:14:06', NULL, '', '', 'Document Management Admin'),
 ('EMP-023', 'olivia_lim@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Olivia Lim', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-045', 'opat09252005@gmail.com', '$2y$10$Unfz75rCYF6S9R6eAnBhe.OJbSvDHHesakHf9EDfpiN9n/RMgRTie', 'Employee', 'Joepat Lacerna', 'Active', '0000-00-00 00:00:00', NULL, '', '', NULL),
-('EMP-046', 'pam066198@gmail.com', '$2y$10$rn9F/gwE3LSqKaOCZ3HiOed2YUD1ZaLuEJv42dI.N2iAjMQm/y5sW', 'Employee', 'Patricia Swing', 'Active', '2025-11-27 18:51:12', NULL, '', '', 'Content Management Admin'),
 ('EMP-012', 'patricia_gomez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Patricia Gomez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-033', 'paul_lim@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Paul Lim', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-028', 'renato.villanueva@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Renato Villanueva', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
@@ -1622,7 +1667,7 @@ ALTER TABLE `employee_shift_pattern`
 -- AUTO_INCREMENT for table `employee_shift_schedule`
 --
 ALTER TABLE `employee_shift_schedule`
-  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=905;
+  MODIFY `schedule_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=953;
 
 --
 -- AUTO_INCREMENT for table `employment_type`
@@ -1688,7 +1733,7 @@ ALTER TABLE `manager_announcement`
 -- AUTO_INCREMENT for table `position`
 --
 ALTER TABLE `position`
-  MODIFY `positionID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=115;
+  MODIFY `positionID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=116;
 
 --
 -- AUTO_INCREMENT for table `rejected_applications`
@@ -1706,7 +1751,7 @@ ALTER TABLE `shift_patterns`
 -- AUTO_INCREMENT for table `shift_pattern_details`
 --
 ALTER TABLE `shift_pattern_details`
-  MODIFY `pattern_detail_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `pattern_detail_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `shift_templates`
