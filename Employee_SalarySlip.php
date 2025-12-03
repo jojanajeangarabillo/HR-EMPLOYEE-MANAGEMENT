@@ -11,39 +11,50 @@ $employeenameQuery = $conn->query("
 $employeename = ($employeenameQuery && $row = $employeenameQuery->fetch_assoc()) ? $row['fullname'] : 'Employee';
 
 $employeeID = $_SESSION['applicant_employee_id'] ?? null;
+$sessionEmail = $_SESSION['email'] ?? null;
 $employeename = "Employee";
 
-if ($employeeID) {
-    $stmt = $conn->prepare("SELECT fullname FROM user WHERE applicant_employee_id = ?");
-    $stmt->bind_param("s", $employeeID);
-    $stmt->execute();
-    $result = $stmt->get_result();
+if (!$employeeID && $sessionEmail) {
+  $stmt = $conn->prepare("SELECT applicant_employee_id FROM user WHERE email = ? LIMIT 1");
+  $stmt->bind_param("s", $sessionEmail);
+  $stmt->execute();
+  $res = $stmt->get_result();
+  if ($u = $res->fetch_assoc()) {
+    $employeeID = $u['applicant_employee_id'];
+  }
+}
 
-    if ($row = $result->fetch_assoc()) {
-        $employeename = $row['fullname'];
-    }
+if ($employeeID) {
+  $stmt = $conn->prepare("SELECT fullname FROM user WHERE applicant_employee_id = ?");
+  $stmt->bind_param("s", $employeeID);
+  $stmt->execute();
+  $result = $stmt->get_result();
+
+  if ($row = $result->fetch_assoc()) {
+    $employeename = $row['fullname'];
+  }
 }
 
 // Fetch employee name and profile picture
 if ($employeeID) {
-    $stmt = $conn->prepare("SELECT fullname, profile_pic FROM employee WHERE empID = ?");
-    $stmt->bind_param("s", $employeeID);
-    $stmt->execute();
-    $result = $stmt->get_result();
+  $stmt = $conn->prepare("SELECT fullname, profile_pic FROM employee WHERE empID = ?");
+  $stmt->bind_param("s", $employeeID);
+  $stmt->execute();
+  $result = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $employeename = $row['fullname'];
-        $profile_picture = !empty($row['profile_pic']) 
-                           ? "uploads/employees/" . $row['profile_pic'] 
-                           : "uploads/employees/default.png";
-    } else {
-        $employeename = $_SESSION['fullname'] ?? "Employee";
-        $profile_picture = "uploads/employees/default.png";
-    }
-} else {
+  if ($result->num_rows > 0) {
+    $row = $result->fetch_assoc();
+    $employeename = $row['fullname'];
+    $profile_picture = !empty($row['profile_pic'])
+      ? "uploads/employees/" . $row['profile_pic']
+      : "uploads/employees/default.png";
+  } else {
     $employeename = $_SESSION['fullname'] ?? "Employee";
     $profile_picture = "uploads/employees/default.png";
+  }
+} else {
+  $employeename = $_SESSION['fullname'] ?? "Employee";
+  $profile_picture = "uploads/employees/default.png";
 }
 
 ?>
@@ -59,7 +70,7 @@ if ($employeeID) {
   <title>Employee Salary Slip</title>
   <link rel="stylesheet" href="manager-sidebar.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
-  
+
   <style>
     :root {
       --primary: #6674cc;
@@ -90,51 +101,51 @@ if ($employeeID) {
 
 
 
- 
-.sidebar-logo {
-  padding: 30px 20px 10px;
-  text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
+
+    .sidebar-logo {
+      padding: 30px 20px 10px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
 
 
-.sidebar-logo img:hover {
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: scale(1.05);
-}
+    .sidebar-logo img:hover {
+      border-color: rgba(255, 255, 255, 0.5);
+      transform: scale(1.05);
+    }
 
-.sidebar-name {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  color: white;
-  padding: 10px;
-  margin-bottom: 30px;
-  font-size: 18px;
-  flex-direction: column;
-}
+    .sidebar-name {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: white;
+      padding: 10px;
+      margin-bottom: 30px;
+      font-size: 18px;
+      flex-direction: column;
+    }
 
-.menu-board-title {
-  font-size: 14px;
-  font-weight: 600;
-  margin: 15px 0 5px 20px;
-  text-transform: uppercase;
-  color: var(--light-blue-dark);
-  letter-spacing: 1px;
-  color: white;
-}
+    .menu-board-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 15px 0 5px 20px;
+      text-transform: uppercase;
+      color: var(--light-blue-dark);
+      letter-spacing: 1px;
+      color: white;
+    }
 
 
-      h1 {
-        font-family: 'Roboto', sans-serif;
-        font-size: 35px;
-        color: white;
-        text-align: center;
-      }
+    h1 {
+      font-family: 'Roboto', sans-serif;
+      font-size: 35px;
+      color: white;
+      text-align: center;
+    }
 
-     
-  
+
+
 
     /* Main Content */
     .main-content {
@@ -253,10 +264,21 @@ if ($employeeID) {
       margin: 0;
     }
 
-    .stat-card.total-earnings .stat-icon { background: linear-gradient(135deg, var(--accent-green), #059669); }
-    .stat-card.average-pay .stat-icon { background: linear-gradient(135deg, var(--secondary), #2563eb); }
-    .stat-card.total-deductions .stat-icon { background: linear-gradient(135deg, var(--accent-red), #b91c1c); }
-    .stat-card.pay-periods .stat-icon { background: linear-gradient(135deg, var(--accent-orange), #d97706); }
+    .stat-card.total-earnings .stat-icon {
+      background: linear-gradient(135deg, var(--accent-green), #059669);
+    }
+
+    .stat-card.average-pay .stat-icon {
+      background: linear-gradient(135deg, var(--secondary), #2563eb);
+    }
+
+    .stat-card.total-deductions .stat-icon {
+      background: linear-gradient(135deg, var(--accent-red), #b91c1c);
+    }
+
+    .stat-card.pay-periods .stat-icon {
+      background: linear-gradient(135deg, var(--accent-orange), #d97706);
+    }
 
     .table-container {
       background: var(--card-bg);
@@ -597,40 +619,40 @@ if ($employeeID) {
       box-shadow: var(--shadow-hover);
     }
 
-    
+
 
     /* Responsive Design */
     @media (max-width: 1200px) {
       .content-wrapper {
         grid-template-columns: 1fr;
       }
-      
+
       .left-section {
         order: 2;
       }
-      
+
       .right-section {
         order: 1;
       }
     }
 
     @media (max-width: 992px) {
-   
-      
+
+
       .sidebar .nav li a {
         justify-content: center;
         padding: 15px;
       }
-      
+
       .sidebar .nav li a i {
         margin-right: 0;
         font-size: 20px;
       }
-      
+
       .main-content {
         margin-left: 80px;
       }
-      
+
       .stats-cards {
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       }
@@ -640,28 +662,28 @@ if ($employeeID) {
       .main-content {
         padding: 20px;
       }
-      
+
       .page-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 15px;
       }
-      
+
       .filter-container {
         width: 100%;
         justify-content: space-between;
       }
-      
+
       .filter-select {
         flex: 1;
       }
-      
+
       .header-section {
         flex-direction: column;
         gap: 15px;
         align-items: flex-start;
       }
-      
+
       .export-buttons {
         align-self: flex-end;
       }
@@ -672,30 +694,31 @@ if ($employeeID) {
         width: 0;
         transform: translateX(-100%);
       }
-      
+
       .main-content {
         margin-left: 0;
       }
-      
+
       .stats-cards {
         grid-template-columns: 1fr;
       }
-      
+
       .salary-overview-table {
         font-size: 14px;
       }
-      
-      .salary-overview-table th, 
+
+      .salary-overview-table th,
       .salary-overview-table td {
         padding: 12px 10px;
       }
-      
+
       .content-wrapper {
         padding: 20px;
       }
     }
 
     @media print {
+
       .sidebar,
       .export-buttons,
       .btn-back,
@@ -703,13 +726,13 @@ if ($employeeID) {
       .stats-cards {
         display: none;
       }
-      
+
       .main-content {
         margin-left: 0;
         width: 100%;
         padding: 0;
       }
-      
+
       .details-container {
         box-shadow: none;
       }
@@ -722,16 +745,18 @@ if ($employeeID) {
   <div class="sidebar">
     <div class="sidebar-logo">
       <a href="Employee_Profile.php" class="profile">
-        <img src="<?php echo htmlspecialchars($profile_picture); ?>" 
-             alt="Profile" class="sidebar-profile-img">
+        <img src="<?php echo htmlspecialchars($profile_picture); ?>" alt="Profile" class="sidebar-profile-img">
       </a>
-      <div class="sidebar-name"><p><?php echo "Welcome, $employeename"; ?></p></div>
+      <div class="sidebar-name">
+        <p><?php echo "Welcome, $employeename"; ?></p>
+      </div>
     </div>
 
     <ul class="nav">
       <h4 class="menu-board-title">Menu Board</h4>
       <li><a href="Employee_Dashboard.php"><i class="fa-solid fa-grip"></i> <span>Dashboard</span></a></li>
-      <li class="active"><a href="Employee_SalarySlip.php"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Salary Slip</span></a></li>
+      <li class="active"><a href="Employee_SalarySlip.php"><i class="fa-solid fa-file-invoice-dollar"></i> <span>Salary
+            Slip</span></a></li>
       <li><a href="Employee_Requests.php"><i class="fa-solid fa-code-branch"></i> <span>Requests</span></a></li>
       <li><a href="Login.php"><i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span></a></li>
     </ul>
@@ -777,7 +802,7 @@ if ($employeeID) {
           </div>
           <div class="stat-info">
             <h3>Total Earnings</h3>
-            <p>₱295,800.00</p>
+            <p id="totalEarnings">₱0.00</p>
           </div>
         </div>
         <div class="stat-card average-pay">
@@ -786,7 +811,7 @@ if ($employeeID) {
           </div>
           <div class="stat-info">
             <h3>Average Pay</h3>
-            <p>₱59,160.00</p>
+            <p id="averagePay">₱0.00</p>
           </div>
         </div>
         <div class="stat-card total-deductions">
@@ -795,7 +820,7 @@ if ($employeeID) {
           </div>
           <div class="stat-info">
             <h3>Total Deductions</h3>
-            <p>₱10,200.00</p>
+            <p id="totalDeductions">₱0.00</p>
           </div>
         </div>
         <div class="stat-card pay-periods">
@@ -804,7 +829,7 @@ if ($employeeID) {
           </div>
           <div class="stat-info">
             <h3>Pay Periods</h3>
-            <p>5</p>
+            <p id="payPeriods">0</p>
           </div>
         </div>
       </div>
@@ -821,48 +846,7 @@ if ($employeeID) {
               <th>Action</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td>October 15, 2025</td>
-              <td>₱60,000.00</td>
-              <td>₱3,500.00</td>
-              <td>₱2,200.00</td>
-              <td>₱61,300.00</td>
-              <td><button class="btn-view" onclick="showDetails()"><i class="fa-solid fa-eye"></i> View</button></td>
-            </tr>
-            <tr>
-              <td>October 30, 2025</td>
-              <td>₱60,000.00</td>
-              <td>₱0.00</td>
-              <td>₱2,200.00</td>
-              <td>₱57,800.00</td>
-              <td><button class="btn-view" onclick="showDetails()"><i class="fa-solid fa-eye"></i> View</button></td>
-            </tr>
-            <tr>
-              <td>September 15, 2025</td>
-              <td>₱58,000.00</td>
-              <td>₱2,800.00</td>
-              <td>₱1,900.00</td>
-              <td>₱58,900.00</td>
-              <td><button class="btn-view" onclick="showDetails()"><i class="fa-solid fa-eye"></i> View</button></td>
-            </tr>
-            <tr>
-              <td>September 30, 2025</td>
-              <td>₱58,000.00</td>
-              <td>₱1,200.00</td>
-              <td>₱1,800.00</td>
-              <td>₱57,400.00</td>
-              <td><button class="btn-view" onclick="showDetails()"><i class="fa-solid fa-eye"></i> View</button></td>
-            </tr>
-            <tr>
-              <td>August 15, 2025</td>
-              <td>₱56,500.00</td>
-              <td>₱2,000.00</td>
-              <td>₱2,100.00</td>
-              <td>₱56,400.00</td>
-              <td><button class="btn-view" onclick="showDetails()"><i class="fa-solid fa-eye"></i> View</button></td>
-            </tr>
-          </tbody>
+          <tbody id="salaryTableBody"></tbody>
         </table>
       </div>
     </div>
@@ -895,19 +879,19 @@ if ($employeeID) {
               <div class="info-card-body">
                 <div class="info-row">
                   <span class="info-label">Name</span>
-                  <span class="info-value">RIVER FUENTABELLA</span>
+                  <span class="info-value full_name"></span>
                 </div>
                 <div class="info-row">
                   <span class="info-label">ID</span>
-                  <span class="info-value">25-0001</span>
+                  <span class="info-value empID"></span>
                 </div>
                 <div class="info-row">
                   <span class="info-label">Position</span>
-                  <span class="info-value">DOCTOR</span>
+                  <span class="info-value position"></span>
                 </div>
                 <div class="info-row">
                   <span class="info-label">Status</span>
-                  <span class="info-value">REGULAR</span>
+                  <span class="info-value status"></span>
                 </div>
               </div>
             </div>
@@ -918,31 +902,31 @@ if ($employeeID) {
               <div class="info-card-body">
                 <div class="info-row">
                   <span class="info-label">Pay Date</span>
-                  <span class="info-value">OCTOBER 15, 2025</span>
+                  <span class="info-value payDate"></span>
                 </div>
                 <div class="info-row">
                   <span class="info-label">Pay Type</span>
-                  <span class="info-value">15/30</span>
+                  <span class="info-value payType"></span>
                 </div>
                 <div class="info-row">
                   <span class="info-label">Period</span>
-                  <span class="info-value">SEPTEMBER 26 - OCTOBER 10, 2025</span>
+                  <span class="info-value period"></span>
                 </div>
                 <div class="info-row">
                   <span class="info-label">Monthly Rate</span>
-                  <span class="info-value">₱ 60,000.00</span>
+                  <span class="info-value monthlyRate"></span>
                 </div>
                 <div class="info-row">
                   <span class="info-label">Daily Rate</span>
-                  <span class="info-value">₱ 2,000.00</span>
+                  <span class="info-value dailyRate"></span>
                 </div>
                 <div class="info-row">
                   <span class="info-label">Hourly Rate</span>
-                  <span class="info-value">₱ 250.00</span>
+                  <span class="info-value hourlyRate"></span>
                 </div>
                 <div class="info-row">
                   <span class="info-label">Payment Method</span>
-                  <span class="info-value">BANK TRANSFER</span>
+                  <span class="info-value paymentMethod"></span>
                 </div>
               </div>
             </div>
@@ -951,14 +935,14 @@ if ($employeeID) {
             <div class="info-card">
               <div class="info-card-header">APPROVED BY</div>
               <div class="info-card-body">
-                <div class="received-by-body">HR</div>
+                <div class="received-by-body approvedBy"></div>
               </div>
             </div>
 
             <!-- Received By -->
             <div class="received-by-card">
               <div class="received-by-header">RECEIVED BY</div>
-              <div class="received-by-body">RIVER FUENTABELLA</div>
+              <div class="received-by-body receivedBy"></div>
             </div>
           </div>
 
@@ -989,83 +973,86 @@ if ($employeeID) {
                   <tbody>
                     <tr>
                       <td>Sub-Basic Pay:</td>
-                      <td>30</td>
-                      <td>₱ 60,000.00</td>
+                      <td class="subBasicPayTotal"></td>
+                      <td class="subBasicPay"></td>
                       <td>SSS</td>
-                      <td>₱200.00</td>
+                      <td class="sss"></td>
                     </tr>
                     <tr>
                       <td>Basic Pay:</td>
-                      <td></td>
-                      <td>₱ 60,000.00</td>
+                      <td class="basicPayTotal"></td>
+                      <td class="basicPay"></td>
                       <td>PhilHealth</td>
-                      <td>₱500.00</td>
+                      <td class="philHealth"></td>
                     </tr>
                     <tr>
                       <td>Absent:</td>
-                      <td>0</td>
-                      <td>-</td>
+                      <td class="absent"></td>
+                      <td class="absentPay"></td>
                       <td>Pag-ibig</td>
-                      <td>₱500.00</td>
+                      <td class="pagIbig"></td>
                     </tr>
                     <tr>
                       <td>Under time:</td>
-                      <td>0</td>
-                      <td>-</td>
+                      <td class="underTime"></td>
+                      <td class="underTimePay"></td>
                       <td>Tax</td>
-                      <td>₱1,000.00</td>
+                      <td class="tax"></td>
                     </tr>
                     <tr>
                       <td>Over Time Pay:</td>
-                      <td>6</td>
-                      <td>₱ 3,500.00</td>
+                      <td class="overTimePay"></td>
+                      <td class="overTimePayPay"></td>
                       <td>SSS Loan</td>
                       <td>-</td>
                     </tr>
                     <tr>
                       <td>Legal Holiday:</td>
-                      <td>-</td>
-                      <td>-</td>
+                      <td class="legalHoliday"></td>
+                      <td class="legalHolidayPay"></td>
                       <td>Cash Advance</td>
                       <td>-</td>
                     </tr>
                     <tr>
                       <td>Special Non Working Holiday:</td>
-                      <td>-</td>
-                      <td>-</td>
+                      <td class="specialNonWorkingHoliday"></td>
+                      <td class="specialNonWorkingHolidayPay"></td>
                       <td>Other Deduction:</td>
-                      <td>-</td>
+                      <td class="otherDeduction"></td>
                     </tr>
                     <tr>
                       <td>Holiday OT Pay:</td>
-                      <td>-</td>
-                      <td>-</td>
+                      <td class="holidayOTPay"></td>
+                      <td class="holidayOTPayPay"></td>
                       <td></td>
                       <td></td>
                     </tr>
                     <tr>
                       <td>Rest Day Pay:</td>
-                      <td>-</td>
-                      <td>-</td>
+                      <td class="restDayPay"></td>
+                      <td class="restDayPayPay"></td>
                       <td></td>
                       <td></td>
                     </tr>
                     <tr class="total-row">
                       <td colspan="2">Gross Pay:</td>
-                      <td>₱ 60,000.00</td>
+                      <td class="grossPay"></td>
                       <td>Total Deduction:</td>
-                      <td>₱2,200.00</td>
+                      <td class="totalDeduction"></td>
                     </tr>
                     <tr class="total-row">
                       <td colspan="2">Net Pay:</td>
-                      <td colspan="3">₱61,300.00</td>
+                      <td class="netPay"></td>
+                      <td></td>
+                      <td></td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
 
-            <button class="btn-back" onclick="showOverview()"><i class="fa-solid fa-arrow-left"></i> Back to Overview</button>
+            <button class="btn-back" onclick="showOverview()"><i class="fa-solid fa-arrow-left"></i> Back to
+              Overview</button>
           </div>
         </div>
       </div>
@@ -1074,9 +1061,110 @@ if ($employeeID) {
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    function showDetails() {
+    const empID = '<?php echo addslashes($employeeID ?? ""); ?>';
+    let rowsAll = [];
+
+    function filterRowsByUI(rows) {
+      const yearSel = document.getElementById('yearFilter').value;
+      const monthSel = document.getElementById('monthFilter').value; // e.g., 'january', 'all'
+      if (!rows || !rows.length) return [];
+      return rows.filter(r => {
+        const d = new Date(r.period_end || r.pay_date || r.date || '');
+        if (isNaN(d)) return true;
+        const yOk = !yearSel || String(d.getFullYear()) === String(yearSel);
+        const mOk = monthSel === 'all' || monthSel === '' || d.toLocaleString('en-US', { month: 'long' }).toLowerCase() === monthSel.toLowerCase();
+        return yOk && mOk;
+      });
+    }
+
+    function renderRows(rows) {
+      try {
+        const filtered = filterRowsByUI(rows);
+        const tbody = document.getElementById('salaryTableBody');
+        tbody.innerHTML = '';
+        let totalGross = 0;
+        let totalNet = 0;
+        let totalDed = 0;
+        filtered.forEach((r, i) => {
+          const date = r.period_end || r.pay_date || r.date || '';
+          const basic = Number(r.basic_pay || r.basic || 0);
+          const overtime = Number(r.ot_pay || r.overtime_pay || r.overtime || 0);
+          const deduction = Number(r.total_deduction || r.deduction || 0);
+          const net = Number(r.net_pay || r.net || 0);
+          const gross = Number(r.gross_pay || basic + overtime + Number(r.allowances || 0));
+          totalGross += Number.isFinite(gross) ? gross : 0;
+          totalNet += Number.isFinite(net) ? net : 0;
+          totalDed += Number.isFinite(deduction) ? deduction : 0;
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${date}</td>
+            <td>₱${basic.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
+            <td>₱${overtime.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
+            <td>₱${deduction.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
+            <td>₱${net.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
+            <td><button class="btn-view" data-index="${i}"><i class="fa-solid fa-eye"></i> View</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+        document.getElementById('totalEarnings').textContent = '₱' + totalGross.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+        document.getElementById('averagePay').textContent = '₱' + (filtered.length ? (totalNet / filtered.length) : 0).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+        document.getElementById('totalDeductions').textContent = '₱' + totalDed.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+        document.getElementById('payPeriods').textContent = String(filtered.length);
+        tbody.querySelectorAll('.btn-view').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const index = Number(btn.dataset.index);
+            const rec = filtered[index];
+            if (rec) showDetails(rec);
+          });
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    async function loadPayroll() {
+      try {
+        const res = await fetch('/HR-EMPLOYEE-MANAGEMENT/API/consumer_payroll.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ emp_code: empID })
+        });
+        const resp = await res.json();
+        const payload = resp.data || resp.payload || [];
+        rowsAll = Array.isArray(payload) ? payload : (payload.data || payload.records || []);
+        rowsAll = rowsAll.filter(r => String(r.emp_code || '').trim() === String(empID || '').trim());
+        renderRows(rowsAll);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    loadPayroll();
+
+    document.getElementById('yearFilter').addEventListener('change', () => renderRows(rowsAll));
+    document.getElementById('monthFilter').addEventListener('change', () => renderRows(rowsAll));
+
+    function showDetails(data) {
+
       document.getElementById('overviewPage').classList.add('hidden');
       document.getElementById('detailsPage').classList.add('active');
+
+      const fmt = v => '₱ ' + Number(v || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+      const set = (sel, val) => { const el = document.querySelector(sel); if (el) el.textContent = val ?? '—'; };
+
+      set('.full_name', data.full_name);
+      set('.empID', data.emp_code);
+      set('.position', data.position);
+      set('.status', (data.employment_type || '').toUpperCase());
+
+      set('.payDate', data.period_end);
+      set('.payType', '15/30');
+      set('.period', (data.period_start || '') + ' - ' + (data.period_end || ''));
+      set('.monthlyRate', fmt(data.basic_pay));
+      set('.dailyRate', '');
+      set('.hourlyRate', '');
+      set('.paymentMethod', 'BANK TRANSFER');
+
+      set('.approvedBy', 'HR');
+      set('.receivedBy', data.full_name);
     }
 
     function showOverview() {
@@ -1100,11 +1188,12 @@ if ($employeeID) {
 
     // Add some interactivity to filter selects
     document.querySelectorAll('.filter-select').forEach(select => {
-      select.addEventListener('change', function() {
+      select.addEventListener('change', function () {
         // In a real implementation, this would filter the salary data
         console.log(`Filter changed: ${this.id} = ${this.value}`);
       });
     });
   </script>
 </body>
+
 </html>
