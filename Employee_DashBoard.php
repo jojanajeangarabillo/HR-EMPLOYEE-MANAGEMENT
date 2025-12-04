@@ -597,7 +597,7 @@ body {
             <?php while ($row = mysqli_fetch_assoc($managerResult)) { ?>
             <tr>
               <td><?php echo $row['title']; ?></td>
-              <td><?php echo $row['posted_by']; ?> (Manager)</td>
+              <td><?php echo $row['posted_by']; ?></td>
               <td><?php echo date("M d, Y", strtotime($row['date_posted'])); ?></td>
               <td><a href="?view=manager&id=<?php echo $row['id']; ?>"><button>View</button></a></td>
             </tr>
@@ -646,7 +646,6 @@ body {
 
           <br>
           <p><strong>Posted By:</strong><br>
-          HR Manager, <br>
           <?php echo $announcement['posted_by']; ?><br>
           </p>
         <?php } ?>

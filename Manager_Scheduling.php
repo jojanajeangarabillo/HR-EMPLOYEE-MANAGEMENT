@@ -47,6 +47,7 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
+    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -61,6 +62,7 @@ $menus = [
     "Job Post" => "Manager-JobPosting.php",
     "Calendar" => "Manager_Calendar.php",
     "Approvals" => "Manager_Approvals.php",
+    "Reports" => "Manager_Reports.php",
     "Settings" => "Manager_LeaveSettings.php",
     "Logout" => "Login.php"
   ],
@@ -94,6 +96,7 @@ $icons = [
   "Job Post" => "fa-bullhorn",
   "Calendar" => "fa-calendar-days",
   "Approvals" => "fa-square-check",
+  "Reports" => "fa-chart-column",
   "Settings" => "fa-gear",
   "Logout" => "fa-right-from-bracket"
 ];
@@ -621,6 +624,61 @@ function createShiftPattern($pattern_name, $description, $cycle_days, $pattern_d
     }
 }
 
+// Function to update shift pattern
+function updateShiftPattern($pattern_id, $pattern_name, $description, $cycle_days, $pattern_days, $conn) {
+    // Update pattern
+    $stmt = $conn->prepare("UPDATE shift_patterns SET pattern_name = ?, description = ?, cycle_days = ? WHERE pattern_id = ?");
+    $stmt->bind_param("ssii", $pattern_name, $description, $cycle_days, $pattern_id);
+    
+    if ($stmt->execute()) {
+        // Delete existing pattern details
+        $delete_stmt = $conn->prepare("DELETE FROM shift_pattern_details WHERE pattern_id = ?");
+        $delete_stmt->bind_param("i", $pattern_id);
+        $delete_stmt->execute();
+        
+        // Insert updated pattern details
+        $detail_stmt = $conn->prepare("INSERT INTO shift_pattern_details (pattern_id, day_number, shift_id) VALUES (?, ?, ?)");
+        
+        foreach ($pattern_days as $day) {
+            $detail_stmt->bind_param("iii", $pattern_id, $day['day_number'], $day['shift_id']);
+            $detail_stmt->execute();
+        }
+        
+        return ["success" => true, "message" => "Shift pattern updated successfully"];
+    } else {
+        return ["success" => false, "message" => "Error updating shift pattern: " . $conn->error];
+    }
+}
+
+// Function to delete shift pattern
+function deleteShiftPattern($pattern_id, $conn) {
+    // Check if pattern is assigned to any employee
+    $check_stmt = $conn->prepare("SELECT COUNT(*) as count FROM employee_shift_pattern WHERE pattern_id = ?");
+    $check_stmt->bind_param("i", $pattern_id);
+    $check_stmt->execute();
+    $result = $check_stmt->get_result();
+    $row = $result->fetch_assoc();
+    
+    if ($row['count'] > 0) {
+        return ["success" => false, "message" => "Cannot delete pattern. It is currently assigned to employees."];
+    }
+    
+    // Delete pattern details first
+    $delete_details_stmt = $conn->prepare("DELETE FROM shift_pattern_details WHERE pattern_id = ?");
+    $delete_details_stmt->bind_param("i", $pattern_id);
+    $delete_details_stmt->execute();
+    
+    // Delete pattern
+    $delete_stmt = $conn->prepare("DELETE FROM shift_patterns WHERE pattern_id = ?");
+    $delete_stmt->bind_param("i", $pattern_id);
+    
+    if ($delete_stmt->execute()) {
+        return ["success" => true, "message" => "Shift pattern deleted successfully"];
+    } else {
+        return ["success" => false, "message" => "Error deleting shift pattern: " . $conn->error];
+    }
+}
+
 // Helper function for single date
 function getExpectedEmployeesForDate($conn, $date) {
     $query = "
@@ -1001,8 +1059,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
   }
+
+  // NEW: Update shift pattern
+  if (isset($_POST['update_pattern'])) {
+    $pattern_id = $_POST['pattern_id'];
+    $pattern_name = $_POST['pattern_name'];
+    $description = $_POST['pattern_description'];
+    $cycle_days = $_POST['cycle_days'];
+    
+    // Process pattern days
+    $pattern_days = [];
+    for ($i = 1; $i <= $cycle_days; $i++) {
+        if (isset($_POST["day_{$i}_shift"]) && !empty($_POST["day_{$i}_shift"])) {
+            $pattern_days[] = [
+                'day_number' => $i,
+                'shift_id' => $_POST["day_{$i}_shift"]
+            ];
+        }
+    }
+    
+    if (empty($pattern_days)) {
+        $_SESSION['error'] = "Please assign at least one shift to the pattern.";
+    } else {
+        $result = updateShiftPattern($pattern_id, $pattern_name, $description, $cycle_days, $pattern_days, $conn);
+        
+        if ($result['success']) {
+            $_SESSION['success'] = $result['message'];
+        } else {
+            $_SESSION['error'] = $result['message'];
+        }
+    }
+  }
+
+  // NEW: Delete shift pattern
+  if (isset($_POST['delete_pattern'])) {
+    $pattern_id = $_POST['pattern_id'];
+    
+    $result = deleteShiftPattern($pattern_id, $conn);
+    
+    if ($result['success']) {
+        $_SESSION['success'] = $result['message'];
+    } else {
+        $_SESSION['error'] = $result['message'];
+    }
+  }
   
-  header("Location: " . $_SERVER['PHP_SELF']);
+  // Redirect with tab anchor
+  $active_tab = isset($_POST['active_tab']) ? $_POST['active_tab'] : '';
+  header("Location: " . $_SERVER['PHP_SELF'] . "#" . $active_tab);
   exit();
 }
 
@@ -1307,6 +1411,23 @@ if (isset($_GET['ajax'])) {
       exit();
     }
 
+    if ($_GET['ajax'] == 'get_pattern_info') {
+      $pattern_id = $_GET['pattern_id'] ?? '';
+      
+      $stmt = $conn->prepare("SELECT * FROM shift_patterns WHERE pattern_id = ?");
+      $stmt->bind_param("i", $pattern_id);
+      $stmt->execute();
+      $result = $stmt->get_result();
+      
+      if ($result->num_rows > 0) {
+          $pattern = $result->fetch_assoc();
+          echo json_encode($pattern);
+      } else {
+          echo json_encode(['error' => 'Pattern not found']);
+      }
+      exit();
+    }
+
     // NEW: All Schedules AJAX Handlers
     if ($_GET['ajax'] == 'get_all_schedules') {
         $date = $_GET['date'] ?? date('Y-m-d');
@@ -1460,11 +1581,35 @@ while ($row = $dept_result->fetch_assoc()) {
   $departments[] = $row['department'];
 }
 
-// Get employees for dropdowns
+// Get employees for dropdowns with pagination - MODIFIED TO SORT BY EMPLOYEE NUMBER
+$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+$per_page = isset($_GET['per_page']) ? max(10, intval($_GET['per_page'])) : 20;
+$offset = ($page - 1) * $per_page;
+
+// Get total count
+$count_result = $conn->query("SELECT COUNT(*) as total FROM employee");
+$total_row = $count_result->fetch_assoc();
+$total_employees = $total_row['total'];
+$total_pages = ceil($total_employees / $per_page);
+
+// Get employees with pagination - MODIFIED TO SORT BY EMPLOYEE NUMBER
 $employees = [];
-$emp_result = $conn->query("SELECT empID, fullname, department FROM employee ORDER BY fullname");
+$emp_result = $conn->query("
+    SELECT empID, fullname, department, position, 
+           shift_type, work_hours_per_week, 
+           default_shift_id
+    FROM employee 
+    ORDER BY 
+        CASE 
+            WHEN empID REGEXP '^emp-[0-9]+$' 
+            THEN CAST(SUBSTRING(empID, 5) AS UNSIGNED)
+            ELSE 999999
+        END,
+        empID
+    LIMIT $per_page OFFSET $offset
+");
 while ($row = $emp_result->fetch_assoc()) {
-  $employees[] = $row;
+    $employees[] = $row;
 }
 
 // Get staffing requirements
@@ -2040,43 +2185,117 @@ tbody tr:hover {
   filter: invert(1);
 }
 
-/* Responsive Design */
+/* Pagination Styles */
+.pagination {
+    margin-top: 20px;
+}
+
+.page-link {
+    color: #1E3A8A;
+    border: 1px solid #dee2e6;
+    padding: 8px 16px;
+}
+
+.page-item.active .page-link {
+    background-color: #1E3A8A;
+    border-color: #1E3A8A;
+    color: white;
+}
+
+.page-item.disabled .page-link {
+    color: #6c757d;
+    background-color: #f8f9fa;
+}
+
+/* Progress bar for work hours */
+.progress {
+    border-radius: 10px;
+    background-color: #e9ecef;
+    margin-top: 5px;
+}
+
+.progress-bar {
+    background-color: #1E3A8A;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    line-height: 20px;
+    text-align: center;
+}
+
+/* Badge styles */
+.badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+}
+
+/* Employee ID display */
+td:first-child {
+    min-width: 100px;
+}
+
+/* Button group for actions */
+.btn-group {
+    flex-wrap: wrap;
+    gap: 2px;
+}
+
+.btn-group .btn {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+}
+
+/* Responsive table */
 @media (max-width: 768px) {
-  .main-content {
-    margin-left: 0;
-    width: 100%;
-    padding: 15px;
-  }
-  
-  .nav-tabs {
-    padding: 0 10px;
-  }
-  
-  .nav-tabs .nav-link {
-    padding: 10px 15px;
-    font-size: 0.9rem;
-  }
-  
-  .calendar-day {
-    min-height: 80px;
-    font-size: 0.8rem;
-  }
-  
-  .calendar-event {
-    font-size: 0.6rem;
-    padding: 2px 4px;
-  }
-  
-  .filter-controls {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .filter-controls select,
-  .filter-controls input {
-    width: 100%;
-    min-width: auto;
-  }
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+        padding: 15px;
+    }
+    
+    .nav-tabs {
+        padding: 0 10px;
+    }
+    
+    .nav-tabs .nav-link {
+        padding: 10px 15px;
+        font-size: 0.9rem;
+    }
+    
+    .calendar-day {
+        min-height: 80px;
+        font-size: 0.8rem;
+    }
+    
+    .calendar-event {
+        font-size: 0.6rem;
+        padding: 2px 4px;
+    }
+    
+    .filter-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .filter-controls select,
+    .filter-controls input {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .btn-group .btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 /* Scrollbar Styling */
@@ -2097,20 +2316,6 @@ tbody tr:hover {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
-}
-
-/* Add to your existing CSS */
-.pagination {
-    margin-bottom: 0;
-}
-
-.page-link {
-    color: #1E3A8A;
-}
-
-.page-item.active .page-link {
-    background-color: #1E3A8A;
-    border-color: #1E3A8A;
 }
 
 .spinner-border {
@@ -2236,21 +2441,38 @@ tbody tr:hover {
       <div class="tab-pane fade" id="shifts" role="tabpanel" aria-labelledby="shifts-tab">
         <div class="table-container">
           <div class="filter-controls">
+            <!-- Entries filter -->
+            <div class="d-flex align-items-center">
+              <span class="me-2">Show</span>
+              <select id="entries-per-page" class="form-select" style="width: auto;" onchange="changePerPage(this.value)">
+                <option value="10" <?php echo $per_page == 10 ? 'selected' : ''; ?>>10</option>
+                <option value="20" <?php echo $per_page == 20 ? 'selected' : ''; ?>>20</option>
+                <option value="50" <?php echo $per_page == 50 ? 'selected' : ''; ?>>50</option>
+                <option value="100" <?php echo $per_page == 100 ? 'selected' : ''; ?>>100</option>
+              </select>
+              <span class="ms-2">entries</span>
+            </div>
+            
+            <!-- Search filter -->
+            <input type="text" id="shift-search" class="form-control" placeholder="Search employee..." style="width: auto;">
+            
+            <!-- Department filter -->
             <select id="shift-dept-filter" class="form-select" style="width: auto;">
               <option value="">All Departments</option>
               <?php foreach ($departments as $dept): ?>
                 <option value="<?php echo htmlspecialchars($dept); ?>"><?php echo htmlspecialchars($dept); ?></option>
               <?php endforeach; ?>
             </select>
+            
+            <!-- Shift type filter -->
             <select id="shift-type-filter" class="form-select" style="width: auto;">
               <option value="">All Shift Types</option>
               <option value="Fixed">Fixed</option>
               <option value="Rotational">Rotational</option>
             </select>
-            <input type="text" id="shift-search" class="form-control" placeholder="Search employee..." style="width: auto;">
           </div>
 
-          <table id="shifts-table">
+          <table id="shifts-table" class="table table-striped">
             <thead>
               <tr>
                 <th>Employee ID</th>
@@ -2265,45 +2487,176 @@ tbody tr:hover {
               </tr>
             </thead>
             <tbody>
-              <?php
-              $employeesQuery = $conn->query("
-                SELECT e.*, s.shift_name, esp.pattern_id, sp.pattern_name
-                FROM employee e 
-                LEFT JOIN shift_templates s ON e.default_shift_id = s.shift_id
-                LEFT JOIN employee_shift_pattern esp ON e.empID = esp.empID AND esp.end_date >= CURDATE()
-                LEFT JOIN shift_patterns sp ON esp.pattern_id = sp.pattern_id
-                ORDER BY e.department, e.fullname
-              ");
+              <?php 
+              // Sort employees by employee number
+              usort($employees, function($a, $b) {
+                  $getEmpNumber = function($empID) {
+                      $match = [];
+                      if (preg_match('/emp-(\d+)/i', $empID, $match)) {
+                          return intval($match[1]);
+                      }
+                      return 999999;
+                  };
+                  
+                  $numA = $getEmpNumber($a['empID']);
+                  $numB = $getEmpNumber($b['empID']);
+                  
+                  return $numA - $numB;
+              });
               
-              while ($emp = $employeesQuery->fetch_assoc()) {
-                echo "<tr>";
-                echo "<td>" . htmlspecialchars($emp['empID']) . "</td>";
-                echo "<td>" . htmlspecialchars($emp['fullname']) . "</td>";
-                echo "<td>" . htmlspecialchars($emp['department']) . "</td>";
-                echo "<td>" . htmlspecialchars($emp['position']) . "</td>";
-                echo "<td>" . htmlspecialchars($emp['shift_type']) . "</td>";
-                echo "<td>" . ($emp['shift_name'] ? '<span class="shift-badge shift-' . strtolower($emp['shift_name']) . '">' . htmlspecialchars($emp['shift_name']) . '</span>' : 'Not Set') . "</td>";
-                echo "<td>" . htmlspecialchars($emp['work_hours_per_week']) . "</td>";
-                echo "<td>" . ($emp['pattern_name'] ? '<span class="badge bg-info">' . htmlspecialchars($emp['pattern_name']) . '</span>' : 'No Pattern') . "</td>";
-                echo "<td>
-                        <button class='btn btn-sm btn-primary assign-shift-btn' data-emp-id='" . htmlspecialchars($emp['empID']) . "' data-bs-toggle='modal' data-bs-target='#assignShiftModal'>
-                          <i class='fa-solid fa-calendar-plus'></i> Assign Shift
-                        </button>
-                        <button class='btn btn-sm btn-info edit-default-shift-btn' data-emp-id='" . htmlspecialchars($emp['empID']) . "' data-bs-toggle='modal' data-bs-target='#editDefaultShiftModal'>
-                          <i class='fa-solid fa-gear'></i> Settings
-                        </button>
-                        <button class='btn btn-sm btn-warning multiple-shift-btn' data-emp-id='" . htmlspecialchars($emp['empID']) . "' data-bs-toggle='modal' data-bs-target='#multipleShiftModal'>
-                          <i class='fa-solid fa-calendar-week'></i> Multiple
-                        </button>
-                        <button class='btn btn-sm btn-success assign-pattern-btn' data-emp-id='" . htmlspecialchars($emp['empID']) . "' data-bs-toggle='modal' data-bs-target='#assignPatternModal'>
-                          <i class='fa-solid fa-calendar-week'></i> Pattern
-                        </button>
-                      </td>";
-                echo "</tr>";
-              }
+              foreach ($employees as $emp): 
+                // Get shift name if default shift exists
+                $default_shift_name = '';
+                if (!empty($emp['default_shift_id'])) {
+                  $shift_stmt = $conn->prepare("SELECT shift_name FROM shift_templates WHERE shift_id = ?");
+                  $shift_stmt->bind_param("i", $emp['default_shift_id']);
+                  $shift_stmt->execute();
+                  $shift_result = $shift_stmt->get_result();
+                  if ($shift_row = $shift_result->fetch_assoc()) {
+                    $default_shift_name = $shift_row['shift_name'];
+                  }
+                }
+                
+                // Get current pattern
+                $pattern_stmt = $conn->prepare("
+                  SELECT sp.pattern_name 
+                  FROM employee_shift_pattern esp
+                  JOIN shift_patterns sp ON esp.pattern_id = sp.pattern_id
+                  WHERE esp.empID = ? AND esp.end_date >= CURDATE()
+                  LIMIT 1
+                ");
+                $pattern_stmt->bind_param("s", $emp['empID']);
+                $pattern_stmt->execute();
+                $pattern_result = $pattern_stmt->get_result();
+                $pattern_name = $pattern_result->num_rows > 0 ? $pattern_result->fetch_assoc()['pattern_name'] : 'No Pattern';
               ?>
+              <tr>
+                <td>
+                  <span class="badge bg-primary"><?php echo htmlspecialchars($emp['empID']); ?></span>
+                </td>
+                <td><?php echo htmlspecialchars($emp['fullname']); ?></td>
+                <td><?php echo htmlspecialchars($emp['department']); ?></td>
+                <td><?php echo htmlspecialchars($emp['position']); ?></td>
+                <td>
+                  <?php if ($emp['shift_type'] == 'Fixed'): ?>
+                    <span class="badge bg-success">Fixed</span>
+                  <?php else: ?>
+                    <span class="badge bg-warning text-dark">Rotational</span>
+                  <?php endif; ?>
+                </td>
+                <td>
+                  <?php if ($default_shift_name): ?>
+                    <span class="shift-badge shift-<?php echo strtolower($default_shift_name); ?>">
+                      <?php echo htmlspecialchars($default_shift_name); ?>
+                    </span>
+                  <?php else: ?>
+                    <span class="badge bg-secondary">Not Set</span>
+                  <?php endif; ?>
+                </td>
+                <td>
+                  <div class="progress" style="height: 20px;">
+                    <div class="progress-bar" role="progressbar" 
+                         style="width: <?php echo min(100, ($emp['work_hours_per_week'] / 40) * 100); ?>%">
+                      <?php echo htmlspecialchars($emp['work_hours_per_week']); ?> hrs
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <?php if ($pattern_name != 'No Pattern'): ?>
+                    <span class="badge bg-info"><?php echo htmlspecialchars($pattern_name); ?></span>
+                  <?php else: ?>
+                    <span class="badge bg-secondary"><?php echo htmlspecialchars($pattern_name); ?></span>
+                  <?php endif; ?>
+                </td>
+                <td>
+                  <div class="btn-group" role="group" aria-label="Employee Actions">
+                    <button class='btn btn-sm btn-primary assign-shift-btn' 
+                            data-emp-id="<?php echo htmlspecialchars($emp['empID']); ?>" 
+                            data-bs-toggle='modal' 
+                            data-bs-target='#assignShiftModal'
+                            title="Assign Single Shift">
+                      <i class='fa-solid fa-calendar-plus'></i>
+                    </button>
+                    <button class='btn btn-sm btn-info edit-default-shift-btn' 
+                            data-emp-id="<?php echo htmlspecialchars($emp['empID']); ?>" 
+                            data-bs-toggle='modal' 
+                            data-bs-target='#editDefaultShiftModal'
+                            title="Edit Settings">
+                      <i class='fa-solid fa-gear'></i>
+                    </button>
+                    <button class='btn btn-sm btn-warning multiple-shift-btn' 
+                            data-emp-id="<?php echo htmlspecialchars($emp['empID']); ?>" 
+                            data-bs-toggle='modal' 
+                            data-bs-target='#multipleShiftModal'
+                            title="Assign Multiple Shifts">
+                      <i class='fa-solid fa-calendar-week'></i>
+                    </button>
+                    <button class='btn btn-sm btn-success assign-pattern-btn' 
+                            data-emp-id="<?php echo htmlspecialchars($emp['empID']); ?>" 
+                            data-bs-toggle='modal' 
+                            data-bs-target='#assignPatternModal'
+                            title="Assign Pattern">
+                      <i class='fa-solid fa-calendar-alt'></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <?php endforeach; ?>
             </tbody>
           </table>
+
+          <!-- Pagination -->
+          <nav aria-label="Employee pagination">
+            <ul class="pagination justify-content-center">
+              <!-- Previous button -->
+              <li class="page-item <?php echo $page <= 1 ? 'disabled' : ''; ?>">
+                <a class="page-link" href="?page=<?php echo $page - 1; ?>&per_page=<?php echo $per_page; ?>#shifts">
+                  <i class="fa-solid fa-chevron-left"></i> Previous
+                </a>
+              </li>
+              
+              <!-- Page numbers -->
+              <?php
+              // Show page numbers
+              $max_pages_to_show = 5;
+              $start_page = max(1, $page - floor($max_pages_to_show / 2));
+              $end_page = min($total_pages, $start_page + $max_pages_to_show - 1);
+              
+              if ($start_page > 1) {
+                echo '<li class="page-item"><a class="page-link" href="?page=1&per_page=' . $per_page . '#shifts">1</a></li>';
+                if ($start_page > 2) {
+                  echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                }
+              }
+              
+              for ($i = $start_page; $i <= $end_page; $i++) {
+                $active = $i == $page ? 'active' : '';
+                echo '<li class="page-item ' . $active . '">';
+                echo '<a class="page-link" href="?page=' . $i . '&per_page=' . $per_page . '#shifts">' . $i . '</a>';
+                echo '</li>';
+              }
+              
+              if ($end_page < $total_pages) {
+                if ($end_page < $total_pages - 1) {
+                  echo '<li class="page-item disabled"><span class="page-link">...</span></li>';
+                }
+                echo '<li class="page-item"><a class="page-link" href="?page=' . $total_pages . '&per_page=' . $per_page . '#shifts">' . $total_pages . '</a></li>';
+              }
+              ?>
+              
+              <!-- Next button -->
+              <li class="page-item <?php echo $page >= $total_pages ? 'disabled' : ''; ?>">
+                <a class="page-link" href="?page=<?php echo $page + 1; ?>&per_page=<?php echo $per_page; ?>#shifts">
+                  Next <i class="fa-solid fa-chevron-right"></i>
+                </a>
+              </li>
+            </ul>
+          </nav>
+          
+          <!-- Showing X of Y entries -->
+          <div class="text-center text-muted">
+            Showing <?php echo min($per_page, count($employees)); ?> of <?php echo $total_employees; ?> employees
+          </div>
         </div>
       </div>
 
@@ -2313,53 +2666,73 @@ tbody tr:hover {
           <div class="d-flex justify-content-between align-items-center mb-3">
             <h3>Shift Pattern Management</h3>
             <div>
-              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assignPatternModal">
-                <i class="fa-solid fa-user-plus"></i> Assign Pattern
-              </button>
               <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createPatternModal">
                 <i class="fa-solid fa-plus"></i> Create Pattern
               </button>
             </div>
           </div>
 
+          <!-- Filter controls for entries -->
+          <div class="filter-controls mb-3">
+            <div class="d-flex align-items-center">
+              <span class="me-2">Show</span>
+              <select id="pattern-entries-per-page" class="form-select" style="width: auto;" onchange="changePatternPerPage(this.value)">
+                <option value="10">10</option>
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+              <span class="ms-2">entries</span>
+            </div>
+            
+            <!-- Search filter -->
+            <input type="text" id="pattern-search" class="form-control" placeholder="Search pattern..." style="width: auto;">
+          </div>
+
           <!-- Employee Patterns Table -->
           <div class="mb-4">
             <h4>Employee Shift Patterns</h4>
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th>Employee</th>
-                  <th>Department</th>
-                  <th>Pattern</th>
-                  <th>Start Date</th>
-                  <th>End Date</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="employee-patterns-body">
-                <!-- Will be populated by JavaScript -->
-              </tbody>
-            </table>
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Employee ID</th>
+                    <th>Employee Name</th>
+                    <th>Department</th>
+                    <th>Pattern</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="employee-patterns-body">
+                  <!-- Will be populated by JavaScript -->
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <!-- Available Patterns -->
           <div>
             <h4>Available Shift Patterns</h4>
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th>Pattern Name</th>
-                  <th>Description</th>
-                  <th>Cycle Days</th>
-                  <th>Pattern Details</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="shift-patterns-body">
-                <!-- Will be populated by JavaScript -->
-              </tbody>
-            </table>
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Pattern ID</th>
+                    <th>Pattern Name</th>
+                    <th>Description</th>
+                    <th>Cycle Days</th>
+                    <th>Pattern Details</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="shift-patterns-body">
+                  <!-- Will be populated by JavaScript -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -2599,6 +2972,7 @@ tbody tr:hover {
     <div class="modal-dialog">
       <div class="modal-content">
         <form method="POST" action="">
+          <input type="hidden" name="active_tab" value="shifts">
           <div class="modal-header">
             <h5 class="modal-title" id="assignShiftModalLabel">Assign Single Shift</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -2640,6 +3014,7 @@ tbody tr:hover {
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <form method="POST" action="">
+          <input type="hidden" name="active_tab" value="shifts">
           <div class="modal-header">
             <h5 class="modal-title" id="multipleShiftModalLabel">Assign Multiple Shifts</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -2731,6 +3106,7 @@ tbody tr:hover {
     <div class="modal-dialog">
       <div class="modal-content">
         <form method="POST" action="">
+          <input type="hidden" name="active_tab" value="shifts">
           <div class="modal-header">
             <h5 class="modal-title" id="editDefaultShiftModalLabel">Edit Default Shift Settings</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -2779,6 +3155,7 @@ tbody tr:hover {
     <div class="modal-dialog">
       <div class="modal-content">
         <form method="POST" action="">
+          <input type="hidden" name="active_tab" value="patterns">
           <div class="modal-header">
             <h5 class="modal-title" id="assignPatternModalLabel">Assign Shift Pattern</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -2831,6 +3208,7 @@ tbody tr:hover {
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <form method="POST" action="">
+          <input type="hidden" name="active_tab" value="patterns">
           <div class="modal-header">
             <h5 class="modal-title" id="createPatternModalLabel">Create Shift Pattern</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -2871,11 +3249,86 @@ tbody tr:hover {
     </div>
   </div>
 
+  <!-- NEW: Edit Pattern Modal -->
+  <div class="modal fade" id="editPatternModal" tabindex="-1" aria-labelledby="editPatternModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <form method="POST" action="">
+          <input type="hidden" name="active_tab" value="patterns">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editPatternModalLabel">Edit Shift Pattern</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" name="pattern_id" id="edit_pattern_id">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="edit_pattern_name" class="form-label">Pattern Name</label>
+                  <input type="text" class="form-control" id="edit_pattern_name" name="pattern_name" required>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="edit_cycle_days" class="form-label">Cycle Days</label>
+                  <input type="number" class="form-control" id="edit_cycle_days" name="cycle_days" min="1" max="30" value="7" required>
+                </div>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label for="edit_pattern_description" class="form-label">Description</label>
+              <textarea class="form-control" id="edit_pattern_description" name="pattern_description" rows="2"></textarea>
+            </div>
+            
+            <div class="pattern-builder">
+              <h6>Pattern Days</h6>
+              <div id="edit-pattern-days-container">
+                <!-- Pattern days will be generated by JavaScript -->
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" name="update_pattern" class="btn btn-primary">Update Pattern</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW: Delete Pattern Modal -->
+  <div class="modal fade" id="deletePatternModal" tabindex="-1" aria-labelledby="deletePatternModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="">
+          <input type="hidden" name="active_tab" value="patterns">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deletePatternModalLabel">Delete Shift Pattern</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" name="pattern_id" id="delete_pattern_id">
+            <p>Are you sure you want to delete this shift pattern? This action cannot be undone.</p>
+            <div class="alert alert-warning">
+              <i class="fa-solid fa-exclamation-triangle"></i>
+              <strong>Warning:</strong> This pattern may be assigned to employees. Deleting it will remove the pattern but not affect existing schedules.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" name="delete_pattern" class="btn btn-danger">Delete Pattern</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Add Staffing Modal -->
   <div class="modal fade" id="addStaffingModal" tabindex="-1" aria-labelledby="addStaffingModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <form method="POST" action="">
+          <input type="hidden" name="active_tab" value="staffing">
           <div class="modal-header">
             <h5 class="modal-title" id="addStaffingModalLabel">Add Staffing Requirement</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -2943,6 +3396,7 @@ tbody tr:hover {
     <div class="modal-dialog">
       <div class="modal-content">
         <form method="POST" action="">
+          <input type="hidden" name="active_tab" value="staffing">
           <div class="modal-header">
             <h5 class="modal-title" id="editStaffingModalLabel">Edit Staffing Requirement</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -3011,6 +3465,7 @@ tbody tr:hover {
     <div class="modal-dialog">
       <div class="modal-content">
         <form method="POST" action="">
+          <input type="hidden" name="active_tab" value="staffing">
           <div class="modal-header">
             <h5 class="modal-title" id="deleteStaffingModalLabel">Delete Staffing Requirement</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -3340,7 +3795,7 @@ tbody tr:hover {
                         <td>${item.required_count}</td>
                         <td>${item.expected_count}</td>
                         <td class="${statusClass}">${gap > 0 ? `-${gap}` : '0'}</td>
-                        <td class="${statusClass}">${statusIcon}</td>
+                        <td class="${statusClass}">${statusIcon} ${item.staffing_status}</td>
                         <td>
                             <button class='btn btn-sm btn-warning edit-staffing-btn' data-id='${item.staffing_id}' data-bs-toggle='modal' data-bs-target='#editStaffingModal'>
                                 <i class='fa-solid fa-pen'></i>
@@ -3363,7 +3818,7 @@ tbody tr:hover {
         .then(response => response.json())
         .then(employee => {
           if (employee.error) {
-            alert('Error loading employee data: ' + employee.error);
+            alert('Error loading employee data: ' . employee.error);
             return;
           }
           
@@ -3400,6 +3855,36 @@ tbody tr:hover {
         });
     }
 
+    // Function to change entries per page
+    function changePerPage(value) {
+        const url = new URL(window.location);
+        url.searchParams.set('per_page', value);
+        url.searchParams.set('page', '1'); // Reset to first page
+        window.location.href = url.toString() + '#shifts';
+    }
+
+    // Function to change pattern entries per page
+    function changePatternPerPage(value) {
+        // This would typically reload patterns with new pagination
+        loadShiftPatterns();
+    }
+
+    // Helper function to sort employee IDs
+    function sortEmployeeIDs(employees) {
+        return employees.sort((a, b) => {
+            // Extract numbers from empID (e.g., emp-001 -> 1)
+            const getEmpNumber = (empID) => {
+                const match = empID.match(/emp-(\d+)/i);
+                return match ? parseInt(match[1], 10) : Infinity;
+            };
+            
+            const numA = getEmpNumber(a.empID);
+            const numB = getEmpNumber(b.empID);
+            
+            return numA - numB;
+        });
+    }
+
     // NEW: Shift Pattern Functions
     function loadShiftPatterns() {
         fetch('?ajax=get_shift_patterns')
@@ -3430,6 +3915,7 @@ tbody tr:hover {
         patterns.forEach(pattern => {
             html += `
                 <tr>
+                    <td>${pattern.pattern_id}</td>
                     <td><strong>${pattern.pattern_name}</strong></td>
                     <td>${pattern.description}</td>
                     <td>${pattern.cycle_days} days</td>
@@ -3451,6 +3937,9 @@ tbody tr:hover {
         });
         
         container.innerHTML = html;
+        
+        // Attach event listeners to the new buttons
+        attachPatternActionListeners();
     }
 
     function renderEmployeePatterns(employeePatterns) {
@@ -3464,7 +3953,8 @@ tbody tr:hover {
             
             html += `
                 <tr>
-                    <td>${empPattern.fullname} (${empPattern.empID})</td>
+                    <td>${empPattern.empID}</td>
+                    <td>${empPattern.fullname}</td>
                     <td>${empPattern.department}</td>
                     <td>${empPattern.pattern_name}</td>
                     <td>${empPattern.start_date}</td>
@@ -3474,15 +3964,54 @@ tbody tr:hover {
                         <button class="btn btn-sm btn-primary predict-shifts-btn" data-emp-id="${empPattern.empID}">
                             <i class="fa-solid fa-crystal-ball"></i> Predict
                         </button>
-                        <button class="btn btn-sm btn-warning edit-emp-pattern-btn" data-id="${empPattern.emp_pattern_id}">
-                            <i class="fa-solid fa-edit"></i>
-                        </button>
+                        <!-- Edit button removed as requested -->
                     </td>
                 </tr>
             `;
         });
         
         container.innerHTML = html;
+        
+        // Attach event listeners
+        attachEmployeePatternActionListeners();
+    }
+
+    function attachPatternActionListeners() {
+        // Edit pattern buttons
+        document.querySelectorAll('.edit-pattern-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const patternId = this.getAttribute('data-id');
+                loadPatternForEditing(patternId);
+            });
+        });
+        
+        // Delete pattern buttons
+        document.querySelectorAll('.delete-pattern-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const patternId = this.getAttribute('data-id');
+                document.getElementById('delete_pattern_id').value = patternId;
+                const deleteModal = new bootstrap.Modal(document.getElementById('deletePatternModal'));
+                deleteModal.show();
+            });
+        });
+        
+        // View pattern details buttons
+        document.querySelectorAll('.view-pattern-details').forEach(button => {
+            button.addEventListener('click', function() {
+                const patternId = this.getAttribute('data-id');
+                viewPatternDetails(patternId);
+            });
+        });
+    }
+
+    function attachEmployeePatternActionListeners() {
+        // Predict shifts buttons only (edit button removed)
+        document.querySelectorAll('.predict-shifts-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const empId = this.getAttribute('data-emp-id');
+                predictEmployeeShifts(empId);
+            });
+        });
     }
 
     // Predict shifts for employee
@@ -3585,6 +4114,72 @@ tbody tr:hover {
         }
         
         container.innerHTML = html;
+    }
+
+    function loadPatternForEditing(patternId) {
+        fetch(`?ajax=get_pattern_info&pattern_id=${patternId}`)
+            .then(response => response.json())
+            .then(pattern => {
+                if (pattern.error) {
+                    alert('Error loading pattern: ' + pattern.error);
+                    return;
+                }
+                
+                // Set pattern info in edit modal
+                document.getElementById('edit_pattern_id').value = pattern.pattern_id;
+                document.getElementById('edit_pattern_name').value = pattern.pattern_name;
+                document.getElementById('edit_pattern_description').value = pattern.description;
+                document.getElementById('edit_cycle_days').value = pattern.cycle_days;
+                
+                // Generate pattern days
+                generateEditPatternDays(pattern.cycle_days, patternId);
+                
+                // Show edit modal
+                const editModal = new bootstrap.Modal(document.getElementById('editPatternModal'));
+                editModal.show();
+            })
+            .catch(error => {
+                console.error('Error loading pattern:', error);
+            });
+    }
+
+    function generateEditPatternDays(cycleDays, patternId) {
+        const container = document.getElementById('edit-pattern-days-container');
+        let html = '';
+        
+        // First generate empty selects
+        for (let i = 1; i <= cycleDays; i++) {
+            html += `
+                <div class="pattern-day">
+                    <div class="pattern-day-label">Day ${i}:</div>
+                    <select class="form-select pattern-day-select" name="day_${i}_shift" id="edit_day_${i}_shift">
+                        <option value="">No Shift</option>
+                        <?php foreach ($shift_templates as $shift): ?>
+                            <option value="<?php echo $shift['shift_id']; ?>">
+                                <?php echo htmlspecialchars($shift['shift_name']); ?> (<?php echo $shift['time_in'] . ' - ' . $shift['time_out']; ?>)
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            `;
+        }
+        
+        container.innerHTML = html;
+        
+        // Now load existing pattern details
+        fetch(`?ajax=get_pattern_details&pattern_id=${patternId}`)
+            .then(response => response.json())
+            .then(patternDetails => {
+                patternDetails.forEach(detail => {
+                    const select = document.getElementById(`edit_day_${detail.day_number}_shift`);
+                    if (select) {
+                        select.value = detail.shift_id;
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error loading pattern details:', error);
+            });
     }
 
     function loadStaffingOverview() {
@@ -4044,9 +4639,14 @@ tbody tr:hover {
       // Initialize pattern builder
       generatePatternDays(7);
       
-      // Pattern cycle days change handler
+      // Pattern cycle days change handlers
       document.getElementById('cycle_days').addEventListener('change', function() {
           generatePatternDays(this.value);
+      });
+      
+      document.getElementById('edit_cycle_days').addEventListener('change', function() {
+          const patternId = document.getElementById('edit_pattern_id').value;
+          generateEditPatternDays(this.value, patternId);
       });
       
       // Pattern description display
@@ -4060,6 +4660,9 @@ tbody tr:hover {
       document.getElementById('shift-dept-filter').addEventListener('change', filterShiftsTable);
       document.getElementById('shift-type-filter').addEventListener('change', filterShiftsTable);
       document.getElementById('shift-search').addEventListener('input', filterShiftsTable);
+      
+      // Filter functionality for patterns table
+      document.getElementById('pattern-search').addEventListener('input', filterPatternsTable);
       
       // Filter functionality for leaves table
       document.getElementById('leave-dept-filter').addEventListener('change', filterLeavesTable);
@@ -4123,19 +4726,6 @@ tbody tr:hover {
         });
       });
 
-      // Predict shifts buttons (will be attached after loading)
-      document.addEventListener('click', function(e) {
-          if (e.target.closest('.predict-shifts-btn')) {
-              const empId = e.target.closest('.predict-shifts-btn').getAttribute('data-emp-id');
-              predictEmployeeShifts(empId);
-          }
-          
-          if (e.target.closest('.view-pattern-details')) {
-              const patternId = e.target.closest('.view-pattern-details').getAttribute('data-id');
-              viewPatternDetails(patternId);
-          }
-      });
-
       // Load initial staffing overview
       loadStaffingOverview();
     });
@@ -4145,17 +4735,63 @@ tbody tr:hover {
       const typeFilter = document.getElementById('shift-type-filter').value.toLowerCase();
       const searchFilter = document.getElementById('shift-search').value.toLowerCase();
       
-      const rows = document.querySelectorAll('#shifts-table tbody tr');
+      const rows = Array.from(document.querySelectorAll('#shifts-table tbody tr'));
       
+      // Sort rows by employee ID
+      rows.sort((a, b) => {
+        const empIdA = a.cells[0].textContent;
+        const empIdB = b.cells[0].textContent;
+        
+        const getEmpNumber = (empID) => {
+          const match = empID.match(/emp-(\d+)/i);
+          return match ? parseInt(match[1], 10) : Infinity;
+        };
+        
+        return getEmpNumber(empIdA) - getEmpNumber(empIdB);
+      });
+      
+      // Re-append sorted rows
+      const tbody = document.querySelector('#shifts-table tbody');
+      tbody.innerHTML = '';
+      rows.forEach(row => tbody.appendChild(row));
+      
+      // Apply filters
+      let visibleCount = 0;
       rows.forEach(row => {
         const dept = row.cells[2].textContent.toLowerCase();
         const type = row.cells[4].textContent.toLowerCase();
         const name = row.cells[1].textContent.toLowerCase();
+        const empId = row.cells[0].textContent.toLowerCase();
         
         const showRow = 
           (deptFilter === '' || dept.includes(deptFilter)) &&
           (typeFilter === '' || type.includes(typeFilter)) &&
-          (searchFilter === '' || name.includes(searchFilter));
+          (searchFilter === '' || name.includes(searchFilter) || empId.includes(searchFilter));
+        
+        row.style.display = showRow ? '' : 'none';
+        if (showRow) visibleCount++;
+      });
+      
+      // Update the "Showing X of Y entries" text
+      const showingText = document.querySelector('.text-center.text-muted');
+      if (showingText) {
+        showingText.textContent = `Showing ${visibleCount} of ${visibleCount} filtered employees`;
+      }
+    }
+    
+    function filterPatternsTable() {
+      const searchFilter = document.getElementById('pattern-search').value.toLowerCase();
+      
+      const rows = document.querySelectorAll('#shift-patterns-body tr');
+      
+      rows.forEach(row => {
+        const patternName = row.cells[1].textContent.toLowerCase();
+        const description = row.cells[2].textContent.toLowerCase();
+        
+        const showRow = 
+          searchFilter === '' || 
+          patternName.includes(searchFilter) || 
+          description.includes(searchFilter);
         
         row.style.display = showRow ? '' : 'none';
       });
