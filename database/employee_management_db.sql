@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 02, 2025 at 09:24 AM
+-- Generation Time: Dec 04, 2025 at 09:31 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -1310,7 +1310,7 @@ INSERT INTO `user` (`applicant_employee_id`, `email`, `password`, `role`, `fulln
 ('EMP-035', 'julian_flores@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Julian Flores', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-022', 'kevin_tan@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Kevin Tan', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-032', 'lance_tan@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Lance Tan', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-044', 'manrique_klarenzcobie@plpasig.edu.ph', '$2y$10$5EW46NwY9IMJlwdXlgeF6elvpp/ZWSI4RV8E6DCGEJvMmas.4.Aum', 'Employee', 'Klarenz Cobie O. Manrique', 'Active', '2025-11-25 14:08:06', NULL, 'e99a5dd36bab7c26537bd5b611b89270', '2025-11-26 07:08:06', 'Payroll Admin'),
+('EMP-044', 'manrique_klarenzcobie@plpasig.edu.ph', '$2y$10$T.sE.gaEzbtKCBdvemzdGeEmS8d8jUvhYnj3AUASQEwaOu2wIuv/y', 'Employee', 'Klarenz Cobie O. Manrique', 'Active', '2025-11-25 14:08:06', NULL, '', '', 'Payroll Admin'),
 ('EMP-038', 'marco.alcantara@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Marco Alcantara', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-024', 'maria_deguzman@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Maria De Guzman', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-030', 'mark_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Mark Joseph Reyes', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
