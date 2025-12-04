@@ -839,7 +839,7 @@ if ($employeeID) {
           <thead>
             <tr>
               <th>Date</th>
-              <th>Basic Pay</th>
+              <th>Gross Salary</th>
               <th>Overtime Pay</th>
               <th>Deduction</th>
               <th>Net Pay</th>
@@ -911,6 +911,10 @@ if ($employeeID) {
                 <div class="info-row">
                   <span class="info-label">Period</span>
                   <span class="info-value period"></span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Absent Days (attendance)</span>
+                  <span class="info-value absentDaysCount"></span>
                 </div>
                 <div class="info-row">
                   <span class="info-label">Monthly Rate</span>
@@ -1035,7 +1039,7 @@ if ($employeeID) {
                       <td></td>
                     </tr>
                     <tr class="total-row">
-                      <td colspan="2">Gross Pay:</td>
+                      <td colspan="2">Basic Pay:</td>
                       <td class="grossPay"></td>
                       <td>Total Deduction:</td>
                       <td class="totalDeduction"></td>
@@ -1139,6 +1143,20 @@ if ($employeeID) {
     }
     loadPayroll();
 
+    let attendanceAnalytics = null;
+    async function loadAttendanceSummary() {
+      try {
+        const res = await fetch('/HR-EMPLOYEE-MANAGEMENT/API/consumer_attendance.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ emp_code: empID })
+        });
+        const data = await res.json();
+        attendanceAnalytics = (data && data.analytics) ? data.analytics : null;
+      } catch (e) { attendanceAnalytics = null; }
+    }
+    loadAttendanceSummary();
+
     document.getElementById('yearFilter').addEventListener('change', () => renderRows(rowsAll));
     document.getElementById('monthFilter').addEventListener('change', () => renderRows(rowsAll));
 
@@ -1165,6 +1183,59 @@ if ($employeeID) {
 
       set('.approvedBy', 'HR');
       set('.receivedBy', data.full_name);
+
+      const basic = Number(data.basic_pay || data.basic || 0);
+      const subBasic = Number(data.sub_basic_pay || 0);
+      const overtime = Number(data.ot_pay || data.overtime_pay || data.overtime || 0);
+      const legalHoliday = Number(data.legal_holiday_pay || 0);
+      const specialHoliday = Number(data.special_holiday_pay || data.special_non_working_holiday_pay || 0);
+      const holidayOT = Number(data.holiday_ot_pay || 0);
+      const restDay = Number(data.rest_day_pay || 0);
+      const absentUnits = Number(data.absent_days || data.absent_hours || 0);
+      const absentAmt = Number(data.absent_deduction || data.absent_amount || 0);
+      const underUnits = Number(data.undertime_hours || data.under_time || 0);
+      const underAmt = Number(data.undertime_deduction || data.under_time_amount || 0);
+
+      const sss = Number(data.sss || data.sss_contrib || 0);
+      const phil = Number(data.philhealth || data.phil_health || 0);
+      const pagibig = Number(data.pagibig || data.pag_ibig || 0);
+      const tax = Number(data.tax || data.withholding_tax || 0);
+      const otherDed = Number(data.other_deductions || data.other_deduction || 0);
+
+      const allowances = Number(data.allowances || 0);
+      const gross = Number(data.gross_pay || (basic + subBasic + overtime + legalHoliday + specialHoliday + holidayOT + restDay + allowances));
+      const totalDed = Number(data.total_deduction || (sss + phil + pagibig + tax + otherDed + absentAmt + underAmt));
+      const net = Number(data.net_pay || (gross - totalDed));
+
+      set('.subBasicPayTotal', fmt(subBasic));
+      set('.subBasicPay', fmt(subBasic));
+      set('.basicPayTotal', fmt(basic));
+      set('.basicPay', fmt(basic));
+      set('.absent', String(absentUnits));
+      set('.absentPay', fmt(absentAmt));
+      set('.underTime', String(underUnits));
+      set('.underTimePay', fmt(underAmt));
+      set('.overTimePay', fmt(overtime));
+      set('.overTimePayPay', fmt(overtime));
+      set('.legalHoliday', fmt(legalHoliday));
+      set('.legalHolidayPay', fmt(legalHoliday));
+      set('.specialNonWorkingHoliday', fmt(specialHoliday));
+      set('.specialNonWorkingHolidayPay', fmt(specialHoliday));
+      set('.holidayOTPay', fmt(holidayOT));
+      set('.holidayOTPayPay', fmt(holidayOT));
+      set('.restDayPay', fmt(restDay));
+      set('.restDayPayPay', fmt(restDay));
+      set('.sss', fmt(sss));
+      set('.philHealth', fmt(phil));
+      set('.pagIbig', fmt(pagibig));
+      set('.tax', fmt(tax));
+      set('.otherDeduction', fmt(otherDed));
+      set('.grossPay', fmt(gross));
+      set('.totalDeduction', fmt(totalDed));
+      set('.netPay', fmt(net));
+
+      const absCnt = Number((attendanceAnalytics && (attendanceAnalytics.absences_count ?? attendanceAnalytics.dashboard_stats?.absent_days)) || 0);
+      set('.absentDaysCount', String(Number.isFinite(absCnt) ? absCnt : 0));
     }
 
     function showOverview() {
@@ -1193,6 +1264,50 @@ if ($employeeID) {
         console.log(`Filter changed: ${this.id} = ${this.value}`);
       });
     });
+
+    function runSalarySlipTests() {
+      const sample = {
+        full_name: 'Test User',
+        emp_code: 'EMP-001',
+        position: 'Engineer',
+        employment_type: 'Regular',
+        period_start: '2025-12-01',
+        period_end: '2025-12-15',
+        basic_pay: 10000,
+        sub_basic_pay: 2000,
+        ot_pay: 1500,
+        allowances: 500,
+        sss: 300,
+        philhealth: 200,
+        pagibig: 100,
+        tax: 400,
+        other_deductions: 50,
+        absent_deduction: 100,
+        undertime_deduction: 50
+      };
+      showDetails(sample);
+      attendanceAnalytics = { absences_count: 4, dashboard_stats: { absent_days: 4 } };
+      const absentDays = document.querySelector('.absentDaysCount')?.textContent || '0';
+      console.log('TEST absentDaysCount', absentDays === '4' ? 'PASS' : 'FAIL', absentDays);
+      const getNum = sel => {
+        const t = (document.querySelector(sel)?.textContent || '').replace(/[^0-9.\-]/g, '');
+        const n = parseFloat(t);
+        return isNaN(n) ? 0 : n;
+      };
+      const grossExpected = 10000 + 2000 + 1500 + 500;
+      const dedExpected = 300 + 200 + 100 + 400 + 50 + 100 + 50;
+      const netExpected = grossExpected - dedExpected;
+      const okGross = Math.abs(getNum('.grossPay') - grossExpected) < 0.01;
+      const okDed = Math.abs(getNum('.totalDeduction') - dedExpected) < 0.01;
+      const okNet = Math.abs(getNum('.netPay') - netExpected) < 0.01;
+      console.log('TEST grossPay', okGross ? 'PASS' : 'FAIL', getNum('.grossPay'), grossExpected);
+      console.log('TEST totalDeduction', okDed ? 'PASS' : 'FAIL', getNum('.totalDeduction'), dedExpected);
+      console.log('TEST netPay', okNet ? 'PASS' : 'FAIL', getNum('.netPay'), netExpected);
+    }
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('test') === '1') runSalarySlipTests();
+    } catch (e) { }
   </script>
 </body>
 

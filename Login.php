@@ -39,7 +39,7 @@ if (isset($_POST['login'])) {
 
                 // Employee sub-roles
                 "employee" => [
-                    "Content Management Admin" => "http://26.94.239.95/healthcare-system/admin/dashboard.php",
+
                     "HR Director" => "Manager_Dashboard.php",
                     "HR Manager" => "Manager_Dashboard.php",
                     "Recruitment Manager" => "Manager_Dashboard.php",
