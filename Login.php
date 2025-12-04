@@ -34,12 +34,12 @@ if (isset($_POST['login'])) {
             $redirects = [
 
                 // Main roles
-               
+
                 "applicant" => "Applicant_Dashboard.php",
 
                 // Employee sub-roles
                 "employee" => [
-
+                    "Content Management Admin" => "http://26.94.239.95/healthcare-system/admin/dashboard.php",
                     "HR Director" => "Manager_Dashboard.php",
                     "HR Manager" => "Manager_Dashboard.php",
                     "Recruitment Manager" => "Manager_Dashboard.php",
@@ -47,6 +47,7 @@ if (isset($_POST['login'])) {
                     "HR Assistant" => "Manager_Dashboard.php",
                     "Training and Development Coordinator" => "Manager_Dashboard.php",
                     "Human Resource (HR) Admin" => "Admin_Dashboard.php",
+
 
                     // fallback if sub_role does not match any above
                     "default" => "Employee_Dashboard.php"
@@ -97,10 +98,11 @@ if (isset($_POST['login'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Hospital Portal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-   
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
         integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -356,23 +358,23 @@ if (isset($_POST['login'])) {
             .main-content {
                 padding: 1rem;
             }
-            
+
             .login-section {
                 padding: 2rem 1.5rem;
             }
-            
+
             .top-bar {
                 padding: 1rem;
             }
-            
+
             .logo-header img {
                 height: 50px;
             }
-            
+
             .top-bar-text h1 {
                 font-size: 1.25rem;
             }
-            
+
             .top-bar-text h2 {
                 font-size: 0.8rem;
             }
@@ -408,7 +410,7 @@ if (isset($_POST['login'])) {
                         <input type="email" name="email" id="email" placeholder="Enter your email" required>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label">Password</label>
                     <div class="input-container">
@@ -423,7 +425,7 @@ if (isset($_POST['login'])) {
                         <i class="fa-solid fa-right-from-bracket"></i>Sign In
                     </button>
                 </div>
-                
+
                 <div class="forgot-password">
                     <a href="Forgot-Password.php" class="forgot-password-link">Forgot password?</a>
                 </div>
