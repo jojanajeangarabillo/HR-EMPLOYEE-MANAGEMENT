@@ -232,8 +232,8 @@ while ($row = $etypeQuery->fetch_assoc())
             font-family: 'Poppins', 'Roboto', sans-serif;
             margin: 0;
             display: flex;
-            background: #f1f5fc;
-            color: #111827;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            color: #1e293b;
         }
 
         .main-content {
@@ -246,76 +246,190 @@ while ($row = $etypeQuery->fetch_assoc())
             max-height: 100vh;
         }
 
+        .main-content-header {
+            margin-bottom: 30px;
+            padding-left: 20px;
+        }
+
         .main-content-header h1 {
             color: #1E3A8A;
-            margin-bottom: 20px;
-            margin-left: 50px;
+            margin-bottom: 10px;
+            font-weight: 700;
+            font-size: 2rem;
+        }
+
+        .main-content-header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .set-vacancies-container {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin: 0 20px 40px 20px;
+            box-shadow: 0 4px 20px rgba(30, 58, 138, 0.08);
+            border: 1px solid #e2e8f0;
         }
 
         .set-vacancies {
-            background: #1E3A8A;
-            display: flex;
-            align-items: center;
-            gap: 40px;
-            flex-wrap: wrap;
-            border-radius: 20px;
-            padding: 30px 50px;
-            width: fit-content;
-            margin-left: 50px;
-            margin-bottom: 50px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            align-items: end;
         }
 
-        .recent-section {
-            margin-left: 50px;
-            width: 90%;
-            max-height: 400px;
-            overflow-y: auto;
+        .form-group {
+            margin-bottom: 0;
         }
 
-        .recent-section table {
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #475569;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .form-control {
             width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
             background: white;
-            border-radius: 10px;
-            overflow: hidden;
+            color: #334155;
         }
 
-        .recent-section::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .recent-section::-webkit-scrollbar-thumb {
-            background: #1E3A8A;
-            border-radius: 10px;
-        }
-
-        .select-options {
-            display: flex;
-            flex-direction: column;
-            width: 300px;
-        }
-
-        .select-options select,
-        input {
-            font-size: 18px;
-            padding: 10px;
-            border-radius: 10px;
-            border: none;
+        .form-control:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
             outline: none;
         }
 
-        button {
-            border: 2px solid white;
-            background: #1E3A8A;
+        .set-btn {
+            background: linear-gradient(135deg, #1E3A8A 0%, #3b82f6 100%);
             color: white;
-            font-size: 18px;
-            padding: 12px 30px;
+            border: none;
+            padding: 14px 32px;
             border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
+            transition: all 0.3s ease;
+            height: 48px;
+            align-self: end;
         }
 
-        button:hover {
+        .set-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+            background: linear-gradient(135deg, #172554 0%, #2563eb 100%);
+        }
+
+        .recent-section {
             background: white;
-            color: #1E3A8A;
+            border-radius: 16px;
+            padding: 30px;
+            margin: 0 20px;
+            box-shadow: 0 4px 20px rgba(30, 58, 138, 0.08);
+            border: 1px solid #e2e8f0;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .section-header h2 {
+            color: #1e293b;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+
+        .vacancies-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .vacancies-table thead th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            padding: 16px;
+            border-bottom: 2px solid #e2e8f0;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+        }
+
+        .vacancies-table tbody tr {
+            transition: all 0.2s ease;
+        }
+
+        .vacancies-table tbody tr:hover {
+            background: #f8fafc;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .vacancies-table tbody td {
+            padding: 18px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #475569;
+            vertical-align: middle;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .badge.bg-success {
+            background: #10b981 !important;
+        }
+
+        .badge.bg-danger {
+            background: #ef4444 !important;
+        }
+
+        .badge.bg-primary {
+            background: #3b82f6 !important;
+        }
+
+        .btn-sm {
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border: none;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        }
+
+        .text-muted {
+            color: #94a3b8 !important;
+            font-style: italic;
         }
 
         .vacancy-modal {
@@ -326,47 +440,96 @@ while ($row = $etypeQuery->fetch_assoc())
             top: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
             justify-content: center;
             align-items: center;
         }
 
         .vacancy-modal-content {
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            width: 400px;
+            padding: 40px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 450px;
             text-align: center;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .vacancy-modal h2 {
-            color: #1E3A8A;
-            margin-bottom: 20px;
+            color: #1e293b;
+            margin-bottom: 24px;
+            font-size: 1.5rem;
+            font-weight: 700;
         }
 
-        .vacancy-modal input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
+        .modal-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 32px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
         }
 
         .confirm-btn {
-            background: #1E3A8A;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
         }
 
         .cancel-btn {
-            background: red;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
             color: white;
         }
 
         .confirm-btn:hover {
-            background: #162c63;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.3);
         }
 
         .cancel-btn:hover {
-            background: #8b0000;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+            padding: 16px 24px;
+            margin: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .alert-success {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .alert-danger {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #7f1d1d;
+            border-left: 4px solid #ef4444;
         }
 
         .sidebar-profile-img {
@@ -376,10 +539,53 @@ while ($row = $etypeQuery->fetch_assoc())
             object-fit: cover;
             margin-bottom: 20px;
             transition: transform 0.3s ease;
+            border: 4px solid #e2e8f0;
         }
 
         .sidebar-profile-img:hover {
             transform: scale(1.05);
+            border-color: #3b82f6;
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        @media (max-width: 1200px) {
+            .set-vacancies {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            .set-vacancies {
+                grid-template-columns: 1fr;
+            }
+            
+            .set-vacancies-container,
+            .recent-section {
+                margin: 0;
+            }
         }
     </style>
 </head>
@@ -406,6 +612,7 @@ while ($row = $etypeQuery->fetch_assoc())
     <main class="main-content">
         <div class="main-content-header">
             <h1>Upload Vacancies</h1>
+            <p>Add new job openings and manage existing vacancies</p>
             <?php if ($message): ?>
                 <div class="alert alert-<?= $messageType ?> alert-dismissible fade show" role="alert">
                     <?= htmlspecialchars($message) ?>
@@ -415,79 +622,97 @@ while ($row = $etypeQuery->fetch_assoc())
         </div>
 
         <!-- Set Vacancy Form -->
-        <form method="POST" id="vacancyForm">
-            <div class="set-vacancies">
-                <div class="select-options">
-                    <select name="department" id="department" required>
-                        <option value="" disabled selected>Select Department</option>
-                        <?php while ($dept = $deptQuery->fetch_assoc()): ?>
-                            <option value="<?= $dept['deptID'] ?>"><?= htmlspecialchars($dept['deptName']) ?></option>
-                        <?php endwhile; ?>
-                    </select>
+        <div class="set-vacancies-container">
+            <form method="POST" id="vacancyForm">
+                <div class="set-vacancies">
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <select name="department" id="department" class="form-control" required>
+                            <option value="" disabled selected>Select Department</option>
+                            <?php while ($dept = $deptQuery->fetch_assoc()): ?>
+                                <option value="<?= $dept['deptID'] ?>"><?= htmlspecialchars($dept['deptName']) ?></option>
+                            <?php endwhile; ?>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="position">Position</label>
+                        <select name="position" id="position" class="form-control" required>
+                            <option value="" disabled selected>Select Position</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="employment_type">Employment Type</label>
+                        <select name="employment_type" id="employment_type" class="form-control" required>
+                            <option value="" disabled selected>Select Employment Type</option>
+                            <?php foreach ($employmentTypes as $etype): ?>
+                                <option value="<?= $etype['emtypeID'] ?>"><?= htmlspecialchars($etype['typeName']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <button type="button" id="openModalBtn" class="set-btn">
+                        <i class="fas fa-plus-circle me-2"></i>Set Vacancies
+                    </button>
                 </div>
-                <div class="select-options">
-                    <select name="position" id="position" required>
-                        <option value="" disabled selected>Select Position</option>
-                    </select>
-                </div>
-                <div class="select-options">
-                    <select name="employment_type" id="employment_type" required>
-                        <option value="" disabled selected>Select Employment Type</option>
-                        <?php foreach ($employmentTypes as $etype): ?>
-                            <option value="<?= $etype['emtypeID'] ?>"><?= htmlspecialchars($etype['typeName']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <button type="button" id="openModalBtn">Set</button>
-            </div>
-            <input type="hidden" name="vacancyCount" id="vacancyCountInput">
-        </form>
+                <input type="hidden" name="vacancyCount" id="vacancyCountInput">
+            </form>
+        </div>
 
         <!-- Recently Uploaded Vacancies -->
         <div class="recent-section">
-            <h2>Recently Uploaded</h2>
-            <table class="table table-bordered table-striped w-75">
-                <thead class="table-primary">
-                    <tr>
-                        <th>Department</th>
-                        <th>Position</th>
-                        <th>Vacancies</th>
-                        <th>Employment Type</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if ($recentQuery && $recentQuery->num_rows > 0): ?>
-                        <?php while ($row = $recentQuery->fetch_assoc()): ?>
+            <div class="section-header">
+                <h2>Recent Vacancies</h2>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="vacancies-table">
+                    <thead>
+                        <tr>
+                            <th>Department</th>
+                            <th>Position</th>
+                            <th>Vacancies</th>
+                            <th>Employment Type</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ($recentQuery && $recentQuery->num_rows > 0): ?>
+                            <?php while ($row = $recentQuery->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($row['deptName']) ?></td>
+                                    <td><strong><?= htmlspecialchars($row['position_title']) ?></strong></td>
+                                    <td>
+                                        <span class="badge bg-primary">
+                                            <?= max(0, htmlspecialchars($row['remaining_vacancies'])) ?>
+                                        </span>
+                                    </td>
+                                    <td><?= htmlspecialchars($row['employment_type']) ?></td>
+                                    <td>
+                                        <span class="badge <?= $row['status'] === 'On-Going' ? 'bg-success' : ($row['status'] === 'Closed' ? 'bg-danger' : 'bg-primary') ?>">
+                                            <?= htmlspecialchars($row['status']) ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <?php if ($row['hired_count'] >= $row['vacancy_count']): ?>
+                                            <span class="text-muted">Filled</span>
+                                        <?php else: ?>
+                                            <button class="btn btn-sm btn-warning archive-btn" data-id="<?= $row['id'] ?>">
+                                                <i class="fas fa-archive me-1"></i>Archive
+                                            </button>
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
                             <tr>
-                                <td><?= htmlspecialchars($row['deptName']) ?></td>
-                                <td><?= htmlspecialchars($row['position_title']) ?></td>
-                                <td><?= max(0, htmlspecialchars($row['remaining_vacancies'])) ?></td>
-                                <td><?= htmlspecialchars($row['employment_type']) ?></td>
-                                <td>
-                                    <span
-                                        class="badge <?= $row['status'] === 'On-Going' ? 'bg-success' : ($row['status'] === 'Closed' ? 'bg-danger' : 'bg-primary') ?>">
-                                        <?= htmlspecialchars($row['status']) ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <?php if ($row['hired_count'] >= $row['vacancy_count']): ?>
-                                        <span class="text-muted">Filled</span>
-                                    <?php else: ?>
-                                        <button class="btn btn-sm btn-warning archive-btn"
-                                            data-id="<?= $row['id'] ?>">Archive</button>
-                                    <?php endif; ?>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-2x mb-3 d-block"></i>
+                                    No vacancies uploaded yet
                                 </td>
                             </tr>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td colspan="6" class="text-center text-muted">No vacancies uploaded yet.</td>
-                        </tr>
-                    <?php endif; ?>
-                </tbody>
-            </table>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 
@@ -495,10 +720,14 @@ while ($row = $etypeQuery->fetch_assoc())
     <div id="vacancyModal" class="vacancy-modal">
         <div class="vacancy-modal-content">
             <h2>Set Number of Vacancies</h2>
-            <input type="number" id="vacancyCount" placeholder="Enter number of vacancies" min="1">
-            <div>
-                <button class="confirm-btn" id="confirmBtn">Confirm</button>
-                <button class="cancel-btn" id="cancelBtn">Cancel</button>
+            <input type="number" id="vacancyCount" class="form-control" placeholder="Enter number of vacancies" min="1" autofocus>
+            <div class="modal-actions">
+                <button class="modal-btn confirm-btn" id="confirmBtn">
+                    <i class="fas fa-check me-2"></i>Confirm
+                </button>
+                <button class="modal-btn cancel-btn" id="cancelBtn">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
             </div>
         </div>
     </div>

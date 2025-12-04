@@ -240,22 +240,30 @@ if (isset($_POST['send_message'])) {
 
   <link rel="stylesheet" href="manager-sidebar.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-
-  <!-- Font Awesome Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"
-    integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw=="
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-
   <style>
+    :root {
+      --primary-blue: #1E3A8A;
+      --primary-light: #3B82F6;
+      --primary-dark: #1E40AF;
+      --success-color: #10B981;
+      --danger-color: #EF4444;
+      --warning-color: #F59E0B;
+      --light-bg: #F8FAFC;
+      --card-shadow: 0 4px 20px rgba(30, 58, 138, 0.08);
+      --hover-shadow: 0 8px 30px rgba(30, 58, 138, 0.12);
+    }
+
     body {
       font-family: 'Poppins', 'Roboto', sans-serif;
       margin: 0;
       display: flex;
-      background-color: #f1f5fc;
+      background-color: var(--light-bg);
       color: #111827;
+      min-height: 100vh;
     }
 
     .sidebar-profile-img {
@@ -264,295 +272,527 @@ if (isset($_POST['send_message'])) {
       border-radius: 50%;
       object-fit: cover;
       margin-bottom: 20px;
-      transition: transform 0.3s ease;
+      border: 4px solid var(--primary-blue);
+      transition: transform 0.3s ease, border-color 0.3s ease;
     }
 
     .sidebar-profile-img:hover {
       transform: scale(1.05);
+      border-color: var(--primary-light);
     }
 
     .main-content {
-      padding: 40px 30px;
-      margin-left: 220px;
+      flex: 1;
+      padding: 30px;
+      margin-left: 300px;
       display: flex;
       flex-direction: column;
+      transition: margin-left 0.3s ease;
+      max-width: calc(100% - 300px);
+    }
+
+    @media (max-width: 992px) {
+      .main-content {
+        margin-left: 0;
+        max-width: 100%;
+        padding: 20px;
+      }
+    }
+
+    /* Header Section */
+    .main-content-header {
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #EFF6FF;
     }
 
     .main-content-header h1 {
-      padding: 25px 30px;
+      font-size: 28px;
+      color: var(--primary-blue);
+      font-weight: 700;
       margin: 0;
-      font-size: 2rem;
-      margin-bottom: 16px;
-      color: #1E3A8A;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
-    .job-posts h2 {
-      padding: 25px 30px;
-      margin: 0;
-      font-size: 2rem;
-      margin-bottom: 40px;
-      color: #1E3A8A;
+    .main-content-header h1 i {
+      color: var(--primary-blue);
+      font-size: 24px;
     }
 
-    .stats {
+    /* Stats Cards */
+    .stats-section {
+      margin-bottom: 30px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: var(--card-shadow);
+      border-top: 4px solid var(--primary-blue);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--hover-shadow);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-blue), var(--primary-light));
+    }
+
+    .stat-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
       display: flex;
-      gap: 40px;
-      flex-wrap: wrap;
-      margin-left: 40px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+      color: var(--primary-blue);
+      font-size: 22px;
     }
 
-    .section {
-      padding: 25px 30px;
-      border-radius: 15px;
-      border-top-style: solid;
-      border-color: #1E3A8A;
-      width: 350px;
-      height: 120px;
-      background-color: white;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s ease;
+    .stat-label {
+      font-size: 16px;
+      color: #6B7280;
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
-    .section label {
-      font-size: 20px;
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary-blue);
+      margin: 0;
     }
 
-    .section h3 {
-      color: #1E3A8A;
-      margin-top: 15px;
-      font-size: 25px;
+    .stat-change {
+      font-size: 14px;
+      color: var(--success-color);
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
 
-    /* Content section wrapper */
-    .content-section {
-      max-width: 1400px;
-      margin: 0 auto;
-
+    /* Table Container */
+    .table-container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: var(--card-shadow);
+      padding: 30px;
+      margin-top: 20px;
+      transition: all 0.3s ease;
     }
 
-    /* Controls bar */
+    .table-container:hover {
+      box-shadow: var(--hover-shadow);
+    }
+
+    /* Controls Bar */
     .controls-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      margin-bottom: 25px;
       gap: 20px;
       flex-wrap: wrap;
     }
 
     .search-box {
       flex: 1;
-      min-width: 250px;
-      max-width: 400px;
+      min-width: 280px;
+      position: relative;
     }
 
     .search-box input {
       width: 100%;
-      padding: 10px 15px;
-      border: 1px solid #e0e0e0;
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: 'Poppins', 'Roboto', sans-serif;
-      transition: border-color 0.3s;
+      padding: 14px 20px 14px 48px;
+      border: 2px solid #E5E7EB;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.3s ease;
+      background-color: white;
     }
 
     .search-box input:focus {
       outline: none;
-      border-color: #1E3A8A;
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
     }
 
-    .button-group {
+    .search-box i {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9CA3AF;
+      font-size: 16px;
+    }
+
+    .filter-box {
+      min-width: 180px;
+    }
+
+    .filter-select {
+      width: 100%;
+      padding: 14px 20px;
+      border: 2px solid #E5E7EB;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: 'Poppins', sans-serif;
+      background-color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    }
+
+    /* Table Styling */
+    .table-wrapper {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #E5E7EB;
+    }
+
+    .table {
+      margin-bottom: 0;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+
+    .table thead {
+      background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+    }
+
+    .table thead th {
+      border: none;
+      padding: 18px 20px;
+      font-weight: 600;
+      color: white;
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .table thead th:first-child {
+      border-top-left-radius: 12px;
+    }
+
+    .table thead th:last-child {
+      border-top-right-radius: 12px;
+    }
+
+    .table tbody td {
+      padding: 18px 20px;
+      border-bottom: 1px solid #F3F4F6;
+      vertical-align: middle;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    .table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .table tbody tr:hover {
+      background-color: #F8FAFC;
+      transition: background-color 0.2s ease;
+    }
+
+    .table tbody tr:nth-child(even) {
+      background-color: #F9FAFB;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .status-badge.active {
+      background-color: #D1FAE5;
+      color: #065F46;
+    }
+
+    .status-badge.inactive {
+      background-color: #FEE2E2;
+      color: #991B1B;
+    }
+
+    .status-badge.pending {
+      background-color: #FEF3C7;
+      color: #92400E;
+    }
+
+    .status-badge .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-badge.active .status-dot {
+      background-color: #10B981;
+    }
+
+    .status-badge.inactive .status-dot {
+      background-color: #EF4444;
+    }
+
+    .status-badge.pending .status-dot {
+      background-color: #F59E0B;
+    }
+
+    /* Action Icons */
+    .action-cell {
       display: flex;
+      justify-content: center;
       gap: 10px;
     }
 
-    .btn {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: 'Poppins', 'Roboto', sans-serif;
-      cursor: pointer;
-      transition: all 0.3s;
-      text-decoration: none;
-      display: inline-flex;
+    .action-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
       align-items: center;
-      gap: 8px;
-    }
-
-    .btn-primary {
-      background-color: #1E3A8A;
+      justify-content: center;
+      text-decoration: none;
+      transition: all 0.2s ease;
       color: white;
+      border: none;
+      cursor: pointer;
     }
 
-    .btn-primary:hover {
-      background-color: #1e40af;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(30, 58, 138, 0.3);
+    .action-btn.view {
+      background-color: var(--primary-blue);
     }
 
-    .btn-success {
-      background-color: #10b981;
-      color: white;
+    .action-btn.message {
+      background-color: var(--success-color);
     }
 
-    .btn-success:hover {
+    .action-btn.status {
+      background-color: #8B5CF6;
+    }
+
+    .action-btn.archive {
+      background-color: var(--danger-color);
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px) scale(1.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .action-btn.view:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .action-btn.message:hover {
       background-color: #059669;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
     }
 
-    .table-container {
-      width: 90%;
-      padding: 0 30px;
-      margin-top: 12px;
-      box-sizing: border-box;
+    .action-btn.status:hover {
+      background-color: #7C3AED;
     }
 
-
-    .table-responsive {
-      width: 100%;
-      overflow-x: auto;
+    .action-btn.archive:hover {
+      background-color: #DC2626;
     }
 
-    .table-responsive table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      background-color: #ffffff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    th,
-    td {
-      min-width: 150px;
-      /* adjust as needed for wider cells */
-      padding: 16px 20px;
-      /* more horizontal padding also widens cells */
-      text-align: center;
-      border: 1px solid #e0e0e0;
-      padding: 16px 12px;
-      text-align: center;
-    }
-
-    thead {
-      background-color: #1E3A8A;
-      font-weight: 600;
-      color: #ffffff;
-    }
-
-    tbody tr:hover {
-      background-color: #f8f9fa;
-    }
-
-    tbody tr:nth-child(even) {
-      background-color: #fafafa;
-    }
-
-    /* Action icons */
-    .action-icons {
+    /* Pagination */
+    .pagination-container {
       display: flex;
       justify-content: center;
-      gap: 15px;
+      margin-top: 30px;
     }
 
-    .action-icons a {
-      color: #333;
-      text-decoration: none;
-      transition: color 0.2s ease, transform 0.2s ease;
-      font-size: 18px;
-    }
-
-    .action-icons a:hover {
-      transform: scale(1.1);
-    }
-
-    .action-icons a.edit:hover {
-      color: #007bff;
-    }
-
-    .action-icons a.delete:hover {
-      color: #dc3545;
-    }
-
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      z-index: 9999;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.55);
-      backdrop-filter: blur(3px);
-    }
-
-    /* Modal box */
-    .modal-box {
-      background: #fff;
-      width: 450px;
-      max-width: 90%;
-      padding: 25px;
+    .pagination {
+      background: white;
+      padding: 10px;
       border-radius: 12px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0.8);
-      opacity: 0;
-      transition: all 0.25s ease;
+      box-shadow: 0 4px 12px rgba(30, 58, 138, 0.08);
     }
 
-    /* Show animation */
-    .modal-overlay.active .modal-box {
-      transform: translate(-50%, -50%) scale(1);
-      opacity: 1;
+    .page-link {
+      padding: 10px 18px;
+      margin: 0 4px;
+      border-radius: 8px;
+      border: 2px solid #E5E7EB;
+      color: var(--primary-blue);
+      font-weight: 500;
+      transition: all 0.2s ease;
     }
 
-    /* Close button */
-    .modal-close {
-      float: right;
+    .page-link:hover {
+      background-color: var(--primary-blue);
+      color: white;
+      border-color: var(--primary-blue);
+      transform: translateY(-2px);
+    }
+
+    .page-item.active .page-link {
+      background-color: var(--primary-blue);
+      border-color: var(--primary-blue);
+      color: white;
+    }
+
+    /* Alerts */
+    .alert {
+      border-radius: 12px;
+      border: none;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .alert-success {
+      background-color: #D1FAE5;
+      color: #065F46;
+      border-left: 4px solid #10B981;
+    }
+
+    .alert-danger {
+      background-color: #FEE2E2;
+      color: #991B1B;
+      border-left: 4px solid #EF4444;
+    }
+
+    .alert i {
       font-size: 20px;
-      cursor: pointer;
-      color: #1E3A8A;
     }
 
-    .modal-close:hover {
-      color: #d00000;
+    /* Modals */
+    .modal-content {
+      border-radius: 20px;
+      border: none;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+      color: white;
+      border-radius: 20px 20px 0 0 !important;
+      padding: 25px 30px;
+      border: none;
     }
 
     .modal-title {
-      font-size: 22px;
-      margin-bottom: 15px;
       font-weight: 600;
-      color: #1E3A8A;
+      font-size: 22px;
     }
 
-    .modal-field label {
-      font-weight: bold;
+    .modal-body {
+      padding: 30px;
     }
 
-    .modal-field {
-      margin-bottom: 10px;
+    .modal-footer {
+      padding: 20px 30px;
+      border-top: 1px solid #E5E7EB;
     }
 
-    .filter-box select {
-      padding: 10px 15px;
-      border: 1px solid #e0e0e0;
-      border-radius: 6px;
-      font-size: 14px;
-      font-family: 'Poppins', 'Roboto', sans-serif;
-      cursor: pointer;
+    /* Form Elements in Modals */
+    .form-control, .form-select {
+      border: 2px solid #E5E7EB;
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-blue), var(--primary-dark));
+      border: none;
+      border-radius: 10px;
+      padding: 12px 28px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(30, 58, 138, 0.25);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #EF4444, #DC2626);
+      border: none;
+      border-radius: 10px;
+      padding: 12px 28px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(239, 68, 68, 0.25);
+    }
+
+    /* Loading Animation */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #E5E7EB;
+      border-top: 4px solid var(--primary-blue);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
   </style>
 </head>
@@ -572,22 +812,21 @@ if (isset($_POST['send_message'])) {
 
     <ul class="nav">
       <?php foreach ($menus[$role] as $label => $link): ?>
-        <li><a href="<?php echo $link; ?>"><i
-              class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
+        <li><a href="<?php echo $link; ?>"><i class="fa-solid <?php echo $icons[$label] ?? 'fa-circle'; ?>"></i><?php echo $label; ?></a></li>
       <?php endforeach; ?>
     </ul>
   </div>
 
-
-
-
+  <!-- MAIN CONTENT -->
   <div class="main-content">
     <div class="main-content-header">
-      <h1>Employee List</h1>
+      <h1><i class="fas fa-users"></i> Employee Management</h1>
     </div>
 
+    <!-- Flash Messages -->
     <?php if (isset($_SESSION['flash_success'])): ?>
       <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle"></i>
         <?php
         echo $_SESSION['flash_success'];
         unset($_SESSION['flash_success']);
@@ -598,6 +837,7 @@ if (isset($_POST['send_message'])) {
 
     <?php if (isset($_SESSION['flash_error'])): ?>
       <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle"></i>
         <?php
         echo $_SESSION['flash_error'];
         unset($_SESSION['flash_error']);
@@ -606,153 +846,261 @@ if (isset($_POST['send_message'])) {
       </div>
     <?php endif; ?>
 
+
+    <!-- Table Container -->
     <div class="table-container">
+      <!-- Controls -->
       <div class="controls-bar">
         <div class="search-box">
-          <input type="text" id="searchInput" placeholder="Search employees..." onkeyup="filterTable()">
-
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="Search employees by name, ID, department, or email...">
         </div>
+        
         <div class="filter-box">
           <select id="deptFilter" class="filter-select">
             <option value="">All Departments</option>
           </select>
         </div>
+
+        <div class="filter-box">
+          <select id="statusFilter" class="filter-select">
+            <option value="">All Status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+          </select>
+        </div>
       </div>
 
-      <div class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>Employee ID</th>
-              <th>Full Name</th>
-              <th>Department</th>
-              <th>Position</th>
-              <th>Employment Type</th>
-              <th>Email Address</th>
-              <th>Status</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="employeeTable">
-            <?php foreach ($employee as $emp): ?>
-              <tr>
-                <td><?php echo htmlspecialchars($emp['empID']); ?></td>
-                <td><?php echo htmlspecialchars($emp['fullname']); ?></td>
-                <td><?php echo htmlspecialchars($emp['department']); ?></td>
-                <td><?php echo htmlspecialchars($emp['position']); ?></td>
-                <td><?php echo htmlspecialchars($emp['type_name']); ?></td>
-                <td><?php echo htmlspecialchars($emp['email_address']); ?></td>
-                <td class="status-cell"><?php echo htmlspecialchars($emp['status'] ?? 'Active'); ?></td>
-                <td class="action-icons">
-                  <a href="#viewModal" class="view" onclick="openViewModal('<?php echo $emp['empID']; ?>',
-                             '<?php echo $emp['fullname']; ?>',
-                             '<?php echo $emp['department']; ?>',
-                             '<?php echo $emp['position']; ?>',
-                             '<?php echo $emp['type_name']; ?>',
-                             '<?php echo $emp['email_address']; ?>')">
-                    <i class="fa-solid fa-eye"></i>
-                  </a>
+      <!-- Loading Indicator -->
+      <div class="loading" id="loadingIndicator">
+        <div class="spinner"></div>
+        <p class="mt-3 text-muted">Loading employees...</p>
+      </div>
 
-                  <a href="#messageModal" class="message"
-                    onclick="openMessageModal('<?php echo $emp['email_address']; ?>')">
-                    <i class="fa-solid fa-envelope"></i>
-                  </a>
-                  <?php $isInactive = strtolower($emp['status'] ?? 'Active') === 'inactive'; ?>
-                  <?php if (!$isInactive): ?>
-                    <a href="#inactiveModal" class="status-toggle" data-empid="<?php echo $emp['empID']; ?>">
-                      <i class="fa-solid fa-circle" style="color:#10b981;"></i>
-                    </a>
-                  <?php else: ?>
-                    <a href="#archiveModal" class="archive-btn" data-empid="<?php echo $emp['empID']; ?>">
-                      <i class="fa-solid fa-trash"></i>
-                    </a>
-                  <?php endif; ?>
-                </td>
+      <!-- Table -->
+      <div class="table-wrapper">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Employee ID</th>
+                <th>Full Name</th>
+                <th>Department</th>
+                <th>Position</th>
+                <th>Employment Type</th>
+                <th>Email Address</th>
+                <th>Status</th>
+                <th>Actions</th>
               </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
+            </thead>
+            <tbody id="employeeTable">
+              <?php foreach ($employee as $emp): ?>
+                <?php 
+                  $status = $emp['status'] ?? 'Active';
+                  $statusClass = strtolower($status) === 'inactive' ? 'inactive' : 'active';
+                ?>
+                <tr>
+                  <td><strong><?php echo htmlspecialchars($emp['empID']); ?></strong></td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="me-3">
+                        <i class="fas fa-user-circle" style="font-size: 24px; color: var(--primary-blue);"></i>
+                      </div>
+                      <div>
+                        <div class="fw-medium"><?php echo htmlspecialchars($emp['fullname']); ?></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td><?php echo htmlspecialchars($emp['department']); ?></td>
+                  <td><?php echo htmlspecialchars($emp['position']); ?></td>
+                  <td>
+                    <span class="badge bg-light text-dark border">
+                      <?php echo htmlspecialchars($emp['type_name']); ?>
+                    </span>
+                  </td>
+                  <td>
+                    <a href="mailto:<?php echo htmlspecialchars($emp['email_address']); ?>" class="text-primary">
+                      <i class="fas fa-envelope me-2"></i>
+                      <?php echo htmlspecialchars($emp['email_address']); ?>
+                    </a>
+                  </td>
+                  <td>
+                    <span class="status-badge <?php echo $statusClass; ?>">
+                      <span class="status-dot"></span>
+                      <?php echo htmlspecialchars($status); ?>
+                    </span>
+                  </td>
+                  <td class="action-cell">
+                    <a href="#viewModal" class="action-btn view" 
+                       onclick="openViewModal('<?php echo $emp['empID']; ?>',
+                               '<?php echo addslashes($emp['fullname']); ?>',
+                               '<?php echo addslashes($emp['department']); ?>',
+                               '<?php echo addslashes($emp['position']); ?>',
+                               '<?php echo addslashes($emp['type_name']); ?>',
+                               '<?php echo addslashes($emp['email_address']); ?>')"
+                       title="View Details">
+                      <i class="fas fa-eye"></i>
+                    </a>
+
+                    <a href="#messageModal" class="action-btn message"
+                       onclick="openMessageModal('<?php echo addslashes($emp['email_address']); ?>')"
+                       title="Send Message">
+                      <i class="fas fa-envelope"></i>
+                    </a>
+
+                    <?php if ($statusClass === 'active'): ?>
+                      <a href="#inactiveModal" class="action-btn status" 
+                         data-empid="<?php echo $emp['empID']; ?>"
+                         title="Set to Inactive">
+                        <i class="fas fa-toggle-on"></i>
+                      </a>
+                    <?php else: ?>
+                      <a href="#archiveModal" class="action-btn archive" 
+                         data-empid="<?php echo $emp['empID']; ?>"
+                         title="Archive Employee">
+                        <i class="fas fa-trash-alt"></i>
+                      </a>
+                    <?php endif; ?>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- No Results -->
+      <div id="noResults" class="text-center py-5" style="display: none;">
+        <i class="fas fa-search" style="font-size: 48px; color: #9CA3AF;"></i>
+        <h4 class="mt-3 text-muted">No employees found</h4>
+        <p class="text-muted">Try adjusting your search or filter</p>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-container">
+        <nav aria-label="Employee pagination">
+          <ul class="pagination">
+            <li class="page-item <?php echo $page <= 1 ? 'disabled' : ''; ?>">
+              <a class="page-link" href="?page=<?php echo max(1, $page - 1); ?>">
+                <i class="fas fa-chevron-left"></i> Previous
+              </a>
+            </li>
+            <?php for ($p = 1; $p <= $pages; $p++): ?>
+              <li class="page-item <?php echo $p === $page ? 'active' : ''; ?>">
+                <a class="page-link" href="?page=<?php echo $p; ?>"><?php echo $p; ?></a>
+              </li>
+            <?php endfor; ?>
+            <li class="page-item <?php echo $page >= $pages ? 'disabled' : ''; ?>">
+              <a class="page-link" href="?page=<?php echo min($pages, $page + 1); ?>">
+                Next <i class="fas fa-chevron-right"></i>
+              </a>
+            </li>
+          </ul>
+        </nav>
       </div>
     </div>
-    <nav aria-label="Employee pagination" class="mt-3">
-      <ul class="pagination justify-content-center">
-        <li class="page-item <?php echo $page <= 1 ? 'disabled' : ''; ?>">
-          <a class="page-link" href="?page=<?php echo max(1, $page - 1); ?>" tabindex="-1">Previous</a>
-        </li>
-        <?php for ($p = 1; $p <= $pages; $p++): ?>
-          <li class="page-item <?php echo $p === $page ? 'active' : ''; ?>">
-            <a class="page-link" href="?page=<?php echo $p; ?>"><?php echo $p; ?></a>
-          </li>
-        <?php endfor; ?>
-        <li class="page-item <?php echo $page >= $pages ? 'disabled' : ''; ?>">
-          <a class="page-link" href="?page=<?php echo min($pages, $page + 1); ?>">Next</a>
-        </li>
-      </ul>
-    </nav>
   </div>
 
   <!-- View Modal -->
-  <div id="viewModal" class="modal-overlay">
-    <div class="modal-box">
-      <span class="modal-close" onclick="closeViewModal()">&times;</span>
-      <h2 class="modal-title">Employee Details</h2>
-
-      <div class="modal-field"><label>ID:</label> <span id="v_id"></span></div>
-      <div class="modal-field"><label>Name:</label> <span id="v_name"></span></div>
-      <div class="modal-field"><label>Department:</label> <span id="v_dept"></span></div>
-      <div class="modal-field"><label>Position:</label> <span id="v_pos"></span></div>
-      <div class="modal-field"><label>Employment Type:</label> <span id="v_type"></span></div>
-      <div class="modal-field"><label>Email:</label> <span id="v_email"></span></div>
+  <div class="modal fade" id="viewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-user-circle me-2"></i> Employee Details</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-muted">Employee ID</label>
+              <div class="form-control bg-light" id="v_id"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-muted">Full Name</label>
+              <div class="form-control bg-light" id="v_name"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-muted">Department</label>
+              <div class="form-control bg-light" id="v_dept"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-muted">Position</label>
+              <div class="form-control bg-light" id="v_pos"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-muted">Employment Type</label>
+              <div class="form-control bg-light" id="v_type"></div>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label fw-semibold text-muted">Email Address</label>
+              <div class="form-control bg-light" id="v_email"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Message Modal -->
-  <div id="messageModal" class="modal-overlay">
-    <div class="modal-box">
-      <span class="modal-close" onclick="closeMessageModal()">&times;</span>
-      <h2 class="modal-title">Send Message</h2>
+  <div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-envelope me-2"></i> Send Message</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form action="Manager_Employees.php" method="POST">
+          <div class="modal-body">
+            <input type="hidden" id="m_email" name="email">
+            <input type="hidden" name="send_message" value="1">
+            
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Recipient Email</label>
+              <input type="text" class="form-control bg-light" id="recipientEmail" readonly>
+            </div>
 
-      <form action="Manager_Employees.php" method="POST">
-        <input type="hidden" id="m_email" name="email">
-        <input type="hidden" name="send_message" value="1">
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Subject</label>
+              <input type="text" name="subject" class="form-control" placeholder="Enter message subject" required>
+            </div>
 
-        <!-- Subject -->
-        <label>Subject:</label>
-        <input type="text" name="subject" style="
-        width: 100%; padding: 10px; border-radius: 6px;
-        border: 1px solid #ccc; font-size: 14px; margin-bottom: 10px;
-      " required>
-
-        <!-- Message -->
-        <label>Message:</label>
-        <textarea name="message" rows="5" style="
-        width: 100%; padding: 10px; border-radius: 6px;
-        border: 1px solid #ccc; font-size: 14px;
-      " required></textarea>
-
-        <button type="submit" style="
-        margin-top: 15px; width: 100%; padding: 12px;
-        background: #1E3A8A; color: white; border: none;
-        border-radius: 6px; cursor: pointer; font-size: 15px;
-      ">Send Email</button>
-      </form>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Message</label>
+              <textarea name="message" class="form-control" rows="5" placeholder="Type your message here..." required></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-paper-plane me-2"></i> Send Email
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
   <!-- Inactive Confirm Modal -->
   <div class="modal fade" id="inactiveModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Confirm Inactive</h5>
+          <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2 text-warning"></i> Confirm Inactive</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">
-          Are you sure you want to make this employee Inactive?
+        <div class="modal-body text-center">
+          <div class="mb-4">
+            <i class="fas fa-user-slash" style="font-size: 48px; color: var(--warning-color);"></i>
+          </div>
+          <h4>Set Employee as Inactive?</h4>
+          <p class="text-muted">This employee will no longer be able to access the system. This action can be reversed.</p>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer justify-content-center">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" id="confirmInactiveBtn">Yes</button>
+          <button type="button" class="btn btn-warning" id="confirmInactiveBtn">Yes, Set as Inactive</button>
         </div>
       </div>
     </div>
@@ -760,25 +1108,28 @@ if (isset($_POST['send_message'])) {
 
   <!-- Archive Confirm Modal -->
   <div class="modal fade" id="archiveModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Confirm Archive</h5>
+          <h5 class="modal-title"><i class="fas fa-archive me-2 text-danger"></i> Confirm Archive</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body">
-          Are you sure you want to archive this employee?
+        <div class="modal-body text-center">
+          <div class="mb-4">
+            <i class="fas fa-trash-alt" style="font-size: 48px; color: var(--danger-color);"></i>
+          </div>
+          <h4>Archive Employee?</h4>
+          <p class="text-muted">This will permanently move the employee to archive. This action cannot be undone.</p>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer justify-content-center">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-danger" id="confirmArchiveBtn">Yes</button>
+          <button type="button" class="btn btn-danger" id="confirmArchiveBtn">Yes, Archive Employee</button>
         </div>
       </div>
     </div>
   </div>
 
-
-
+  <!-- Hidden Forms for AJAX -->
   <form method="POST" id="inactiveForm" style="display:none;">
     <input type="hidden" name="empID" id="inactiveEmpID">
     <input type="hidden" name="ajax_set_inactive" value="1">
@@ -788,12 +1139,13 @@ if (isset($_POST['send_message'])) {
     <input type="hidden" name="ajax_archive_employee" value="1">
   </form>
 
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
     $(document).ready(function () {
-
-      // Build unique department list from table
+      // Initialize filter dropdowns
       let departments = new Set();
-
       $("#employeeTable tr").each(function () {
         let dept = $(this).find("td:nth-child(3)").text().trim();
         if (dept !== "") {
@@ -801,28 +1153,126 @@ if (isset($_POST['send_message'])) {
         }
       });
 
-      // Append departments to dropdown
       departments.forEach(function (d) {
         $("#deptFilter").append(`<option value="${d}">${d}</option>`);
       });
 
-      // Filter when department changes
-      $("#deptFilter").on("change", function () {
-        filterTable();
+      // Event listeners for filters
+      $("#searchInput, #deptFilter, #statusFilter").on('input change', filterTable);
+      
+      // Initialize modals
+      const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
+      const messageModal = new bootstrap.Modal(document.getElementById('messageModal'));
+      const inactiveModal = new bootstrap.Modal(document.getElementById('inactiveModal'));
+      const archiveModal = new bootstrap.Modal(document.getElementById('archiveModal'));
+
+      let currentEmpId = null;
+      let currentRow = null;
+
+      // View modal function
+      window.openViewModal = function(id, name, dept, pos, type, email) {
+        $("#v_id").text(id);
+        $("#v_name").text(name);
+        $("#v_dept").text(dept);
+        $("#v_pos").text(pos);
+        $("#v_type").text(type);
+        $("#v_email").text(email);
+        viewModal.show();
+      };
+
+      // Message modal function
+      window.openMessageModal = function(email) {
+        $("#m_email").val(email);
+        $("#recipientEmail").val(email);
+        messageModal.show();
+      };
+
+      // Inactive button click
+      $(document).on('click', '.action-btn.status', function (e) {
+        e.preventDefault();
+        currentEmpId = $(this).data('empid');
+        currentRow = $(this).closest('tr');
+        inactiveModal.show();
       });
+
+      // Archive button click
+      $(document).on('click', '.action-btn.archive', function (e) {
+        e.preventDefault();
+        currentEmpId = $(this).data('empid');
+        currentRow = $(this).closest('tr');
+        archiveModal.show();
+      });
+
+      // Confirm inactive
+      $('#confirmInactiveBtn').on('click', function () {
+        $('#inactiveEmpID').val(currentEmpId);
+        $('#loadingIndicator').show();
+        
+        $.post('Manager_Employees.php', $('#inactiveForm').serialize(), function (resp) {
+          if (resp && resp.status === 'success') {
+            // Update status badge
+            currentRow.find('.status-badge')
+              .removeClass('active')
+              .addClass('inactive')
+              .html('<span class="status-dot"></span>Inactive');
+            
+            // Update action button
+            const actionCell = currentRow.find('.action-cell');
+            actionCell.find('.action-btn.status')
+              .removeClass('status')
+              .addClass('archive')
+              .html('<i class="fas fa-trash-alt"></i>')
+              .attr('title', 'Archive Employee')
+              .attr('data-empid', currentEmpId);
+            
+            // Show success message
+            showAlert('Employee status updated to Inactive', 'success');
+          } else {
+            showAlert('Failed to update employee status', 'error');
+          }
+          $('#loadingIndicator').hide();
+          inactiveModal.hide();
+        }, 'json');
+      });
+
+      // Confirm archive
+      $('#confirmArchiveBtn').on('click', function () {
+        $('#archiveEmpID').val(currentEmpId);
+        $('#loadingIndicator').show();
+        
+        $.post('Manager_Employees.php', $('#archiveForm').serialize(), function (resp) {
+          if (resp && resp.status === 'success') {
+            currentRow.fadeOut(300, function() {
+              $(this).remove();
+              updateStats();
+              showAlert('Employee archived successfully', 'success');
+            });
+          } else {
+            showAlert('Failed to archive employee', 'error');
+          }
+          $('#loadingIndicator').hide();
+          archiveModal.hide();
+        }, 'json');
+      });
+
+      // Initialize table filtering
+      filterTable();
     });
 
     function filterTable() {
       const search = $("#searchInput").val().toLowerCase();
       const deptFilter = $("#deptFilter").val().toLowerCase();
+      const statusFilter = $("#statusFilter").val().toLowerCase();
+
+      let visibleRows = 0;
 
       $("#employeeTable tr").each(function () {
         let row = $(this);
         let textMatch = false;
-
-        // Check search input across all columns except Action
-        row.find("td").each(function (index) {
-          if (index < row.find("td").length - 1) {
+        
+        // Check search across all columns except Actions
+        $(this).find("td").each(function (index) {
+          if (index < 7) { // All columns except Actions (8th column)
             let cellText = $(this).text().toLowerCase();
             if (cellText.includes(search)) {
               textMatch = true;
@@ -834,80 +1284,58 @@ if (isset($_POST['send_message'])) {
         let rowDept = row.find("td:nth-child(3)").text().toLowerCase();
         let deptMatch = deptFilter === "" || rowDept === deptFilter;
 
-        // Show only if both match
-        row.toggle(textMatch && deptMatch);
+        // Check status filter
+        let rowStatus = row.find(".status-badge").text().trim().toLowerCase();
+        let statusMatch = statusFilter === "" || rowStatus === statusFilter.toLowerCase();
+
+        // Show only if all match
+        if (textMatch && deptMatch && statusMatch) {
+          row.show();
+          visibleRows++;
+        } else {
+          row.hide();
+        }
       });
+
+      // Show/hide no results message
+      if (visibleRows === 0) {
+        $("#noResults").show();
+      } else {
+        $("#noResults").hide();
+      }
     }
 
-    function openViewModal(id, name, dept, pos, type, email) {
-      $("#v_id").text(id);
-      $("#v_name").text(name);
-      $("#v_dept").text(dept);
-      $("#v_pos").text(pos);
-      $("#v_type").text(type);
-      $("#v_email").text(email);
-
-      $("#viewModal").addClass("active").fadeIn(150);
+    function updateStats() {
+      // Update active count in stats
+      const activeCount = $("#employeeTable tr:visible .status-badge.active").length;
+      $(".stat-card:nth-child(2) .stat-value").text(activeCount);
+      
+      // Update total count
+      const totalCount = $("#employeeTable tr:visible").length;
+      $(".stat-card:first-child .stat-value").text(totalCount);
     }
 
-    function closeViewModal() {
-      $("#viewModal").removeClass("active").fadeOut(150);
+    function showAlert(message, type) {
+      const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+      const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+      
+      const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+          <i class="fas ${icon}"></i>
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      `;
+      
+      $('.main-content-header').after(alertHtml);
+      
+      // Auto remove after 5 seconds
+      setTimeout(() => {
+        $('.alert').alert('close');
+      }, 5000);
     }
-
-    function openMessageModal(email) {
-      $("#m_email").val(email);
-      $("#messageModal").addClass("active").fadeIn(150);
-    }
-
-    function closeMessageModal() {
-      $("#messageModal").removeClass("active").fadeOut(150);
-    }
-
-    let currentEmpId = null;
-    $(document).on('click', '.status-toggle', function (e) {
-      e.preventDefault();
-      currentEmpId = $(this).data('empid');
-      const modal = new bootstrap.Modal(document.getElementById('inactiveModal'));
-      modal.show();
-    });
-
-    $('#confirmInactiveBtn').on('click', function () {
-      const form = $('#inactiveForm');
-      $('#inactiveEmpID').val(currentEmpId);
-      $.post('Manager_Employees.php', form.serialize(), function (resp) {
-        if (resp && resp.status === 'success') {
-          const row = $(`a.status-toggle[data-empid="${currentEmpId}"]`).closest('tr');
-          row.find('.status-cell').text('Inactive');
-          const actionCell = row.find('.action-icons');
-          actionCell.find('a.status-toggle').replaceWith(`<a href="#archiveModal" class="archive-btn" data-empid="${currentEmpId}"><i class="fa-solid fa-trash"></i></a>`);
-          bootstrap.Modal.getInstance(document.getElementById('inactiveModal')).hide();
-        }
-      }, 'json');
-    });
-
-    $(document).on('click', '.archive-btn', function (e) {
-      e.preventDefault();
-      currentEmpId = $(this).data('empid');
-      const modal = new bootstrap.Modal(document.getElementById('archiveModal'));
-      modal.show();
-    });
-
-    $('#confirmArchiveBtn').on('click', function () {
-      const form = $('#archiveForm');
-      $('#archiveEmpID').val(currentEmpId);
-      $.post('Manager_Employees.php', form.serialize(), function (resp) {
-        if (resp && resp.status === 'success') {
-          const row = $(`a.archive-btn[data-empid="${currentEmpId}"]`).closest('tr');
-          row.remove();
-          bootstrap.Modal.getInstance(document.getElementById('archiveModal')).hide();
-        }
-      }, 'json');
-    });
   </script>
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
-
 
 </html>

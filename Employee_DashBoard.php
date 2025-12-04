@@ -620,106 +620,92 @@ if (isset($_GET['view']) && isset($_GET['id'])) {
                 </tr>
               <?php } ?>
 
-              <?php while ($row = mysqli_fetch_assoc($adminResult)) { ?>
-                <tr>
-                  <td><?php echo $row['title']; ?></td>
-                  <td>Admin</td>
-                  <td><?php echo date("M d, Y", strtotime($row['date_posted'])); ?></td>
-                  <td><a href="?view=admin&id=<?php echo $row['id']; ?>"><button>View</button></a></td>
-                </tr>
+              <div class="announcement-section">
+                <h1><i class="fa-solid fa-bullhorn"></i> Announcements</h1>
+                <div class="announcement-table-container">
+                  <div class="table-responsive">
+                    <table class="announcement-table">
+                      <thead>
+                        <tr>
+                          <th>Title</th>
+                          <th>From</th>
+                          <th>Date</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <?php while ($row = mysqli_fetch_assoc($managerResult)) { ?>
+                          <tr>
+                            <td><?php echo $row['title']; ?></td>
+                            <td><?php echo $row['posted_by']; ?></td>
+                            <td><?php echo date("M d, Y", strtotime($row['date_posted'])); ?></td>
+                            <td><a href="?view=manager&id=<?php echo $row['id']; ?>"><button>View</button></a></td>
+                          </tr>
+                        <?php } ?>
+
+                        <br>
+                        <p><strong>Posted By:</strong><br>
+                          HR Manager, <br>
+                          <?php echo $announcement['posted_by']; ?><br>
+                        </p>
+                        <?php ?>
+
+                        <br>
+                        <p><strong>Posted By:</strong><br>
+                          <?php echo $announcement['posted_by']; ?><br>
+                        </p>
+                        <?php ?>
+                  </div>
+                  <div class="modal-footer">
+                    <a href="Employee_Dashboard.php" class="btn btn-secondary">Close</a>
+                  </div>
+                </div>
+              </div>
+
+              <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+              <?php if ($openModal) { ?>
+                <script>
+                  var modal = new bootstrap.Modal(document.getElementById('announcementModal'));
+                  modal.show();
+                </script>
               <?php } ?>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </main>
+              <script>
+                const empID = '<?php echo addslashes($employeeID ?? ""); ?>';
+                async function loadAttendanceAnalytics() {
+                  try {
+                    const res = await fetch('/HR-EMPLOYEE-MANAGEMENT/API/consumer_attendance.php', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                      body: JSON.stringify({ emp_code: empID })
+                    });
+                    const data = await res.json();
+                    const analytics = (data && data.analytics) ? data.analytics : {};
+                    const dash = (analytics && analytics.dashboard_stats) ? analytics.dashboard_stats : {};
+                    const present = Number(dash.present_days ?? analytics.present_days ?? 0);
+                    const absent = Number(dash.absent_days ?? analytics.absences_count ?? 0);
+                    const payslips = Number(dash.payslips_issued ?? analytics.payslips_count ?? 0);
+                    const setNum = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(Number.isFinite(v) ? v : 0); };
+                    setNum('presentDaysMetric', present);
+                    setNum('absencesCountMetric', absent);
+                    setNum('payslipsCountMetric', payslips);
+                  } catch (e) {
+                    console.error(e);
+                  }
+                }
+                loadAttendanceAnalytics();
+                setInterval(loadAttendanceAnalytics, 30000);
 
-  <!-- Modal -->
-  <div class="modal fade" id="announcementModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title"><?php echo $announcement['title'] ?? ''; ?></h5>
-          <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <?php if ($announcement) { ?>
-            <p><strong>Date:</strong> <?php echo date("F d, Y", strtotime($announcement['date_posted'])); ?></p>
-            <p><?php echo nl2br($announcement['message']); ?></p>
-
-            <?php if (!empty($announcement['start_date']) || !empty($announcement['end_date'])) { ?>
-              <hr>
-              <h6 class="fw-bold text-success">Related Leave Setting</h6>
-
-              <?php $start = !empty($announcement['start_date']) ? date("m/d/Y", strtotime($announcement['start_date'])) : null; ?>
-              <?php $end = !empty($announcement['end_date']) ? date("m/d/Y", strtotime($announcement['end_date'])) : null; ?>
-              <p><strong>Filing Duration:</strong> <?php echo ($start && $end) ? "$start to $end" : 'N/A'; ?></p>
-
-              <p><strong>Slots:</strong>
-                <?php echo isset($announcement['employee_limit']) ? $announcement['employee_limit'] : 'N/A'; ?></p>
-
-              <p><strong>Expires:</strong> <?php echo $end ? $end : 'N/A'; ?></p>
-            <?php } ?>
-
-            <br>
-            <p><strong>Posted By:</strong><br>
-              HR Manager, <br>
-              <?php echo $announcement['posted_by']; ?><br>
-            </p>
-          <?php } ?>
-        </div>
-        <div class="modal-footer">
-          <a href="Employee_Dashboard.php" class="btn btn-secondary">Close</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <?php if ($openModal) { ?>
-    <script>
-      var modal = new bootstrap.Modal(document.getElementById('announcementModal'));
-      modal.show();
-    </script>
-  <?php } ?>
-  <script>
-    const empID = '<?php echo addslashes($employeeID ?? ""); ?>';
-    async function loadAttendanceAnalytics() {
-      try {
-        const res = await fetch('/HR-EMPLOYEE-MANAGEMENT/API/consumer_attendance.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({ emp_code: empID })
-        });
-        const data = await res.json();
-        const analytics = (data && data.analytics) ? data.analytics : {};
-        const dash = (analytics && analytics.dashboard_stats) ? analytics.dashboard_stats : {};
-        const present = Number(dash.present_days ?? analytics.present_days ?? 0);
-        const absent = Number(dash.absent_days ?? analytics.absences_count ?? 0);
-        const payslips = Number(dash.payslips_issued ?? analytics.payslips_count ?? 0);
-        const setNum = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = String(Number.isFinite(v) ? v : 0); };
-        setNum('presentDaysMetric', present);
-        setNum('absencesCountMetric', absent);
-        setNum('payslipsCountMetric', payslips);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-    loadAttendanceAnalytics();
-    setInterval(loadAttendanceAnalytics, 30000);
-
-    function runDashboardTests() {
-      const presentEl = document.getElementById('presentDaysMetric');
-      const absentEl = document.getElementById('absencesCountMetric');
-      const payslipEl = document.getElementById('payslipsCountMetric');
-      presentEl.textContent = '5';
-      absentEl.textContent = '2';
-      payslipEl.textContent = '3';
-      console.log('TEST dashboard metrics', presentEl.textContent === '5' && absentEl.textContent === '2' && payslipEl.textContent === '3' ? 'PASS' : 'FAIL');
-    }
-    try { const params = new URLSearchParams(window.location.search); if (params.get('test') === '1') runDashboardTests(); } catch (e) { }
-  </script>
+                function runDashboardTests() {
+                  const presentEl = document.getElementById('presentDaysMetric');
+                  const absentEl = document.getElementById('absencesCountMetric');
+                  const payslipEl = document.getElementById('payslipsCountMetric');
+                  presentEl.textContent = '5';
+                  absentEl.textContent = '2';
+                  payslipEl.textContent = '3';
+                  console.log('TEST dashboard metrics', presentEl.textContent === '5' && absentEl.textContent === '2' && payslipEl.textContent === '3' ? 'PASS' : 'FAIL');
+                }
+                try { const params = new URLSearchParams(window.location.search); if (params.get('test') === '1') runDashboardTests(); } catch (e) { }
+              </script>
 </body>
 
 </html>

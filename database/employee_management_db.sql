@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 01, 2025 at 09:30 AM
+-- Generation Time: Dec 02, 2025 at 09:24 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -198,6 +198,8 @@ CREATE TABLE `employee` (
   `fullname` varchar(50) NOT NULL,
   `department` varchar(50) NOT NULL,
   `position` varchar(50) NOT NULL,
+  `salary_grade` int(11) DEFAULT NULL,
+  `step` varchar(50) DEFAULT NULL,
   `type_name` varchar(50) NOT NULL,
   `shift_type` enum('Fixed','Rotational') DEFAULT 'Rotational',
   `default_shift_id` int(11) DEFAULT NULL,
@@ -221,51 +223,51 @@ CREATE TABLE `employee` (
 -- Dumping data for table `employee`
 --
 
-INSERT INTO `employee` (`empID`, `fullname`, `department`, `position`, `type_name`, `shift_type`, `default_shift_id`, `work_hours_per_week`, `assigned_by`, `email_address`, `home_address`, `contact_number`, `date_of_birth`, `gender`, `emergency_contact`, `TIN_number`, `phil_health_number`, `SSS_number`, `pagibig_number`, `profile_pic`, `hired_at`) VALUES
-('EMP-001', 'Rhoanne Nicole Antonio', 'Human Resources (HR) Department', 'HR Manager', 'Full Time', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'antonio_rhoannenicole@plpasig.edu.ph', 'Pasig\r\n', '0909', '2005-12-25', 'Female', '085', '123-1234-123', '123-1234-123', '123-1234-123', '123-1234-123', 'employee_EMP-001.jpg', '2025-11-18'),
-('EMP-004', 'Jhanna Jaroda', 'Human Resources (HR) Department', 'Recruitment Manager', 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'jaroda_jhanna_rhaynne@plpasig.edu.ph', 'Cainta\r\n', '74185', '2002-09-30', '', '875421', '12345-8754-087', '12345-8754-087', '12345-8754-087', '12345-8754-087', NULL, '2025-11-18'),
-('EMP-005', 'Shane Ella Cacho', 'Human Resources (HR) Department', 'Training and Development Coordinator', 'Full Time', 'Rotational', 3, 40, 'Jean Garabillo', 'cacho_shaneellamae@plpasig.edu.ph', 'Cainta', '123456', '2000-12-25', '', '123456', '1234-7654-2345', '1234-7654-2345', '1234-7654-2345', '1234-7654-2345', NULL, '2025-11-18'),
-('EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', 'Full Time', 'Rotational', 1, 40, 'Rhoanne Nicole Antonio', 'gutierrez_jodielynn@plpasig.edu.ph', 'Pasig\r\n', '0303', '2001-11-24', '', '015', '', '', '', '', 'employee_EMP-006.jpg', '2025-11-18'),
-('EMP-009', 'Carlos Mendoza', 'Anesthetics Department', 'Nurse Anesthetist', 'Full Time', 'Rotational', 2, 40, 'Jean Garabillo', 'carlos_mendoza@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-011', 'Miguel Santos', 'Cardiology Department', 'Cardiac Nurse', 'Regular', 'Rotational', 1, 40, 'Jean Garabillo', 'miguel_santos@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-012', 'Patricia Gomez', 'Gynecology Department', 'Midwife', 'Full Time', 'Rotational', 2, 40, 'Rhoanne Nicole Antonio', 'patricia_gomez@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-013', 'John Francis Velasquez', 'IT Department', 'IT Support', 'Contractual', 'Rotational', 1, 40, 'Rhoanne Nicole Antonio', 'johnf_velasquez@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-014', 'Cheska Ramirez', 'Human Resources (HR) Department', 'HR Assistant', 'Part Time', 'Rotational', 2, 40, 'Jean Garabillo', 'cheska_ramirez@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-015', 'Hannah Nicole Villanueva', 'Elderly Services (Geriatrics)', 'Geriatric Nurse', 'Full Time', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'hannah_villanueva@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-016', 'Jerome Alcantara', 'Cardiology Department', 'Cardiac Lab Supervisor', 'Regular', 'Rotational', 1, 40, 'Jean Garabillo', 'jerome_alcantara@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-017', 'Danica Joy Flores', 'Gastroenterology Department', 'Endoscopy Nurse', 'Full Time', 'Rotational', 1, 40, 'Rhoanne Nicole Antonio', 'danica_flores@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-018', 'Ricardo Manalo', 'Breast Screening Department', 'Mammography Technologist', 'Full Time', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'ricardo_manalo@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-019', 'Anna Mendoza', 'Anesthetics Department', 'Operating Room Nurse', 'Regular', 'Fixed', 2, 40, 'Jean Garabillo', 'anna_mendoza@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-021', 'George Cruz', 'IT Department', 'IT Manager', 'Full Time', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'george_cruz@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-022', 'Kevin Tan', 'General Surgery Department', 'Surgical Technician', 'Contractual', 'Rotational', 1, 40, 'Jean Garabillo', 'kevin_tan@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-023', 'Olivia Lim', 'Gynecology Department', 'Senior Midwife', 'Full Time', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'olivia_lim@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-024', 'Maria De Guzman', 'Cardiology Department', 'ECG Technician', 'Full Time', 'Rotational', 2, 40, 'Jean Garabillo', 'maria_deguzman@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-025', 'Isabel Flores', 'Elderly Services (Geriatrics)', 'Healthcare Assistant', 'Part Time', 'Rotational', 1, 40, 'Jean Garabillo', 'isabel_flores@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-026', 'Edward Reyes', 'Anesthetics Department', 'Consultant Anesthesiologist', 'Full Time', 'Fixed', 3, 40, 'Jean Garabillo', 'edward_reyes@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-027', 'Carla Santos', 'Cardiology Department', 'Cardiology Unit Manager', 'Regular', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'carla_santos@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-028', 'Renato Villanueva', 'Gastroenterology Department', 'Consultant Gastroenterologist', 'Full Time', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'renato.villanueva@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-029', 'Bella Ramirez', 'Breast Screening Department', 'Screening Coordinator', 'Contractual', 'Fixed', 1, 40, 'Jean Garabillo', 'bella_ramirez@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-030', 'Mark Joseph Reyes', 'General Surgery Department', 'Scrub Nurse', 'Full Time', 'Rotational', 2, 40, 'Rhoanne Nicole Antonio', 'mark_reyes@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-031', 'Helena Cruz', 'IT Department', 'IT Head', 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'helena_cruz@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-032', 'Lance Tan', 'Cardiology Department', 'Senior Cardiac Nurse', 'Full Time', 'Rotational', 1, 40, 'Rhoanne Nicole Antonio', 'lance_tan@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-033', 'Paul Lim', 'Gynecology Department', 'Labor and Delivery Supervisor', 'Regular', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'paul_lim@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-034', 'Nathan De Guzman', 'Cardiology Department', 'Consultant Cardiologist', 'Full Time', 'Rotational', 2, 40, 'Rhoanne Nicole Antonio', 'nathan_deguzman@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-035', 'Julian Flores', 'Elderly Services (Geriatrics)', 'Unit Head', 'Full Time', 'Rotational', 2, 40, 'Rhoanne Nicole Antonio', 'julian_flores@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-036', 'Fiona Reyes', 'Anesthetics Department', 'Senior PACU Nurse', 'Full Time', 'Rotational', 3, 40, 'Jean Garabillo', 'fiona_reyes@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-037', 'Diana Lopez', 'Cardiology Department', 'Cardiac Rehabilitation Specialist', 'Regular', 'Rotational', 2, 40, 'Jean Garabillo', 'diana_lopez@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-038', 'Marco Alcantara', 'Gastroenterology Department', 'Endoscopy Technician', 'Full Time', 'Rotational', 3, 40, 'Jean Garabillo', 'marco.alcantara@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
-('EMP-039', 'Jean Garabillo', 'Human Resources (HR) Department', 'HR Director', 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'jojanajeangarabillo@gmail.com', 'Taytay Rizal', '1234', '2005-09-25', 'Female', '0984', '12345-87654-432', '12345-87654-432', '12345-87654-432', '12345-87654-432', 'employee_EMP-039.jpg', '2025-11-23'),
-('EMP-041', 'Lark Bolotaolo', 'Sales and Operation Department', 'Point of Sales Admin', 'Full Time', 'Rotational', 2, 40, 'Rhoanne Nicole Antonio', 'bolotaolo_lark@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24'),
-('EMP-042', 'Marvin Gallardo', 'Records Management Department', 'Document Management Admin', 'Full Time', 'Rotational', 3, 40, 'Jean Garabillo', 'gallardo_marvin@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-25'),
-('EMP-043', 'Ariuz Dean Guerrero', 'Medical and Health Services Department', 'Patient Management Admin', 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'guerrero_ariuzdean@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-25'),
-('EMP-044', 'Klarenz Cobie O. Manrique', 'Finance Department', 'Payroll Admin', 'Full Time', 'Rotational', 3, 40, 'Jean Garabillo', 'manrique_klarenzcobie@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-25'),
-('EMP-045', 'Joepat Lacerna', 'Breast Screening Department', 'Radiology Assistant', 'Contractual', 'Rotational', 2, 40, 'Jean Garabillo', 'opat09252005@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'employee_EMP-045.jpeg', '2025-11-25'),
-('EMP-047', 'Jojana Garabillo', 'Human Resources (HR) Department', 'Human Resource (HR) Admin', 'Regular', 'Rotational', 1, 40, 'Jean Garabillo', 'garabillo_jojanajean@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'employee_EMP-047.jpg', '2025-11-27'),
-('EMP-048', 'Amihan Dimaguiba', 'Breast Screening Department', 'Radiology Assistant', 'Contractual', 'Rotational', 1, 40, 'Jean Garabillo', 'ruberducky032518@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'employee_EMP-048.png', '2025-11-28'),
-('EMP-049', 'Leonor Rivera', 'Records Management Department', 'Document Management Admin', 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'noonajeogyo@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-28'),
-('EMP-050', 'Alexander Cajurao', 'Warehouse and Supply Department', 'Inventory Admin', 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'cajurao_alexanderjr@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-29'),
-('EMP-051', 'Mico Bermudez', 'Marketing Department', 'Content Management Admin', 'Regular', 'Rotational', NULL, 40, NULL, 'bermudez_miguelcarlos@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-01'),
-('EMP-052', 'Pepito Manaloto', 'Marketing Department', 'System Staff', 'Full Time', 'Rotational', NULL, 40, NULL, 'freeyt.zy@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-01');
+INSERT INTO `employee` (`empID`, `fullname`, `department`, `position`, `salary_grade`, `step`, `type_name`, `shift_type`, `default_shift_id`, `work_hours_per_week`, `assigned_by`, `email_address`, `home_address`, `contact_number`, `date_of_birth`, `gender`, `emergency_contact`, `TIN_number`, `phil_health_number`, `SSS_number`, `pagibig_number`, `profile_pic`, `hired_at`) VALUES
+('EMP-001', 'Rhoanne Nicole Antonio', 'Human Resources (HR) Department', 'HR Manager', NULL, NULL, 'Full Time', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'antonio_rhoannenicole@plpasig.edu.ph', 'Pasig\r\n', '0909', '2005-12-25', 'Female', '085', '123-1234-123', '123-1234-123', '123-1234-123', '123-1234-123', 'employee_EMP-001.jpg', '2025-11-18'),
+('EMP-004', 'Jhanna Jaroda', 'Human Resources (HR) Department', 'Recruitment Manager', NULL, NULL, 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'jaroda_jhanna_rhaynne@plpasig.edu.ph', 'Cainta\r\n', '74185', '2002-09-30', '', '875421', '12345-8754-087', '12345-8754-087', '12345-8754-087', '12345-8754-087', NULL, '2025-11-18'),
+('EMP-005', 'Shane Ella Cacho', 'Human Resources (HR) Department', 'Training and Development Coordinator', NULL, NULL, 'Full Time', 'Rotational', 3, 40, 'Jean Garabillo', 'cacho_shaneellamae@plpasig.edu.ph', 'Cainta', '123456', '2000-12-25', '', '123456', '1234-7654-2345', '1234-7654-2345', '1234-7654-2345', '1234-7654-2345', NULL, '2025-11-18'),
+('EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', NULL, NULL, 'Full Time', 'Rotational', 1, 40, 'Rhoanne Nicole Antonio', 'gutierrez_jodielynn@plpasig.edu.ph', 'Pasig\r\n', '0303', '2001-11-24', '', '015', '', '', '', '', 'employee_EMP-006.jpg', '2025-11-18'),
+('EMP-009', 'Carlos Mendoza', 'Anesthetics Department', 'Nurse Anesthetist', NULL, NULL, 'Full Time', 'Rotational', 2, 40, 'Jean Garabillo', 'carlos_mendoza@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-011', 'Miguel Santos', 'Cardiology Department', 'Cardiac Nurse', NULL, NULL, 'Regular', 'Rotational', 1, 40, 'Jean Garabillo', 'miguel_santos@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-012', 'Patricia Gomez', 'Gynecology Department', 'Midwife', NULL, NULL, 'Full Time', 'Rotational', 2, 40, 'Rhoanne Nicole Antonio', 'patricia_gomez@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-013', 'John Francis Velasquez', 'IT Department', 'IT Support', NULL, NULL, 'Contractual', 'Rotational', 1, 40, 'Rhoanne Nicole Antonio', 'johnf_velasquez@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-014', 'Cheska Ramirez', 'Human Resources (HR) Department', 'HR Assistant', NULL, NULL, 'Part Time', 'Rotational', 2, 40, 'Jean Garabillo', 'cheska_ramirez@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-015', 'Hannah Nicole Villanueva', 'Elderly Services (Geriatrics)', 'Geriatric Nurse', NULL, NULL, 'Full Time', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'hannah_villanueva@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-016', 'Jerome Alcantara', 'Cardiology Department', 'Cardiac Lab Supervisor', NULL, NULL, 'Regular', 'Rotational', 1, 40, 'Jean Garabillo', 'jerome_alcantara@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-017', 'Danica Joy Flores', 'Gastroenterology Department', 'Endoscopy Nurse', NULL, NULL, 'Full Time', 'Rotational', 1, 40, 'Rhoanne Nicole Antonio', 'danica_flores@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-018', 'Ricardo Manalo', 'Breast Screening Department', 'Mammography Technologist', NULL, NULL, 'Full Time', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'ricardo_manalo@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-019', 'Anna Mendoza', 'Anesthetics Department', 'Operating Room Nurse', NULL, NULL, 'Regular', 'Fixed', 2, 40, 'Jean Garabillo', 'anna_mendoza@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-021', 'George Cruz', 'IT Department', 'IT Manager', NULL, NULL, 'Full Time', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'george_cruz@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-022', 'Kevin Tan', 'General Surgery Department', 'Surgical Technician', NULL, NULL, 'Contractual', 'Rotational', 1, 40, 'Jean Garabillo', 'kevin_tan@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-023', 'Olivia Lim', 'Gynecology Department', 'Senior Midwife', NULL, NULL, 'Full Time', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'olivia_lim@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-024', 'Maria De Guzman', 'Cardiology Department', 'ECG Technician', NULL, NULL, 'Full Time', 'Rotational', 2, 40, 'Jean Garabillo', 'maria_deguzman@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-025', 'Isabel Flores', 'Elderly Services (Geriatrics)', 'Healthcare Assistant', NULL, NULL, 'Part Time', 'Rotational', 1, 40, 'Jean Garabillo', 'isabel_flores@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-026', 'Edward Reyes', 'Anesthetics Department', 'Consultant Anesthesiologist', NULL, NULL, 'Full Time', 'Fixed', 3, 40, 'Jean Garabillo', 'edward_reyes@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-027', 'Carla Santos', 'Cardiology Department', 'Cardiology Unit Manager', NULL, NULL, 'Regular', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'carla_santos@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-028', 'Renato Villanueva', 'Gastroenterology Department', 'Consultant Gastroenterologist', NULL, NULL, 'Full Time', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'renato.villanueva@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-029', 'Bella Ramirez', 'Breast Screening Department', 'Screening Coordinator', NULL, NULL, 'Contractual', 'Fixed', 1, 40, 'Jean Garabillo', 'bella_ramirez@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-030', 'Mark Joseph Reyes', 'General Surgery Department', 'Scrub Nurse', NULL, NULL, 'Full Time', 'Rotational', 2, 40, 'Rhoanne Nicole Antonio', 'mark_reyes@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-031', 'Helena Cruz', 'IT Department', 'IT Head', NULL, NULL, 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'helena_cruz@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-032', 'Lance Tan', 'Cardiology Department', 'Senior Cardiac Nurse', NULL, NULL, 'Full Time', 'Rotational', 1, 40, 'Rhoanne Nicole Antonio', 'lance_tan@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-033', 'Paul Lim', 'Gynecology Department', 'Labor and Delivery Supervisor', NULL, NULL, 'Regular', 'Rotational', 3, 40, 'Rhoanne Nicole Antonio', 'paul_lim@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-034', 'Nathan De Guzman', 'Cardiology Department', 'Consultant Cardiologist', NULL, NULL, 'Full Time', 'Rotational', 2, 40, 'Rhoanne Nicole Antonio', 'nathan_deguzman@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-035', 'Julian Flores', 'Elderly Services (Geriatrics)', 'Unit Head', NULL, NULL, 'Full Time', 'Rotational', 2, 40, 'Rhoanne Nicole Antonio', 'julian_flores@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-036', 'Fiona Reyes', 'Anesthetics Department', 'Senior PACU Nurse', NULL, NULL, 'Full Time', 'Rotational', 3, 40, 'Jean Garabillo', 'fiona_reyes@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-037', 'Diana Lopez', 'Cardiology Department', 'Cardiac Rehabilitation Specialist', NULL, NULL, 'Regular', 'Rotational', 2, 40, 'Jean Garabillo', 'diana_lopez@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Female', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-038', 'Marco Alcantara', 'Gastroenterology Department', 'Endoscopy Technician', NULL, NULL, 'Full Time', 'Rotational', 3, 40, 'Jean Garabillo', 'marco.alcantara@plpasig.edu.ph', '123 Sample Street, Pasig City', '09123456789', '1990-01-01', 'Male', '09987654321', '123-456-789', 'PH123456789', 'SSS123456789', 'PB123456789', NULL, NULL),
+('EMP-039', 'Jean Garabillo', 'Human Resources (HR) Department', 'HR Director', NULL, NULL, 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'jojanajeangarabillo@gmail.com', 'Taytay Rizal', '1234', '2005-09-25', 'Female', '0984', '12345-87654-432', '12345-87654-432', '12345-87654-432', '12345-87654-432', 'employee_EMP-039.jpg', '2025-11-23'),
+('EMP-041', 'Lark Bolotaolo', 'Sales and Operation Department', 'Point of Sales Admin', NULL, NULL, 'Full Time', 'Rotational', 2, 40, 'Rhoanne Nicole Antonio', 'bolotaolo_lark@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-24'),
+('EMP-042', 'Marvin Gallardo', 'Records Management Department', 'Document Management Admin', NULL, NULL, 'Full Time', 'Rotational', 3, 40, 'Jean Garabillo', 'gallardo_marvin@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-25'),
+('EMP-043', 'Ariuz Dean Guerrero', 'Medical and Health Services Department', 'Patient Management Admin', NULL, NULL, 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'guerrero_ariuzdean@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-25'),
+('EMP-044', 'Klarenz Cobie O. Manrique', 'Finance Department', 'Payroll Admin', NULL, NULL, 'Full Time', 'Rotational', 3, 40, 'Jean Garabillo', 'manrique_klarenzcobie@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-25'),
+('EMP-045', 'Joepat Lacerna', 'Breast Screening Department', 'Radiology Assistant', NULL, NULL, 'Contractual', 'Rotational', 2, 40, 'Jean Garabillo', 'opat09252005@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'employee_EMP-045.jpeg', '2025-11-25'),
+('EMP-047', 'Jojana Garabillo', 'Human Resources (HR) Department', 'Human Resource (HR) Admin', NULL, NULL, 'Regular', 'Rotational', 1, 40, 'Jean Garabillo', 'garabillo_jojanajean@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'employee_EMP-047.jpg', '2025-11-27'),
+('EMP-048', 'Amihan Dimaguiba', 'Breast Screening Department', 'Radiology Assistant', NULL, NULL, 'Contractual', 'Rotational', 1, 40, 'Jean Garabillo', 'ruberducky032518@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'employee_EMP-048.png', '2025-11-28'),
+('EMP-049', 'Leonor Rivera', 'Records Management Department', 'Document Management Admin', NULL, NULL, 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'noonajeogyo@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-28'),
+('EMP-050', 'Alexander Cajurao', 'Warehouse and Supply Department', 'Inventory Admin', NULL, NULL, 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'cajurao_alexanderjr@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-29'),
+('EMP-051', 'Mico Bermudez', 'Marketing Department', 'Content Management Admin', NULL, NULL, 'Regular', 'Rotational', NULL, 40, NULL, 'bermudez_miguelcarlos@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-01'),
+('EMP-052', 'Pepito Manaloto', 'Marketing Department', 'System Staff', NULL, NULL, 'Full Time', 'Rotational', NULL, 40, NULL, 'freeyt.zy@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-01');
 
 -- --------------------------------------------------------
 
@@ -783,7 +785,8 @@ INSERT INTO `job_posting` (`jobID`, `job_title`, `job_description`, `department`
 (30, 'Radiology Assistant', 'SDXSAD', 2, NULL, 'BSN', 'Ajhbs', '123345', 12, 4, NULL, 1, '2025-11-10', '2025-11-24'),
 (34, 'Phlebotomist', 'DCD', 9, NULL, 'BSIT', 'Hfc', '216512', 11, 1, NULL, 0, '2025-11-13', '2025-11-14'),
 (35, 'Anesthetic Technician', 'KHXSKWIQGS', 1, NULL, 'BSA', 'Mxhsakx', '12232', 5, 1, NULL, 0, '2025-11-20', '2025-11-23'),
-(36, 'Hematology Lab Manager', 'SDSFG', 9, NULL, 'BSA', 'Asdfg', '1234', 5, 5, NULL, 5, '2025-11-21', '2025-11-26');
+(36, 'Hematology Lab Manager', 'SDSFG', 9, NULL, 'BSA', 'Asdfg', '1234', 5, 5, NULL, 5, '2025-11-21', '2025-11-26'),
+(37, 'Healthcare Assistant', 'SAMPLESAMPLESAMPSAMPLELESAMPLESAMPLESAMPLESAMPLESAMPLESAMPLESAMPSAMPLELESAMPLESAMPLESAMPLESAMPLE', 5, NULL, 'BSN', 'Samplesamplesamplesamplesamplesamplesample', '40,000', 5, 5, NULL, 3, '2025-12-02', '2025-12-31');
 
 -- --------------------------------------------------------
 
@@ -839,11 +842,11 @@ CREATE TABLE `leave_request` (
 --
 
 INSERT INTO `leave_request` (`request_id`, `empID`, `fullname`, `department`, `position`, `type_name`, `email_address`, `e_signature`, `request_type_id`, `request_type_name`, `reason`, `status`, `action_by`, `requested_at`, `leave_type_id`, `pay_category_id`, `leave_type_name`, `from_date`, `to_date`, `duration`) VALUES
-(40, 'EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', 'Full Time', 'gutierrez_jodielynn@plpasig.edu.ph', '', 1, 'Leave', 'asdf', 'Approved', 'Rhoanne Nicole Antonio', '2025-11-23 18:18:58', 1, 1, 'Sick Leave', '2025-11-28', '2025-11-30', 3),
 (42, 'EMP-001', 'Rhoanne Nicole Antonio', 'Human Resources (HR) Department', 'HR Manager', 'Full Time', 'antonio_rhoannenicole@plpasig.edu.ph', '', 1, 'Leave', 'vacation', 'Pending', NULL, '2025-11-24 12:37:54', 2, 1, 'Vacation Leave', '2025-12-01', '2025-12-04', 4),
-(43, 'EMP-039', 'Jean Garabillo', 'Human Resources (HR) Department', 'HR Director', 'Full Time', 'jojanajeangarabillo@gmail.com', '', 1, 'Leave', 'asd', 'Pending', NULL, '2025-11-24 12:38:37', 2, 1, 'Vacation Leave', '2025-12-06', '2025-12-09', 4),
 (44, 'EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', 'Full Time', 'gutierrez_jodielynn@plpasig.edu.ph', '', 1, 'Leave', 'sample', 'Pending', NULL, '2025-11-25 20:18:10', 2, 1, 'Vacation Leave', '2025-12-01', '2025-12-04', 4),
-(45, 'EMP-048', 'Amihan Dimaguiba', 'Breast Screening Department', 'Radiology Assistant', 'Contractual', 'ruberducky032518@gmail.com', 'uploads/signatures/1764303076_sample-esign.png', 1, 'Leave', 'sdfghju', 'Approved', 'HR Manager', '2025-11-28 12:11:16', 2, 1, 'Vacation Leave', '2025-12-04', '2025-12-08', 5);
+(45, 'EMP-048', 'Amihan Dimaguiba', 'Breast Screening Department', 'Radiology Assistant', 'Contractual', 'ruberducky032518@gmail.com', 'uploads/signatures/1764303076_sample-esign.png', 1, 'Leave', 'sdfghju', 'Approved', 'HR Manager', '2025-11-28 12:11:16', 2, 1, 'Vacation Leave', '2025-12-04', '2025-12-08', 5),
+(46, 'EMP-045', 'Joepat Lacerna', 'Breast Screening Department', 'Radiology Assistant', 'Contractual', 'opat09252005@gmail.com', '', 1, 'Leave', 'asdfg', 'Rejected', 'HR Director', '2025-12-01 17:41:59', 2, 1, 'Vacation Leave', '2026-01-02', '2026-01-10', 9),
+(49, 'EMP-039', 'Jean Garabillo', 'Human Resources (HR) Department', 'HR Director', 'Full Time', 'jojanajeangarabillo@gmail.com', '', 1, 'Leave', 'samplereasonsamplereason', 'Pending', NULL, '2025-12-02 10:17:25', 2, 1, 'Vacation Leave', '2025-12-05', '2025-12-14', 10);
 
 -- --------------------------------------------------------
 
@@ -879,7 +882,8 @@ CREATE TABLE `leave_request_archive` (
 --
 
 INSERT INTO `leave_request_archive` (`request_id`, `empID`, `fullname`, `department`, `position`, `type_name`, `email_address`, `e_signature`, `request_type_id`, `request_type_name`, `reason`, `status`, `action_by`, `requested_at`, `leave_type_id`, `pay_category_id`, `leave_type_name`, `from_date`, `to_date`, `duration`) VALUES
-(35, 'EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', 'Full Time', 'gutierrez_jodielynn@plpasig.edu.ph', '', 1, 'Leave', 'asd', 'Approved', 'Rhoanne Nicole Antonio', '2025-11-23 16:31:45', 3, 1, 'Maternity Leave', '2025-11-24', '2025-11-27', 4);
+(35, 'EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', 'Full Time', 'gutierrez_jodielynn@plpasig.edu.ph', '', 1, 'Leave', 'asd', 'Approved', 'Rhoanne Nicole Antonio', '2025-11-23 16:31:45', 3, 1, 'Maternity Leave', '2025-11-24', '2025-11-27', 4),
+(40, 'EMP-006', 'Jodie Lyn Gutierrez', 'Human Resources (HR) Department', 'HR Officer', 'Full Time', 'gutierrez_jodielynn@plpasig.edu.ph', '', 1, 'Leave', 'asdf', 'Approved', 'Rhoanne Nicole Antonio', '2025-11-23 18:18:58', 1, 1, 'Sick Leave', '2025-11-28', '2025-11-30', 3);
 
 -- --------------------------------------------------------
 
@@ -903,8 +907,8 @@ CREATE TABLE `leave_settings` (
 --
 
 INSERT INTO `leave_settings` (`settingID`, `start_date`, `end_date`, `month`, `employee_limit`, `created_by`, `created_at`, `request_type_id`) VALUES
-(18, '2025-11-23', '2025-11-24', NULL, 0, 'Rhoanne Nicole Antonio', '2025-11-23 15:59:38', 1),
-(19, '2025-11-23', '2025-11-25', 11, 0, 'Rhoanne Nicole Antonio', '2025-11-23 18:16:04', 1);
+(26, '2025-12-01', '2025-12-31', 12, 20, 'Jean Garabillo', '2025-12-01 17:37:28', 1),
+(27, '2026-01-01', '2026-01-31', 1, 15, 'Rhoanne Nicole Antonio', '2025-12-01 17:40:37', 1);
 
 -- --------------------------------------------------------
 
@@ -962,8 +966,8 @@ CREATE TABLE `manager_announcement` (
 --
 
 INSERT INTO `manager_announcement` (`id`, `manager_email`, `posted_by`, `title`, `message`, `date_posted`, `is_active`, `settingID`) VALUES
-(7, 'antonio_rhoannenicole@plpasig.edu.ph', 'Rhoanne Nicole Antonio', 'Leave Availability for November', 'Only 2 employees are allowed to have a leave this month. This is a first come first serve basis. Thank You', '2025-11-23 16:00:33', 1, 18),
-(8, 'antonio_rhoannenicole@plpasig.edu.ph', 'Rhoanne Nicole Antonio', 'November Leave Slots', 'jiruaknsc', '2025-11-23 18:16:21', 1, 19);
+(17, 'jojanajeangarabillo@gmail.com', 'HR Director', 'December Leave availability', 'First come First serve basis', '2025-12-01 17:37:54', 1, 26),
+(18, 'antonio_rhoannenicole@plpasig.edu.ph', 'HR Manager', 'January Leave Availability', 'First come first serve Basis', '2025-12-01 17:40:59', 1, 27);
 
 -- --------------------------------------------------------
 
@@ -1137,7 +1141,8 @@ INSERT INTO `shift_patterns` (`pattern_id`, `pattern_name`, `description`, `cycl
 (3, 'Rotating 3-Shift', 'Rotates through all three shifts weekly', 21, 1),
 (4, 'Weekend Warrior', 'Works weekends with weekday off', 7, 1),
 (5, '4x10 Schedule', 'Four 10-hour days', 7, 1),
-(6, '5-Day Night', 'Monday to Friday night shifts', 7, 1);
+(6, '5-Day Night', 'Monday to Friday night shifts', 7, 1),
+(8, 'Weekend 2 Days Saturday and Sunday', 'Weekend Shift', 2, 1);
 
 -- --------------------------------------------------------
 
@@ -1178,7 +1183,9 @@ INSERT INTO `shift_pattern_details` (`pattern_detail_id`, `pattern_id`, `day_num
 (19, 3, 18, 3),
 (20, 3, 19, 3),
 (21, 5, 6, 1),
-(22, 5, 7, 1);
+(22, 5, 7, 1),
+(26, 8, 1, 1),
+(27, 8, 2, 1);
 
 -- --------------------------------------------------------
 
@@ -1273,50 +1280,50 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`applicant_employee_id`, `email`, `password`, `role`, `fullname`, `status`, `created_at`, `profile_pic`, `reset_token`, `token_expiry`, `sub_role`) VALUES
-('EMP-019', 'anna_mendoza@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Anna Mendoza', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-019', 'anna_mendoza@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Anna Mendoza', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-001', 'antonio_rhoannenicole@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Rhoanne Nicole Antonio', 'Active', '2025-10-25 10:38:47', NULL, '', '', 'HR Manager'),
-('EMP-029', 'bella_ramirez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Bella Ramirez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-029', 'bella_ramirez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Bella Ramirez', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-051', 'bermudez_miguelcarlos@plpasig.edu.ph', '$2y$10$ndLP5DvR6o4iKOiupqYsBObh75pBrs0gSeZGwfBfFPeeaWUPg2vsC', 'Employee', 'Mico Bermudez', 'Active', '2025-12-01 16:21:27', NULL, '0266ef147ae09e5c27d6cbd3777efd30', '2025-12-02 09:21:27', 'Content Management Admin'),
 ('EMP-041', 'bolotaolo_lark@plpasig.edu.ph', '$2y$10$0MLZpGr8laSUPGGPig.87.Lx9ozOuApmaSDu.FI95eOjL0TMuIWNq', 'Employee', 'Lark Bolotaolo', 'Active', '2025-11-24 14:59:39', NULL, '5cb327175ef63f558eb234fff22db076', '2025-11-25 07:59:39', 'Point of Sales Admin'),
 ('EMP-005', 'cacho_shaneellamae@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Shane Ella Cacho', 'Active', '2025-11-18 16:53:26', NULL, '', '', NULL),
 ('EMP-050', 'cajurao_alexanderjr@plpasig.edu.ph', '$2y$10$AvYVNJQhwUTCCcd5nmFnnOwRMgcE9Awlf30BdwMwTRQk0ew5q6emC', 'Employee', 'Alexander Cajurao', 'Active', '2025-11-29 10:57:09', NULL, '651d3c8e06c391f4990c809a3c8ccac1', '2025-11-30 03:57:09', 'Inventory Admin'),
-('EMP-027', 'carla_santos@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Carla Santos', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-009', 'carlos_mendoza@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Carlos Mendoza', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-014', 'cheska_ramirez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Cheska Ramirez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-017', 'danica_flores@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Danica Joy Flores', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-037', 'diana_lopez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Diana Lopez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-026', 'edward_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Edward Reyes', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-036', 'fiona_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Fiona Reyes', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-027', 'carla_santos@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Carla Santos', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-009', 'carlos_mendoza@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Carlos Mendoza', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-014', 'cheska_ramirez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Cheska Ramirez', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-017', 'danica_flores@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Danica Joy Flores', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-037', 'diana_lopez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Diana Lopez', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-026', 'edward_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Edward Reyes', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-036', 'fiona_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Fiona Reyes', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-052', 'freeyt.zy@gmail.com', '$2y$10$RkwbtpEJleBCztfntsqy/uSvslsKkOAdF7yL76SD501Tn9M839YYu', 'Employee', 'Pepito Manaloto', 'Active', '2025-12-01 16:22:26', NULL, 'cf11d66ee42696a5a27b6855554b343a', '2025-12-02 09:22:26', 'System Staff'),
 ('EMP-042', 'gallardo_marvin@plpasig.edu.ph', '$2y$10$w25jPJZNJML7Xv7uyhqO.uBvBhR5DBP0nW1O7y1Y/uDYmoJT6Xdfa', 'Employee', 'Marvin Gallardo', 'Active', '2025-11-25 14:05:28', NULL, 'b66d30583006856f7bdc0c8881484e93', '2025-11-26 07:05:28', 'Document Management Admin'),
 ('EMP-047', 'garabillo_jojanajean@plpasig.edu.ph', '$2y$10$Hd75TeKazwdE0p.OtI2D8Oz08Ox48DLUVq1OCrXSzrGdR9fBcu0em', 'Employee', 'Jojana Garabillo', 'Active', '2025-11-27 19:56:26', NULL, '', '', 'Human Resource (HR) Admin'),
-('EMP-021', 'george_cruz@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'George Cruz', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-021', 'george_cruz@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'George Cruz', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-043', 'guerrero_ariuzdean@plpasig.edu.ph', '$2y$10$2ikPbGx0woBWeBF4DCgOYOxZ22aA8Jq.Er2DCltW8o1KoYSL/LeM2', 'Employee', 'Ariuz Dean Guerrero', 'Active', '2025-11-25 14:06:50', NULL, 'ac1a506f369b9a89a5fceb698d8f393c', '2025-11-26 07:06:50', 'Patient Management Admin'),
 ('EMP-006', 'gutierrez_jodielynn@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Jodie Lyn Gutierrez', 'Active', '2025-11-18 16:53:26', NULL, '', '', NULL),
-('EMP-015', 'hannah_villanueva@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Hannah Nicole Villanueva', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-031', 'helena_cruz@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Helena Cruz', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-025', 'isabel_flores@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Isabel Flores', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-015', 'hannah_villanueva@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Hannah Nicole Villanueva', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-031', 'helena_cruz@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Helena Cruz', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-025', 'isabel_flores@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Isabel Flores', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-004', 'jaroda_jhanna_rhaynne@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Jhanna Jaroda', 'Active', '2025-11-18 16:53:26', NULL, '', '', 'Recruitment Manager'),
-('EMP-016', 'jerome_alcantara@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Jerome Alcantara', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-013', 'johnf_velasquez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'John Francis Velasquez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-016', 'jerome_alcantara@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Jerome Alcantara', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-013', 'johnf_velasquez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'John Francis Velasquez', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-039', 'jojanajeangarabillo@gmail.com', '$2y$10$ECd2.hwlGfvWTTP89npMUOkB8LmJ7Ers.s0uBLPKEwRzJnGLNKjT2', 'Employee', 'Jean Garabillo', 'Active', '2025-11-23 19:06:50', NULL, '', '', 'HR Director'),
-('EMP-035', 'julian_flores@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Julian Flores', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-022', 'kevin_tan@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Kevin Tan', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-032', 'lance_tan@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Lance Tan', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-035', 'julian_flores@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Julian Flores', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-022', 'kevin_tan@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Kevin Tan', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-032', 'lance_tan@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Lance Tan', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-044', 'manrique_klarenzcobie@plpasig.edu.ph', '$2y$10$5EW46NwY9IMJlwdXlgeF6elvpp/ZWSI4RV8E6DCGEJvMmas.4.Aum', 'Employee', 'Klarenz Cobie O. Manrique', 'Active', '2025-11-25 14:08:06', NULL, 'e99a5dd36bab7c26537bd5b611b89270', '2025-11-26 07:08:06', 'Payroll Admin'),
-('EMP-038', 'marco.alcantara@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Marco Alcantara', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-024', 'maria_deguzman@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Maria De Guzman', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-030', 'mark_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Mark Joseph Reyes', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-011', 'miguel_santos@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Miguel Santos', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-038', 'marco.alcantara@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Marco Alcantara', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-024', 'maria_deguzman@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Maria De Guzman', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-030', 'mark_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Mark Joseph Reyes', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-011', 'miguel_santos@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Miguel Santos', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('HOS-002', 'n0305933@gmail.com', '$2y$10$uZauCbxJX84e0TSrqZ6Wp.92LcWgE5dZBSa/Se9uKgFPknRigl1ZK', 'Applicant', 'Nelly Bousted', 'Active', '2025-11-22 06:13:45', NULL, '', '', NULL),
-('EMP-034', 'nathan_deguzman@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Nathan De Guzman', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-034', 'nathan_deguzman@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Nathan De Guzman', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-049', 'noonajeogyo@gmail.com', '$2y$10$O8.H2g5cW05BEOWcZJyFyumGEG43f8PtuQBMnYchV.PHFqCF8k5Z6', 'Employee', 'Leonor Rivera', 'Active', '2025-11-28 12:14:06', NULL, '', '', 'Document Management Admin'),
-('EMP-023', 'olivia_lim@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Olivia Lim', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-023', 'olivia_lim@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Olivia Lim', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-045', 'opat09252005@gmail.com', '$2y$10$Unfz75rCYF6S9R6eAnBhe.OJbSvDHHesakHf9EDfpiN9n/RMgRTie', 'Employee', 'Joepat Lacerna', 'Active', '0000-00-00 00:00:00', NULL, '', '', NULL),
-('EMP-012', 'patricia_gomez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Patricia Gomez', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-033', 'paul_lim@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Paul Lim', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-028', 'renato.villanueva@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Renato Villanueva', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-018', 'ricardo_manalo@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Ricardo Manalo', 'active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-012', 'patricia_gomez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Patricia Gomez', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-033', 'paul_lim@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Paul Lim', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-028', 'renato.villanueva@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Renato Villanueva', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-018', 'ricardo_manalo@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Ricardo Manalo', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-048', 'ruberducky032518@gmail.com', '$2y$10$83zATZWowUwclO8adNIGU.IXPGCVQQ.Dwn/NTTVstU0VoJogYsZAi', 'Employee', 'Amihan Dimaguiba', 'Active', '0000-00-00 00:00:00', NULL, '', '', NULL);
 
 -- --------------------------------------------------------
@@ -1369,7 +1376,7 @@ INSERT INTO `vacancies` (`id`, `department_id`, `position_id`, `employment_type_
 (49, 1, 1, 1, 2, 'On-Going', 'Rhoanne Nicole Antonio', '2025-11-20 14:22:20'),
 (50, 9, 77, 5, 5, 'On-Going', 'Jane Garabillo', '2025-11-21 15:32:32'),
 (51, 2, 9, 1, 2, 'To Post', 'Rhoanne Nicole Antonio', '2025-11-21 21:04:19'),
-(52, 5, 34, 5, 3, 'To Post', 'Rhoanne Nicole Antonio', '2025-11-21 21:04:40');
+(52, 5, 34, 5, 3, 'On-Going', 'Rhoanne Nicole Antonio', '2025-11-21 21:04:40');
 
 -- --------------------------------------------------------
 
@@ -1691,7 +1698,7 @@ ALTER TABLE `general_request`
 -- AUTO_INCREMENT for table `job_posting`
 --
 ALTER TABLE `job_posting`
-  MODIFY `jobID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `jobID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `leave_pay_categories`
@@ -1703,19 +1710,19 @@ ALTER TABLE `leave_pay_categories`
 -- AUTO_INCREMENT for table `leave_request`
 --
 ALTER TABLE `leave_request`
-  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT for table `leave_request_archive`
 --
 ALTER TABLE `leave_request_archive`
-  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `request_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `leave_settings`
 --
 ALTER TABLE `leave_settings`
-  MODIFY `settingID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `settingID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `leave_types`
@@ -1727,7 +1734,7 @@ ALTER TABLE `leave_types`
 -- AUTO_INCREMENT for table `manager_announcement`
 --
 ALTER TABLE `manager_announcement`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `position`
@@ -1745,13 +1752,13 @@ ALTER TABLE `rejected_applications`
 -- AUTO_INCREMENT for table `shift_patterns`
 --
 ALTER TABLE `shift_patterns`
-  MODIFY `pattern_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `pattern_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `shift_pattern_details`
 --
 ALTER TABLE `shift_pattern_details`
-  MODIFY `pattern_detail_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `pattern_detail_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `shift_templates`
