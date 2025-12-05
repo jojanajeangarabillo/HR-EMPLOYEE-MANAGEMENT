@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 02, 2025 at 09:24 AM
+-- Generation Time: Dec 05, 2025 at 01:04 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -265,9 +265,12 @@ INSERT INTO `employee` (`empID`, `fullname`, `department`, `position`, `salary_g
 ('EMP-047', 'Jojana Garabillo', 'Human Resources (HR) Department', 'Human Resource (HR) Admin', NULL, NULL, 'Regular', 'Rotational', 1, 40, 'Jean Garabillo', 'garabillo_jojanajean@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'employee_EMP-047.jpg', '2025-11-27'),
 ('EMP-048', 'Amihan Dimaguiba', 'Breast Screening Department', 'Radiology Assistant', NULL, NULL, 'Contractual', 'Rotational', 1, 40, 'Jean Garabillo', 'ruberducky032518@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'employee_EMP-048.png', '2025-11-28'),
 ('EMP-049', 'Leonor Rivera', 'Records Management Department', 'Document Management Admin', NULL, NULL, 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'noonajeogyo@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-28'),
-('EMP-050', 'Alexander Cajurao', 'Warehouse and Supply Department', 'Inventory Admin', NULL, NULL, 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'cajurao_alexanderjr@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-29'),
+('EMP-050', 'Alexander Cajurao', 'Warehouse and Supply Department', 'Inventory Officer', NULL, NULL, 'Full Time', 'Rotational', 1, 40, 'Jean Garabillo', 'cajurao_alexanderjr@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-29'),
 ('EMP-051', 'Mico Bermudez', 'Marketing Department', 'Content Management Admin', NULL, NULL, 'Regular', 'Rotational', NULL, 40, NULL, 'bermudez_miguelcarlos@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-01'),
-('EMP-052', 'Pepito Manaloto', 'Marketing Department', 'System Staff', NULL, NULL, 'Full Time', 'Rotational', NULL, 40, NULL, 'freeyt.zy@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-01');
+('EMP-052', 'Pepito Manaloto', 'Marketing Department', 'System Staff', NULL, NULL, 'Full Time', 'Rotational', NULL, 40, NULL, 'freeyt.zy@gmail.com', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-01'),
+('EMP-053', 'Charles Jeramy De Padua', 'Finance Department', 'Payroll Manager', NULL, NULL, 'Regular', 'Rotational', NULL, 40, NULL, 'depadua_charlesjeramy@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-05'),
+('EMP-054', 'Cj Castro', 'Finance Department', 'Payroll Officer', NULL, NULL, 'Full Time', 'Rotational', NULL, 40, NULL, 'castro_charljoven@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-05'),
+('EMP-055', 'Daryll Alay', 'Warehouse and Supply Department', 'Inventory Admin', NULL, NULL, 'Regular', 'Rotational', NULL, 40, NULL, 'alay_darryljohn@plpasig.edu.ph', '', '', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-12-05');
 
 -- --------------------------------------------------------
 
@@ -1088,7 +1091,8 @@ INSERT INTO `position` (`positionID`, `departmentID`, `emtypeID`, `position_titl
 (111, 15, NULL, 'IT Associate'),
 (112, 15, NULL, 'IT Associate Jr'),
 (113, 15, NULL, 'IT Head'),
-(115, 22, NULL, 'System Staff');
+(115, 22, NULL, 'System Staff'),
+(116, 19, NULL, 'Inventory Officer');
 
 -- --------------------------------------------------------
 
@@ -1280,17 +1284,20 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`applicant_employee_id`, `email`, `password`, `role`, `fullname`, `status`, `created_at`, `profile_pic`, `reset_token`, `token_expiry`, `sub_role`) VALUES
+('EMP-055', 'alay_darryljohn@plpasig.edu.ph', '$2y$10$ex0fvzUhWg1UPnjJ0ubD1.uS.xpdWkiQuMnzcbzdOXOmjVNhVMg4K', 'Employee', 'Daryll Alay', 'Active', '2025-12-05 19:59:16', NULL, 'f56595ce2df5daaea0ae617e8099e112', '2025-12-06 12:59:16', 'Inventory Admin'),
 ('EMP-019', 'anna_mendoza@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Anna Mendoza', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-001', 'antonio_rhoannenicole@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Rhoanne Nicole Antonio', 'Active', '2025-10-25 10:38:47', NULL, '', '', 'HR Manager'),
 ('EMP-029', 'bella_ramirez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Bella Ramirez', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-051', 'bermudez_miguelcarlos@plpasig.edu.ph', '$2y$10$ndLP5DvR6o4iKOiupqYsBObh75pBrs0gSeZGwfBfFPeeaWUPg2vsC', 'Employee', 'Mico Bermudez', 'Active', '2025-12-01 16:21:27', NULL, '0266ef147ae09e5c27d6cbd3777efd30', '2025-12-02 09:21:27', 'Content Management Admin'),
 ('EMP-041', 'bolotaolo_lark@plpasig.edu.ph', '$2y$10$0MLZpGr8laSUPGGPig.87.Lx9ozOuApmaSDu.FI95eOjL0TMuIWNq', 'Employee', 'Lark Bolotaolo', 'Active', '2025-11-24 14:59:39', NULL, '5cb327175ef63f558eb234fff22db076', '2025-11-25 07:59:39', 'Point of Sales Admin'),
 ('EMP-005', 'cacho_shaneellamae@plpasig.edu.ph', '$2y$10$RJtHsBgGOE3/PVHBCH5FdOJoYXj04MmyajHi2zQYyYtjNU0r6rm5.', 'Employee', 'Shane Ella Cacho', 'Active', '2025-11-18 16:53:26', NULL, '', '', NULL),
-('EMP-050', 'cajurao_alexanderjr@plpasig.edu.ph', '$2y$10$AvYVNJQhwUTCCcd5nmFnnOwRMgcE9Awlf30BdwMwTRQk0ew5q6emC', 'Employee', 'Alexander Cajurao', 'Active', '2025-11-29 10:57:09', NULL, '651d3c8e06c391f4990c809a3c8ccac1', '2025-11-30 03:57:09', 'Inventory Admin'),
+('EMP-050', 'cajurao_alexanderjr@plpasig.edu.ph', '$2y$10$AvYVNJQhwUTCCcd5nmFnnOwRMgcE9Awlf30BdwMwTRQk0ew5q6emC', 'Employee', 'Alexander Cajurao', 'Active', '2025-11-29 10:57:09', NULL, '651d3c8e06c391f4990c809a3c8ccac1', '2025-11-30 03:57:09', 'Inventory Officer'),
 ('EMP-027', 'carla_santos@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Carla Santos', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-009', 'carlos_mendoza@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Carlos Mendoza', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-054', 'castro_charljoven@plpasig.edu.ph', '$2y$10$osT66WkA/aJ8/Qei7ZLioOO65iUhEoCrSB8Fa6Xd9MRdf1Eexztza', 'Employee', 'Cj Castro', 'Active', '2025-12-05 17:50:56', NULL, 'd25032b4c4f7831f9bffcf018d870b65', '2025-12-06 10:50:56', 'Payroll Officer'),
 ('EMP-014', 'cheska_ramirez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Cheska Ramirez', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-017', 'danica_flores@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Danica Joy Flores', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
+('EMP-053', 'depadua_charlesjeramy@plpasig.edu.ph', '$2y$10$osT66WkA/aJ8/Qei7ZLioOO65iUhEoCrSB8Fa6Xd9MRdf1Eexztza', 'Employee', 'Charles Jeramy De Padua', 'Active', '2025-12-05 17:49:55', NULL, '623b466d32b13b7bea8d18c3d6699aa1', '2025-12-06 10:49:55', 'Payroll Manager'),
 ('EMP-037', 'diana_lopez@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Diana Lopez', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-026', 'edward_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Edward Reyes', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-036', 'fiona_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Fiona Reyes', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
@@ -1310,7 +1317,7 @@ INSERT INTO `user` (`applicant_employee_id`, `email`, `password`, `role`, `fulln
 ('EMP-035', 'julian_flores@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Julian Flores', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-022', 'kevin_tan@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Kevin Tan', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-032', 'lance_tan@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Lance Tan', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
-('EMP-044', 'manrique_klarenzcobie@plpasig.edu.ph', '$2y$10$5EW46NwY9IMJlwdXlgeF6elvpp/ZWSI4RV8E6DCGEJvMmas.4.Aum', 'Employee', 'Klarenz Cobie O. Manrique', 'Active', '2025-11-25 14:08:06', NULL, 'e99a5dd36bab7c26537bd5b611b89270', '2025-11-26 07:08:06', 'Payroll Admin'),
+('EMP-044', 'manrique_klarenzcobie@plpasig.edu.ph', '$2y$10$T.sE.gaEzbtKCBdvemzdGeEmS8d8jUvhYnj3AUASQEwaOu2wIuv/y', 'Employee', 'Klarenz Cobie O. Manrique', 'Active', '2025-11-25 14:08:06', NULL, '', '', 'Payroll Admin'),
 ('EMP-038', 'marco.alcantara@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Marco Alcantara', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-024', 'maria_deguzman@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Maria De Guzman', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
 ('EMP-030', 'mark_reyes@plpasig.edu.ph', '$2y$10$a60gRs.Sx9A0jUz098Urs.0g4QWFHWLJMBSbEkKUtSmVIyWq94dNq', 'employee', 'Mark Joseph Reyes', 'Active', '2025-11-28 21:07:47', NULL, '', '', NULL),
@@ -1740,7 +1747,7 @@ ALTER TABLE `manager_announcement`
 -- AUTO_INCREMENT for table `position`
 --
 ALTER TABLE `position`
-  MODIFY `positionID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=116;
+  MODIFY `positionID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=117;
 
 --
 -- AUTO_INCREMENT for table `rejected_applications`

@@ -597,78 +597,100 @@ if (isset($_GET['view']) && isset($_GET['id'])) {
       </div>
     </div>
 
-    <div class="announcement-section">
-      <h1><i class="fa-solid fa-bullhorn"></i> Announcements</h1>
-      <div class="announcement-table-container">
-        <div class="table-responsive">
-          <table class="announcement-table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>From</th>
-                <th>Date</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php while ($row = mysqli_fetch_assoc($managerResult)) { ?>
-                <tr>
-                  <td><?php echo $row['title']; ?></td>
-                  <td><?php echo $row['posted_by']; ?> (Manager)</td>
-                  <td><?php echo date("M d, Y", strtotime($row['date_posted'])); ?></td>
-                  <td><a href="?view=manager&id=<?php echo $row['id']; ?>"><button>View</button></a></td>
-                </tr>
-              <?php } ?>
+  <!-- ... rest of your HTML code ... -->
 
-              <div class="announcement-section">
-                <h1><i class="fa-solid fa-bullhorn"></i> Announcements</h1>
-                <div class="announcement-table-container">
-                  <div class="table-responsive">
-                    <table class="announcement-table">
-                      <thead>
-                        <tr>
-                          <th>Title</th>
-                          <th>From</th>
-                          <th>Date</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <?php while ($row = mysqli_fetch_assoc($managerResult)) { ?>
-                          <tr>
-                            <td><?php echo $row['title']; ?></td>
-                            <td><?php echo $row['posted_by']; ?></td>
-                            <td><?php echo date("M d, Y", strtotime($row['date_posted'])); ?></td>
-                            <td><a href="?view=manager&id=<?php echo $row['id']; ?>"><button>View</button></a></td>
-                          </tr>
-                        <?php } ?>
+<div class="announcement-section">
+  <h1><i class="fa-solid fa-bullhorn"></i> Announcements</h1>
+  <div class="announcement-table-container">
+    <div class="table-responsive">
+      <table class="announcement-table">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>From</th>
+            <th>Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php while ($row = mysqli_fetch_assoc($managerResult)) { ?>
+            <tr>
+              <td><?php echo htmlspecialchars($row['title']); ?></td>
+              <td><?php echo htmlspecialchars($row['posted_by'] ?? 'Unknown'); ?></td>
+              <td><?php echo date("M d, Y", strtotime($row['date_posted'])); ?></td>
+              <td><a href="?view=manager&id=<?php echo $row['id']; ?>"><button>View</button></a></td>
+            </tr>
+          <?php } ?>
+          
+          <?php 
+          // Reset pointer for admin announcements
+          mysqli_data_seek($adminResult, 0);
+          while ($row = mysqli_fetch_assoc($adminResult)) { ?>
+            <tr>
+              <td><?php echo htmlspecialchars($row['title']); ?></td>
+              <td>Admin</td>
+              <td><?php echo date("M d, Y", strtotime($row['date_posted'])); ?></td>
+              <td><a href="?view=admin&id=<?php echo $row['id']; ?>"><button>View</button></a></td>
+            </tr>
+          <?php } ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-                        <br>
-                        <p><strong>Posted By:</strong><br>
-                          HR Manager, <br>
-                          <?php echo $announcement['posted_by']; ?><br>
-                        </p>
-                        <?php ?>
+<!-- Modal -->
+<div class="modal fade" id="announcementModal" tabindex="-1" aria-labelledby="announcementModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="announcementModalLabel">
+          <?php echo htmlspecialchars($announcement['title'] ?? 'Announcement Details'); ?>
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <?php if ($announcement) { ?>
+          <p><strong>Date Posted:</strong> <?php echo date("F j, Y, g:i a", strtotime($announcement['date_posted'])); ?></p>
+          <p><strong>Posted By:</strong> <?php echo htmlspecialchars($announcement['posted_by'] ?? 'Unknown'); ?></p>
+          <hr>
+          <div class="announcement-content">
+            <p><?php echo nl2br(htmlspecialchars($announcement['message'])); ?></p>
+          </div>
+          
+          <?php if (isset($announcement['start_date']) || isset($announcement['end_date'])) { ?>
+            <hr>
+            <h6>Leave Settings:</h6>
+            <?php if (isset($announcement['start_date'])) { ?>
+              <p><strong>Start Date:</strong> <?php echo date("M d, Y", strtotime($announcement['start_date'])); ?></p>
+            <?php } ?>
+            <?php if (isset($announcement['end_date'])) { ?>
+              <p><strong>End Date:</strong> <?php echo date("M d, Y", strtotime($announcement['end_date'])); ?></p>
+            <?php } ?>
+            <?php if (isset($announcement['employee_limit'])) { ?>
+              <p><strong>Employee Limit:</strong> <?php echo htmlspecialchars($announcement['employee_limit']); ?></p>
+            <?php } ?>
+          <?php } ?>
+        <?php } else { ?>
+          <p>Announcement not found or has been removed.</p>
+        <?php } ?>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-                        <br>
-                        <p><strong>Posted By:</strong><br>
-                          <?php echo $announcement['posted_by']; ?><br>
-                        </p>
-                        <?php ?>
-                  </div>
-                  <div class="modal-footer">
-                    <a href="Employee_Dashboard.php" class="btn btn-secondary">Close</a>
-                  </div>
-                </div>
-              </div>
-
-              <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-              <?php if ($openModal) { ?>
-                <script>
-                  var modal = new bootstrap.Modal(document.getElementById('announcementModal'));
-                  modal.show();
-                </script>
-              <?php } ?>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<?php if ($openModal && $announcement) { ?>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      var modal = new bootstrap.Modal(document.getElementById('announcementModal'));
+      modal.show();
+    });
+  </script>
+<?php } ?>
               <script>
                 const empID = '<?php echo addslashes($employeeID ?? ""); ?>';
                 async function loadAttendanceAnalytics() {
