@@ -37,6 +37,7 @@ try {
     $offset = ($page - 1) * $limit;
 
     $search = isset($body['search']) ? trim($body['search']) : '';
+    $empID = isset($body['empID']) ? trim($body['empID']) : '';
     $department = isset($body['department']) ? trim($body['department']) : '';
     $position = isset($body['position']) ? trim($body['position']) : '';
     $status = isset($body['status']) ? trim($body['status']) : '';
@@ -47,6 +48,10 @@ try {
     if ($search !== '') {
         $where[] = "(fullname LIKE :q OR empID LIKE :q OR email_address LIKE :q)";
         $params[':q'] = "%" . $search . "%";
+    }
+    if ($empID !== '') {
+        $where[] = "empID = :empID";
+        $params[':empID'] = $empID;
     }
     if ($department !== '') {
         $where[] = "department = :dept";
