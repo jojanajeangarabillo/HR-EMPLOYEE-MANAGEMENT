@@ -3,11 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
-<<<<<<< HEAD
--- Generation Time: Dec 05, 2025 at 03:36 PM
-=======
--- Generation Time: Dec 05, 2025 at 03:13 PM
->>>>>>> a0f8b2ab714f7958157f376faadc59393d652098
+-- Generation Time: Dec 05, 2025 at 04:28 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -138,32 +134,6 @@ CREATE TRIGGER `set_initial_application_status` BEFORE INSERT ON `applications` 
 END
 $$
 DELIMITER ;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `archive_logs`
---
-
-CREATE TABLE `archive_logs` (
-  `log_id` int(11) NOT NULL,
-  `table_name` varchar(50) DEFAULT NULL,
-  `record_id` int(11) DEFAULT NULL,
-  `record_type` varchar(100) DEFAULT NULL,
-  `action` varchar(20) DEFAULT NULL,
-  `action_by` varchar(100) DEFAULT NULL,
-  `action_at` datetime DEFAULT current_timestamp(),
-  `reason` text DEFAULT NULL,
-  `data_before` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`data_before`)),
-  `data_after` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`data_after`))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `archive_logs`
---
-
-INSERT INTO `archive_logs` (`log_id`, `table_name`, `record_id`, `record_type`, `action`, `action_by`, `action_at`, `reason`, `data_before`, `data_after`) VALUES
-(1, 'shift_patterns', 8, 'shift_pattern', 'ARCHIVE', 'Jean Garabillo', '2025-12-05 21:19:04', NULL, '{\"pattern_id\":8,\"pattern_name\":\"Weekend 2 Days Saturday and Sunday\",\"description\":\"Weekend Shift\",\"cycle_days\":2,\"is_active\":1,\"is_archived\":0,\"archived_by\":null,\"archived_at\":null,\"restored_by\":null,\"restored_at\":null}', NULL);
 
 -- --------------------------------------------------------
 
@@ -755,12 +725,7 @@ CREATE TABLE `expected_staffing` (
   `shift_id` int(11) NOT NULL,
   `day_of_week` enum('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
   `required_count` int(11) NOT NULL,
-  `employment_status` enum('Any','Regular','Full-Time','Part-Time','Contractual','Intern') DEFAULT 'Any',
-  `is_archived` tinyint(1) DEFAULT 0,
-  `archived_by` varchar(100) DEFAULT NULL,
-  `archived_at` datetime DEFAULT NULL,
-  `restored_by` varchar(100) DEFAULT NULL,
-  `restored_at` datetime DEFAULT NULL
+  `employment_status` enum('Any','Regular','Full-Time','Part-Time','Contractual','Intern') DEFAULT 'Any'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -1167,26 +1132,21 @@ CREATE TABLE `shift_patterns` (
   `pattern_name` varchar(100) NOT NULL,
   `description` text DEFAULT NULL,
   `cycle_days` int(11) DEFAULT 7,
-  `is_active` tinyint(1) DEFAULT 1,
-  `is_archived` tinyint(1) DEFAULT 0,
-  `archived_by` varchar(100) DEFAULT NULL,
-  `archived_at` datetime DEFAULT NULL,
-  `restored_by` varchar(100) DEFAULT NULL,
-  `restored_at` datetime DEFAULT NULL
+  `is_active` tinyint(1) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `shift_patterns`
 --
 
-INSERT INTO `shift_patterns` (`pattern_id`, `pattern_name`, `description`, `cycle_days`, `is_active`, `is_archived`, `archived_by`, `archived_at`, `restored_by`, `restored_at`) VALUES
-(1, '5-Day Morning', 'Monday to Friday morning shifts', 7, 1, 0, NULL, NULL, NULL, NULL),
-(2, '5-Day Afternoon', 'Monday to Friday afternoon shifts', 7, 1, 0, NULL, NULL, NULL, NULL),
-(3, 'Rotating 3-Shift', 'Rotates through all three shifts weekly', 21, 1, 0, NULL, NULL, NULL, NULL),
-(4, 'Weekend Warrior', 'Works weekends with weekday off', 7, 1, 0, NULL, NULL, NULL, NULL),
-(5, '4x10 Schedule', 'Four 10-hour days', 7, 1, 0, NULL, NULL, NULL, NULL),
-(6, '5-Day Night', 'Monday to Friday night shifts', 7, 1, 0, NULL, NULL, NULL, NULL),
-(8, 'Weekend 2 Days Saturday and Sunday', 'Weekend Shift', 2, 0, 1, 'Jean Garabillo', '2025-12-05 21:19:04', NULL, NULL);
+INSERT INTO `shift_patterns` (`pattern_id`, `pattern_name`, `description`, `cycle_days`, `is_active`) VALUES
+(1, '5-Day Morning', 'Monday to Friday morning shifts', 7, 1),
+(2, '5-Day Afternoon', 'Monday to Friday afternoon shifts', 7, 1),
+(3, 'Rotating 3-Shift', 'Rotates through all three shifts weekly', 21, 1),
+(4, 'Weekend Warrior', 'Works weekends with weekday off', 7, 1),
+(5, '4x10 Schedule', 'Four 10-hour days', 7, 1),
+(6, '5-Day Night', 'Monday to Friday night shifts', 7, 1),
+(8, 'Weekend 2 Days Saturday and Sunday', 'Weekend Shift', 2, 1);
 
 -- --------------------------------------------------------
 
@@ -1243,22 +1203,17 @@ CREATE TABLE `shift_templates` (
   `time_in` time NOT NULL,
   `time_out` time NOT NULL,
   `shift_hours` int(11) NOT NULL,
-  `description` varchar(255) DEFAULT NULL,
-  `is_archived` tinyint(1) DEFAULT 0,
-  `archived_by` varchar(100) DEFAULT NULL,
-  `archived_at` datetime DEFAULT NULL,
-  `restored_by` varchar(100) DEFAULT NULL,
-  `restored_at` datetime DEFAULT NULL
+  `description` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `shift_templates`
 --
 
-INSERT INTO `shift_templates` (`shift_id`, `shift_name`, `time_in`, `time_out`, `shift_hours`, `description`, `is_archived`, `archived_by`, `archived_at`, `restored_by`, `restored_at`) VALUES
-(1, 'Morning', '06:00:00', '14:00:00', 8, 'Morning shift 6AM-2PM', 0, NULL, NULL, NULL, NULL),
-(2, 'Afternoon', '14:00:00', '22:00:00', 8, 'Afternoon shift 2PM-10PM', 0, NULL, NULL, NULL, NULL),
-(3, 'Night', '22:00:00', '06:00:00', 8, 'Night shift 10PM-6AM', 0, NULL, NULL, NULL, NULL);
+INSERT INTO `shift_templates` (`shift_id`, `shift_name`, `time_in`, `time_out`, `shift_hours`, `description`) VALUES
+(1, 'Morning', '06:00:00', '14:00:00', 8, 'Morning shift 6AM-2PM'),
+(2, 'Afternoon', '14:00:00', '22:00:00', 8, 'Afternoon shift 2PM-10PM'),
+(3, 'Night', '22:00:00', '06:00:00', 8, 'Night shift 10PM-6AM');
 
 -- --------------------------------------------------------
 
@@ -1493,13 +1448,6 @@ ALTER TABLE `applications`
   ADD KEY `fk_applicant` (`applicantID`);
 
 --
--- Indexes for table `archive_logs`
---
-ALTER TABLE `archive_logs`
-  ADD PRIMARY KEY (`log_id`),
-  ADD KEY `idx_archive_logs_table_record` (`table_name`,`record_id`);
-
---
 -- Indexes for table `calendar`
 --
 ALTER TABLE `calendar`
@@ -1547,8 +1495,7 @@ ALTER TABLE `employment_type`
 --
 ALTER TABLE `expected_staffing`
   ADD PRIMARY KEY (`staffing_id`),
-  ADD KEY `fk_exp_shift` (`shift_id`),
-  ADD KEY `idx_expected_staffing_archived` (`is_archived`);
+  ADD KEY `fk_exp_shift` (`shift_id`);
 
 --
 -- Indexes for table `general_request`
@@ -1633,8 +1580,7 @@ ALTER TABLE `rejected_applications`
 -- Indexes for table `shift_patterns`
 --
 ALTER TABLE `shift_patterns`
-  ADD PRIMARY KEY (`pattern_id`),
-  ADD KEY `idx_shift_patterns_archived` (`is_archived`,`is_active`);
+  ADD PRIMARY KEY (`pattern_id`);
 
 --
 -- Indexes for table `shift_pattern_details`
@@ -1648,8 +1594,7 @@ ALTER TABLE `shift_pattern_details`
 -- Indexes for table `shift_templates`
 --
 ALTER TABLE `shift_templates`
-  ADD PRIMARY KEY (`shift_id`),
-  ADD KEY `idx_shift_templates_archived` (`is_archived`);
+  ADD PRIMARY KEY (`shift_id`);
 
 --
 -- Indexes for table `system_settings`
@@ -1716,12 +1661,6 @@ ALTER TABLE `announcement`
 --
 ALTER TABLE `applications`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
-
---
--- AUTO_INCREMENT for table `archive_logs`
---
-ALTER TABLE `archive_logs`
-  MODIFY `log_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `calendar`
