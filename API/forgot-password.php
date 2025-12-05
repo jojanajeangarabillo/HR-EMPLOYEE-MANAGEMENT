@@ -9,10 +9,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
 }
 
-// Load database config
 require_once 'Config.php';
 
-// Load PHPMailer with correct paths
+
 $phpmailerPath = __DIR__ . '/../PHPMailer-master/src/';
 if (!file_exists($phpmailerPath . 'PHPMailer.php')) {
     http_response_code(500);
@@ -27,6 +26,32 @@ require_once $phpmailerPath . 'Exception.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+
+function getInput()
+{
+    $raw = file_get_contents('php://input');
+    $json = json_decode($raw, true);
+    if (!is_array($json)) {
+        $json = [];
+    }
+    $email = $json['email'] ?? ($_POST['email'] ?? ($_GET['email'] ?? ''));
+    $action = $json['action'] ?? ($_POST['action'] ?? ($_GET['action'] ?? ''));
+    $otp = $json['otp'] ?? ($_POST['otp'] ?? ($_GET['otp'] ?? ''));
+    if (empty($otp)) {
+        $otp = $json['reset_token'] ?? ($_POST['reset_token'] ?? ($_GET['reset_token'] ?? ''));
+    }
+    $temporary_password = $json['temporary_password'] ?? ($_POST['temporary_password'] ?? '');
+    $new_password = $json['new_password'] ?? ($_POST['new_password'] ?? '');
+    $confirm_password = $json['confirm_password'] ?? ($_POST['confirm_password'] ?? '');
+    return compact('email', 'action', 'otp', 'temporary_password', 'new_password', 'confirm_password') + ['json' => $json];
+}
+
+function buildOtpEmail($fullname, $otp)
+{
+    $name = htmlspecialchars($fullname);
+    $code = htmlspecialchars($otp);
+    return "<html><body style='font-family: Arial, sans-serif;'><div style='max-width: 600px; margin: 0 auto; padding: 20px;'><h2>Password Reset Request</h2><p>Hello {$name},</p><p>You requested to reset your password. Use the following OTP to proceed:</p><div style='background-color: #f0f0f0; padding: 15px; text-align: center; margin: 20px 0;'><h1 style='color: #333; margin: 0;'>{$code}</h1></div><p><strong>This OTP will expire in 15 minutes.</strong></p><p>If you didn't request this, please ignore this email.</p><hr><p style='color: #888; font-size: 12px;'>Employee Management System</p></div></body></html>";
+}
 
 try {
     if (!class_exists('Database')) {
@@ -45,48 +70,24 @@ try {
     exit;
 }
 
-// Initialize variables
-$action = '';
-$email = '';
-
-// Try to get data from JSON body first (preferred)
-$rawInput = file_get_contents('php://input');
-$jsonInput = json_decode($rawInput, true);
-
-if (is_array($jsonInput)) {
-    $email = $jsonInput['email'] ?? '';
-    $action = $jsonInput['action'] ?? '';
-}
-
-// Fallback to POST data if JSON is empty
-if (empty($email)) {
-    $email = $_POST['email'] ?? '';
-    $action = $_POST['action'] ?? $action;
-}
-
-// Fallback to GET/Query parameters if POST is empty
-if (empty($email)) {
-    $email = $_GET['email'] ?? '';
-    if (empty($action)) {
-        $action = $_GET['action'] ?? '';
-    }
-}
-
-// Default action if not specified
-if (empty($action)) {
+$input = getInput();
+$email = $input['email'];
+$action = strtolower(trim($input['action'] ?? ''));
+if ($action === '') {
     $action = 'send_otp';
 }
-
-// Validate email is provided
+if ($action === 'verify_otp' && empty($input['otp'])) {
+    error_log('forgot-password: verify_otp requested without otp; falling back to send_otp');
+    $action = 'send_otp';
+}
 if (empty($email)) {
     http_response_code(400);
-    error_log('forgot-password: Missing email field. JSON: ' . json_encode($jsonInput) . ', POST: ' . json_encode($_POST) . ', GET: ' . json_encode($_GET));
     echo json_encode(['status' => 'error', 'message' => 'Email is required']);
     exit;
 }
 
 try {
-    // Check if user exists
+
     $stmt = $conn->prepare("SELECT * FROM user WHERE email = :email LIMIT 1");
     $stmt->bindParam(':email', $email);
     $stmt->execute();
@@ -99,16 +100,16 @@ try {
         exit;
     }
 
-    // Action: Send OTP
+
     if ($action === 'send_otp' || empty($action)) {
         $otp = strval(random_int(100000, 999999));
         $otp_expiry = date('Y-m-d H:i:s', strtotime('+15 minutes'));
 
-        // Store OTP in database
+
         try {
-            $stmt = $conn->prepare("UPDATE user SET reset_token = :reset_token, token_expiry = :token_expiry WHERE email = :email");
-            $stmt->bindParam(':reset_token', $otp, PDO::PARAM_STR);
-            $stmt->bindParam(':token_expiry', $otp_expiry, PDO::PARAM_STR);
+            $stmt = $conn->prepare("UPDATE user SET otp = :otp, otp_expiry = :otp_expiry WHERE email = :email");
+            $stmt->bindParam(':otp', $otp, PDO::PARAM_STR);
+            $stmt->bindParam(':otp_expiry', $otp_expiry, PDO::PARAM_STR);
             $stmt->bindParam(':email', $email, PDO::PARAM_STR);
             $stmt->execute();
         } catch (PDOException $e) {
@@ -120,7 +121,7 @@ try {
             exit;
         }
 
-        // Send OTP via email
+
         $mail = new PHPMailer(true);
         $mailConfig = require '../mailer-config.php';
 
@@ -136,24 +137,7 @@ try {
         $mail->addAddress($email, $user['fullname']);
         $mail->isHTML(true);
         $mail->Subject = 'Password Reset OTP';
-        $mail->Body = "
-            <html>
-            <body style='font-family: Arial, sans-serif;'>
-                <div style='max-width: 600px; margin: 0 auto; padding: 20px;'>
-                    <h2>Password Reset Request</h2>
-                    <p>Hello " . htmlspecialchars($user['fullname']) . ",</p>
-                    <p>You requested to reset your password. Use the following OTP to proceed:</p>
-                    <div style='background-color: #f0f0f0; padding: 15px; text-align: center; margin: 20px 0;'>
-                        <h1 style='color: #333; margin: 0;'>" . $otp . "</h1>
-                    </div>
-                    <p><strong>This OTP will expire in 15 minutes.</strong></p>
-                    <p>If you didn't request this, please ignore this email.</p>
-                    <hr>
-                    <p style='color: #888; font-size: 12px;'>Employee Management System</p>
-                </div>
-            </body>
-            </html>
-        ";
+        $mail->Body = buildOtpEmail($user['fullname'], $otp);
 
         if (!$mail->send()) {
             http_response_code(500);
@@ -171,9 +155,9 @@ try {
         exit;
     }
 
-    // Action: Verify OTP
+
     if ($action === 'verify_otp') {
-        $otp = $jsonInput['otp'] ?? $_POST['otp'] ?? $_GET['otp'] ?? '';
+        $otp = $input['otp'];
 
         if (empty($otp)) {
             http_response_code(400);
@@ -183,44 +167,44 @@ try {
 
         $currentTime = date('Y-m-d H:i:s');
 
-        // Check if reset_token is empty or null
-        if (empty($user['reset_token'])) {
+
+        if (empty($user['otp'])) {
             http_response_code(401);
             error_log('forgot-password: No OTP found for email ' . $email);
             echo json_encode(['status' => 'error', 'message' => 'No OTP request found. Please request a new OTP']);
             exit;
         }
 
-        // Check OTP matches
-        if ($user['reset_token'] !== $otp) {
+
+        if ($user['otp'] !== $otp) {
             http_response_code(401);
             error_log('forgot-password: Invalid OTP for email ' . $email);
             echo json_encode(['status' => 'error', 'message' => 'Invalid OTP']);
             exit;
         }
 
-        // Check OTP expiry
-        if (empty($user['token_expiry'])) {
+
+        if (empty($user['otp_expiry'])) {
             http_response_code(401);
             error_log('forgot-password: OTP expiry not set for email ' . $email);
             echo json_encode(['status' => 'error', 'message' => 'OTP is invalid']);
             exit;
         }
 
-        if ($currentTime > $user['token_expiry']) {
+        if ($currentTime > $user['otp_expiry']) {
             http_response_code(401);
             error_log('forgot-password: OTP expired for email ' . $email);
             echo json_encode(['status' => 'error', 'message' => 'OTP has expired']);
             exit;
         }
 
-        // Generate temporary password
+
         $tempPassword = bin2hex(random_bytes(6));
         $hashedTempPassword = password_hash($tempPassword, PASSWORD_BCRYPT);
 
-        // Update password with temporary one and mark reset as required
+
         try {
-            $stmt = $conn->prepare("UPDATE user SET password = :password, reset_token = NULL, token_expiry = NULL, reset_required = 1 WHERE email = :email");
+            $stmt = $conn->prepare("UPDATE user SET password = :password, otp = NULL, otp_expiry = NULL, reset_required = 1 WHERE email = :email");
             if (!$stmt) {
                 throw new PDOException('Failed to prepare statement: ' . implode(', ', $conn->errorInfo()));
             }
@@ -248,11 +232,11 @@ try {
         exit;
     }
 
-    // Action: Update Password (with temporary password)
+
     if ($action === 'update_password') {
-        $tempPassword = $jsonInput['temporary_password'] ?? $_POST['temporary_password'] ?? '';
-        $newPassword = $jsonInput['new_password'] ?? $_POST['new_password'] ?? '';
-        $confirmPassword = $jsonInput['confirm_password'] ?? $_POST['confirm_password'] ?? '';
+        $tempPassword = $input['temporary_password'];
+        $newPassword = $input['new_password'];
+        $confirmPassword = $input['confirm_password'];
 
         if (empty($tempPassword) || empty($newPassword) || empty($confirmPassword)) {
             http_response_code(400);
@@ -272,7 +256,6 @@ try {
             exit;
         }
 
-        // Verify temporary password
         $passwordValid = password_verify($tempPassword, $user['password']);
 
         if (!$passwordValid) {
@@ -282,7 +265,6 @@ try {
             exit;
         }
 
-        // Update to new password
         $hashedNewPassword = password_hash($newPassword, PASSWORD_BCRYPT);
         try {
             $stmt = $conn->prepare("UPDATE user SET password = :password, reset_required = 0 WHERE email = :email");

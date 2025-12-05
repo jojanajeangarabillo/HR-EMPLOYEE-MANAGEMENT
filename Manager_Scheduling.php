@@ -1750,56 +1750,120 @@ body {
   line-height: 1.4;
 }
 
-/* TABS CONTAINER - FIXED POSITIONING */
-.tabs-container {
+/* DROPDOWN NAVIGATION STYLES */
+.dropdown-nav-container {
   background: white;
   border-radius: 10px 10px 0 0;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   margin-bottom: 0;
+  padding: 15px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
-.nav-tabs {
-  border-bottom: 1px solid #dee2e6;
-  padding: 0 15px;
-  margin-bottom: 0;
-  display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
+.dropdown {
+  position: relative;
 }
 
-.nav-tabs .nav-link {
-  color: #1E3A8A;
+.dropdown-toggle {
+  background-color: #1E3A8A;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
   font-weight: 500;
-  border: none;
-  border-radius: 0;
-  padding: 12px 20px;
-  white-space: nowrap;
-  transition: all 0.3s ease;
-  margin-bottom: -1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.3s ease;
 }
 
-.nav-tabs .nav-link:hover {
-  border: none;
+.dropdown-toggle:hover {
+  background-color: #152C6B;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  display: none;
+  min-width: 250px;
+  padding: 5px 0;
+  margin: 2px 0 0;
+  font-size: 0.875rem;
+  color: #212529;
+  text-align: left;
+  list-style: none;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0,0,0,.15);
+  border-radius: 0.375rem;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.dropdown-menu.show {
+  display: block;
+}
+
+.dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  clear: both;
+  font-weight: 400;
+  color: #212529;
+  text-align: inherit;
+  text-decoration: none;
+  white-space: nowrap;
+  background-color: transparent;
+  border: 0;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
   background-color: #f8f9fa;
   color: #1E3A8A;
 }
 
-.nav-tabs .nav-link.active {
+.dropdown-item.active {
   background-color: #1E3A8A;
   color: white;
-  border: none;
-  border-bottom: 3px solid #1E3A8A;
 }
 
-.nav-tabs .nav-link i {
+.dropdown-item i {
   margin-right: 8px;
+  width: 20px;
+  text-align: center;
+}
+
+.current-view-indicator {
+  background: #f8f9fa;
+  padding: 8px 16px;
+  border-radius: 5px;
+  font-weight: 500;
+  color: #1E3A8A;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.current-view-indicator i {
   font-size: 0.9rem;
 }
 
-/* TAB CONTENT AREA */
+/* Hide the original tabs */
+.tabs-container {
+  display: none;
+}
+
+/* Ensure tab content is properly displayed */
 .tab-content {
   background: white;
   border-radius: 0 0 10px 10px;
@@ -1810,7 +1874,11 @@ body {
 }
 
 .tab-pane {
-  min-height: 500px;
+  display: none;
+}
+
+.tab-pane.active {
+  display: block;
 }
 
 /* Calendar Styles */
@@ -2252,13 +2320,20 @@ td:first-child {
         padding: 15px;
     }
     
-    .nav-tabs {
-        padding: 0 10px;
+    .dropdown-nav-container {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
     }
     
-    .nav-tabs .nav-link {
-        padding: 10px 15px;
-        font-size: 0.9rem;
+    .dropdown-toggle {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .current-view-indicator {
+        width: 100%;
+        justify-content: center;
     }
     
     .calendar-day {
@@ -2366,44 +2441,56 @@ td:first-child {
       </div>
     <?php endif; ?>
 
-    <!-- Tabs for different views -->
-    <ul class="nav nav-tabs" id="schedulingTabs" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar" type="button" role="tab" aria-controls="calendar" aria-selected="true">
-          <i class="fa-solid fa-calendar"></i> Calendar View
+    <!-- DROPDOWN NAVIGATION CONTAINER -->
+    <div class="dropdown-nav-container">
+      <div class="dropdown">
+        <button class="dropdown-toggle" type="button" id="schedulingDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="fa-solid fa-bars"></i> Menu
         </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="shifts-tab" data-bs-toggle="tab" data-bs-target="#shifts" type="button" role="tab" aria-controls="shifts" aria-selected="false">
-          <i class="fa-solid fa-clock"></i> Shift Management
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="patterns-tab" data-bs-toggle="tab" data-bs-target="#patterns" type="button" role="tab" aria-controls="patterns" aria-selected="false">
-          <i class="fa-solid fa-calendar-week"></i> Shift Patterns
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="all-schedules-tab" data-bs-toggle="tab" data-bs-target="#all-schedules" type="button" role="tab" aria-controls="all-schedules" aria-selected="false">
-          <i class="fa-solid fa-list-check"></i> All Schedules
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="staffing-tab" data-bs-toggle="tab" data-bs-target="#staffing" type="button" role="tab" aria-controls="staffing" aria-selected="false">
-          <i class="fa-solid fa-users"></i> Staffing Requirements
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="staffing-overview-tab" data-bs-toggle="tab" data-bs-target="#staffing-overview" type="button" role="tab" aria-controls="staffing-overview" aria-selected="false">
-          <i class="fa-solid fa-chart-bar"></i> Staffing Overview
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="leaves-tab" data-bs-toggle="tab" data-bs-target="#leaves" type="button" role="tab" aria-controls="leaves" aria-selected="false">
-          <i class="fa-solid fa-umbrella-beach"></i> Leave Schedule
-        </button>
-      </li>
-    </ul>
+        <ul class="dropdown-menu" aria-labelledby="schedulingDropdown">
+          <li>
+            <button class="dropdown-item active" onclick="showTab('calendar')">
+              <i class="fa-solid fa-calendar"></i> Calendar View
+            </button>
+          </li>
+          <li>
+            <button class="dropdown-item" onclick="showTab('shifts')">
+              <i class="fa-solid fa-clock"></i> Shift Management
+            </button>
+          </li>
+          <li>
+            <button class="dropdown-item" onclick="showTab('patterns')">
+              <i class="fa-solid fa-calendar-week"></i> Shift Patterns
+            </button>
+          </li>
+          <li>
+            <button class="dropdown-item" onclick="showTab('all-schedules')">
+              <i class="fa-solid fa-list-check"></i> All Schedules
+            </button>
+          </li>
+          <li>
+            <button class="dropdown-item" onclick="showTab('staffing')">
+              <i class="fa-solid fa-users"></i> Staffing Requirements
+            </button>
+          </li>
+          <li>
+            <button class="dropdown-item" onclick="showTab('staffing-overview')">
+              <i class="fa-solid fa-chart-bar"></i> Staffing Overview
+            </button>
+          </li>
+          <li>
+            <button class="dropdown-item" onclick="showTab('leaves')">
+              <i class="fa-solid fa-umbrella-beach"></i> Leave Schedule
+            </button>
+          </li>
+        </ul>
+      </div>
+      
+      <!-- Current View Indicator -->
+      <div class="current-view-indicator" id="currentViewIndicator">
+        <i class="fa-solid fa-calendar"></i> Calendar View
+      </div>
+    </div>
 
     <div class="tab-content" id="schedulingTabsContent">
       <!-- Calendar Tab -->
@@ -3487,6 +3574,51 @@ td:first-child {
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
   <script>
+    // Tab switching functionality
+    function showTab(tabName) {
+      // Hide all tab panes
+      document.querySelectorAll('.tab-pane').forEach(pane => {
+        pane.classList.remove('active');
+        pane.classList.remove('show');
+      });
+      
+      // Show selected tab pane
+      const selectedTab = document.getElementById(tabName);
+      if (selectedTab) {
+        selectedTab.classList.add('active', 'show');
+      }
+      
+      // Update dropdown menu active state
+      document.querySelectorAll('.dropdown-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      
+      // Update current view indicator
+      const currentViewIndicator = document.getElementById('currentViewIndicator');
+      const selectedButton = event.target.closest('.dropdown-item');
+      if (selectedButton && currentViewIndicator) {
+        selectedButton.classList.add('active');
+        currentViewIndicator.innerHTML = selectedButton.innerHTML;
+      }
+      
+      // Close dropdown
+      const dropdownMenu = document.querySelector('.dropdown-menu');
+      dropdownMenu.classList.remove('show');
+      
+      // Handle specific tab initialization
+      switch(tabName) {
+        case 'all-schedules':
+          loadAllSchedules();
+          break;
+        case 'staffing':
+          loadStaffingRequirements();
+          break;
+        case 'staffing-overview':
+          loadStaffingOverview();
+          break;
+      }
+    }
+
     // Calendar functionality
     let currentMonth = <?php echo $month; ?>;
     let currentYear = <?php echo $year; ?>;
@@ -4628,8 +4760,12 @@ td:first-child {
         loadAllSchedules();
     });
 
-    // Initialize calendar and event listeners
+    // Initialize on page load
     document.addEventListener('DOMContentLoaded', function() {
+      // Show calendar tab by default
+      showTab('calendar');
+      
+      // Initialize other components
       renderCalendar(currentMonth, currentYear);
       setupCalendarDayClicks();
       updateStaffingStatus();

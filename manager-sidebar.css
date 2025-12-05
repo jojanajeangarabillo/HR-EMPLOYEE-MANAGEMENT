@@ -1,157 +1,414 @@
+/* Combined and Aligned CSS */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;600&display=swap');
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* ============================== */
+/* GLOBAL VARIABLES AND RESETS */
+/* ============================== */
+:root {
+    /* *** COLOR PALETTE - Consolidated *** */
+    --color-primary: #2563eb;
+    --color-primary-light: #93c5fd;
+    --color-primary-dark: #1e3a8a;
+    --primary: var(--color-primary-dark); /* Alias for consistency */
+    --primary-600: var(--color-primary);
+    
+    --color-background: #f5f8ff; /* Updated to match manager-sidebar.css */
+    --color-surface: #ffffff;
+    --bg: var(--color-background); /* Alias */
+    
+    --color-border: #c7c9d1;
+    --color-disabled: #dcdde1;
+    
+    --color-text: #111827; /* Updated to match manager-sidebar.css */
+    --color-text-muted: #6b7280;
+    --text: var(--color-text); /* Alias */
+    --muted: var(--color-text-muted); /* Alias */
+    
+    --color-success: #10b981;
+    --color-success-light: #88dcc0;
+    
+    --color-warning: #fbbf24;
+    --color-warning-light: #fddf92;
+    
+    --color-error: #dc2626;
+    --color-error-light: #ee9393;
+    
+    /* *** RADII *** */
+    --radius-circle: 999rem;
+    --radius-outer: 1rem;
+    --radius-inner: 0.5rem;
+    --radius: 12px; /* Alias from manager-sidebar.css */
+    
+    /* *** SPACING - Consolidated *** */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 40px;
+    
+    /* *** TYPOGRAPHY *** */
+    --font-heading: 'Poppins', sans-serif;
+    --font-body: 'Roboto', sans-serif;
+    
+    /* *** SHADOWS *** */
+    --shadow-surface: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-element: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-text: 0px 1px 2px rgb(0 0 0 / 0.1), 0px 3px 2px rgb(0 0 0 / 0.1), 0px 4px 8px rgb(0 0 0 / 0.1);
+    --shadow: 0 10px 25px rgba(15,23,42,.08); /* From manager-sidebar.css */
+}
+
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
 }
 
 body {
-  font-family: "Poppins", "Roboto", sans-serif;
+    font-family: var(--font-body);
+    font-weight: 500; /* Changed from bold to 500 for better readability */
+    background-color: var(--color-background);
+    color: var(--color-text);
+    height: 100%;
+    line-height: 1.5;
+    letter-spacing: 0.025em;
 }
 
-/* SIDEBAR CONTAINER */
+body.--modal-active {
+    position: fixed;
+    width: 100%;
+    padding-right: 17px;
+}
+
+h1,
+h2,
+h3 {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 700; /* Changed from bold to 700 for consistency */
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+span {
+    font-weight: 500; /* Changed from bold to 500 for consistency */
+}
+
+svg {
+    height: 2rem;
+    width: 2rem;
+}
+
+button {
+    font-size: 1rem;
+    font-family: var(--font-body);
+    font-weight: 500;
+}
+
+/* ============================== */
+/* SIDEBAR STYLES */
+/* ============================== */
 .sidebar {
-  width: 230px;
-  background-color: #1E3A8A;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 30px;
-  position: fixed;
-  left: 0;
-  top: 0;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-  overflow-y: auto; /* enables vertical scrolling */
-  scrollbar-width: thin; /* optional: make scrollbar thinner */
-  scrollbar-color: #e5edfb transparent; /* optional: custom scrollbar */
+    width: 230px;
+    background-color: var(--color-primary-dark);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: var(--space-6);
+    position: fixed;
+    left: 0;
+    top: 0;
+    box-shadow: var(--shadow-element);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #e5edfb transparent;
+    z-index: 1000;
 }
 
-/* NAVIGATION MENU */
-.nav {
-  margin-top: 40px;  
-  list-style: none;
-  width: 100%;
-  padding: 0;
-}
-
-.nav li {
-  width: 100%; /* ✅ ensures full-width hover background */
-}
-
-.nav li a {
-  color: #ffffff;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 15px 25px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  width: 100%; /* ✅ makes anchor stretch full width */
-  box-sizing: border-box;
-}
-
-/* ✅ full-width hover & active highlight */
-.nav li a:hover,
-.nav li.active a {
-  background-color: #e5edfb;
-  color: #1E3A8A;
-  font-weight: 600;
-}
-
-.nav i {
-  width: 20px;
-  text-align: center;
-}
-
-/* RESPONSIVE DESIGN */
-@media (max-width: 900px) {
-  .sidebar {
-    width: 200px;
-    padding-top: 20px;
-  }
-
-  .sidebar-logo img {
-    height: 90px;
-    width: 90px;
-  }
-
-  .nav li a {
-    font-size: 14px;
-    padding: 12px 20px;
-  }
-}
-
-/* SIDEBAR LOGO & PROFILE */
+/* Sidebar logo and profile */
 .sidebar-logo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px; /* space between image and text */
-  margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
 }
 
 .sidebar-logo img {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  border: 3px solid white;
-  cursor: pointer;
-  transition: transform 0.3s ease;
+    width: 100px;
+    height: 100px;
+    border-radius: var(--radius-circle);
+    border: 3px solid var(--color-surface);
+    cursor: pointer;
+    transition: transform 0.3s ease;
 }
 
 .sidebar-logo img:hover {
-  transform: scale(1.05);
+    transform: scale(1.05);
 }
 
 .sidebar-name p {
-  color: white;
-  text-align: center;
-  font-weight: 500;
-}
-/* --- Design tokens and modern spacing --- */
-:root{
-  --primary:#1E3A8A;
-  --primary-600:#2563EB;
-  --bg:#F5F8FF;
-  --text:#111827;
-  --muted:#4b5563;
-  --radius:12px;
-  --shadow:0 10px 25px rgba(15,23,42,.08);
-  --space-1:4px; --space-2:8px; --space-3:12px; --space-4:16px; --space-5:24px; --space-6:32px; --space-7:40px;
+    color: var(--color-surface);
+    text-align: center;
+    font-weight: 500;
+    font-family: var(--font-body);
+    margin: 0;
 }
 
-/* Content area spacing */
-.main-content { margin-left:230px !important; padding: var(--space-6) var(--space-5) !important; min-height:100vh; display:block; }
-.job-postings-container { margin-left:230px !important; padding: var(--space-6) var(--space-5) !important; min-height:100vh; }
-.main-content-header { display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--space-4); padding-bottom: var(--space-3); border-bottom:1px solid #e5e7eb; }
-.main-content-header h1 { color: var(--primary); font-weight:700; margin:0; display:flex; align-items:center; gap:10px; }
+/* Navigation menu */
+.nav {
+    margin-top: var(--space-7);
+    list-style: none;
+    width: 100%;
+    padding: 0;
+}
 
+.nav li {
+    width: 100%;
+}
+
+.nav li a {
+    color: var(--color-surface);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5);
+    font-weight: 500;
+    transition: all 0.3s ease;
+    width: 100%;
+    font-family: var(--font-body);
+}
+
+.nav li a:hover,
+.nav li.active a {
+    background-color: #e5edfb;
+    color: var(--color-primary-dark);
+    font-weight: 600;
+}
+
+.nav i {
+    width: 20px;
+    text-align: center;
+    font-size: 1.25rem;
+}
+
+/* ============================== */
+/* CONTENT AREA STYLES */
+/* ============================== */
+.main-content {
+    margin-left: 230px !important;
+    padding: var(--space-6) var(--space-5) !important;
+    min-height: 100vh;
+    display: block;
+    background-color: var(--color-background);
+}
+
+.job-postings-container {
+    margin-left: 230px !important;
+    padding: var(--space-6) var(--space-5) !important;
+    min-height: 100vh;
+    background-color: var(--color-background);
+}
+
+.main-content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.main-content-header h1 {
+    color: var(--color-primary-dark);
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    font-family: var(--font-heading);
+    font-size: 1.75rem;
+}
+
+/* ============================== */
+/* COMPONENT STYLES */
+/* ============================== */
 /* Cards */
-.card { border:none; border-radius: var(--radius); box-shadow: var(--shadow); }
-.card-header { background:#fff; border-bottom:1px solid #e5e7eb; }
-.card-body { padding: var(--space-5); }
+.card {
+    border: none;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    background-color: var(--color-surface);
+    overflow: hidden;
+}
+
+.card-header {
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-4) var(--space-5);
+    font-family: var(--font-heading);
+    font-weight: 600;
+}
+
+.card-body {
+    padding: var(--space-5);
+}
 
 /* Tables */
-.table { border-collapse: collapse; border-radius: var(--radius); overflow: hidden; }
-.table th, .table td { padding: var(--space-4) var(--space-5); vertical-align: middle; }
-.table thead { background-color: #e5edfb; }
-/* Common table container spacing */
-.table-container { margin-top: var(--space-3); }
+.table {
+    border-collapse: collapse;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background-color: var(--color-surface);
+    box-shadow: var(--shadow-element);
+    width: 100%;
+}
+
+.table th,
+.table td {
+    padding: var(--space-4) var(--space-5);
+    vertical-align: middle;
+    border-bottom: 1px solid var(--color-border);
+    font-family: var(--font-body);
+}
+
+.table thead {
+    background-color: #e5edfb;
+}
+
+.table th {
+    font-weight: 600;
+    color: var(--color-text);
+    font-family: var(--font-heading);
+}
+
+.table-container {
+    margin-top: var(--space-3);
+    background-color: var(--color-surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
 
 /* Buttons */
-.btn { border-radius: 10px; padding: 10px 16px; }
-.btn-primary { background-color: var(--primary); border-color: var(--primary); }
-.btn-primary:hover { background-color: var(--primary-600); border-color: var(--primary-600); }
-.btn-outline-primary { color: var(--primary); border-color: var(--primary); }
-.btn-outline-primary:hover { background-color: var(--primary); color:#fff; }
+.btn {
+    border-radius: 10px;
+    padding: var(--space-3) var(--space-4);
+    font-family: var(--font-body);
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--color-primary-dark);
+    border-color: var(--color-primary-dark);
+    color: var(--color-surface);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-outline-primary {
+    background-color: transparent;
+    color: var(--color-primary-dark);
+    border: 2px solid var(--color-primary-dark);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--color-primary-dark);
+    color: var(--color-surface);
+}
 
 /* Badges */
-.badge { border-radius:999px; padding:6px 10px; }
+.badge {
+    border-radius: var(--radius-circle);
+    padding: 6px 10px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-block;
+    text-align: center;
+}
 
 /* Utility spacing */
-.stack-sm > * + * { margin-top: var(--space-3); }
-.stack-md > * + * { margin-top: var(--space-4); }
-.stack-lg > * + * { margin-top: var(--space-6); }
+.stack-sm > * + * {
+    margin-top: var(--space-3);
+}
+
+.stack-md > * + * {
+    margin-top: var(--space-4);
+}
+
+.stack-lg > * + * {
+    margin-top: var(--space-6);
+}
+
+/* ============================== */
+/* RESPONSIVE DESIGN */
+/* ============================== */
+@media (max-width: 900px) {
+    .sidebar {
+        width: 200px;
+        padding-top: var(--space-5);
+    }
+    
+    .sidebar-logo img {
+        height: 90px;
+        width: 90px;
+    }
+    
+    .nav li a {
+        font-size: 14px;
+        padding: var(--space-3) var(--space-4);
+    }
+    
+    .main-content,
+    .job-postings-container {
+        margin-left: 200px !important;
+        padding: var(--space-5) var(--space-4) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 60px;
+        padding-top: var(--space-4);
+    }
+    
+    .sidebar-logo img {
+        height: 40px;
+        width: 40px;
+        border-width: 2px;
+    }
+    
+    .sidebar-name,
+    .nav li a span:not(.icon) {
+        display: none;
+    }
+    
+    .nav li a {
+        justify-content: center;
+        padding: var(--space-3);
+    }
+    
+    .nav {
+        margin-top: var(--space-5);
+    }
+    
+    .main-content,
+    .job-postings-container {
+        margin-left: 60px !important;
+        padding: var(--space-4) var(--space-3) !important;
+    }
+}

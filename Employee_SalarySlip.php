@@ -73,9 +73,9 @@ if ($employeeID) {
 
   <style>
     :root {
-      --primary: #6674cc;
-      --primary-dark: #4c5ecf;
-      --primary-light: #f0f2ff;
+      --primary: #2563eb; /* Changed from #6674cc to blue */
+      --primary-dark: #1d4ed8; /* Changed from #4c5ecf to darker blue */
+      --primary-light: #dbeafe; /* Changed from #f0f2ff to light blue */
       --secondary: #3b82f6;
       --accent-green: #10b981;
       --accent-red: #dc2626;
@@ -99,15 +99,11 @@ if ($employeeID) {
       line-height: 1.6;
     }
 
-
-
-
     .sidebar-logo {
       padding: 30px 20px 10px;
       text-align: center;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
-
 
     .sidebar-logo img:hover {
       border-color: rgba(255, 255, 255, 0.5);
@@ -136,16 +132,12 @@ if ($employeeID) {
       color: white;
     }
 
-
     h1 {
       font-family: 'Roboto', sans-serif;
       font-size: 35px;
       color: white;
       text-align: center;
     }
-
-
-
 
     /* Main Content */
     .main-content {
@@ -202,7 +194,7 @@ if ($employeeID) {
     .filter-select:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(102, 116, 204, 0.1);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); /* Updated to match primary blue */
     }
 
     /* Overview Page */
@@ -293,7 +285,7 @@ if ($employeeID) {
     }
 
     .salary-overview-table thead {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); /* Updated to blue */
     }
 
     .salary-overview-table th {
@@ -310,7 +302,7 @@ if ($employeeID) {
     }
 
     .salary-overview-table tbody tr:hover {
-      background-color: var(--primary-light);
+      background-color: var(--primary-light); /* Updated to light blue */
     }
 
     .salary-overview-table td {
@@ -360,7 +352,7 @@ if ($employeeID) {
       align-items: center;
       padding: 30px;
       border-bottom: 1px solid var(--border-color);
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); /* Updated to blue */
       color: white;
     }
 
@@ -433,7 +425,7 @@ if ($employeeID) {
     }
 
     .info-card-header {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); /* Updated to blue */
       color: white;
       padding: 15px 20px;
       font-weight: 600;
@@ -476,7 +468,7 @@ if ($employeeID) {
     }
 
     .received-by-header {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); /* Updated to blue */
       color: white;
       padding: 15px 20px;
       font-weight: 600;
@@ -500,11 +492,11 @@ if ($employeeID) {
     }
 
     .salary-slip-card {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); /* Changed from purple gradient to blue */
       border-radius: var(--border-radius);
       padding: 30px;
       color: white;
-      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4); /* Updated to blue */
     }
 
     .slip-header {
@@ -541,7 +533,7 @@ if ($employeeID) {
       align-items: center;
       justify-content: center;
       font-size: 24px;
-      color: var(--primary);
+      color: var(--primary); /* Updated to blue */
       flex-shrink: 0;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
@@ -600,7 +592,7 @@ if ($employeeID) {
     .btn-back {
       align-self: flex-start;
       padding: 12px 30px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); /* Updated to blue */
       color: white;
       border: none;
       border-radius: 8px;
@@ -619,8 +611,6 @@ if ($employeeID) {
       box-shadow: var(--shadow-hover);
     }
 
-
-
     /* Responsive Design */
     @media (max-width: 1200px) {
       .content-wrapper {
@@ -637,8 +627,6 @@ if ($employeeID) {
     }
 
     @media (max-width: 992px) {
-
-
       .sidebar .nav li a {
         justify-content: center;
         padding: 15px;
@@ -718,7 +706,6 @@ if ($employeeID) {
     }
 
     @media print {
-
       .sidebar,
       .export-buttons,
       .btn-back,
@@ -959,7 +946,7 @@ if ($employeeID) {
                   <p>HOSPITAL</p>
                 </div>
                 <div class="hospital-logo">
-                  <i class="fa-solid fa-hospital"></i>
+                  <img src="C:/xampp/htdocs/HR-EMPLOYEE-MANAGEMENT/images/hospitallogo.png'" alt="">
                 </div>
               </div>
 
