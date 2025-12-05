@@ -2,6 +2,146 @@
 session_start();
 require 'admin/db.connect.php';
 
+if (isset($_GET['export']) && $_GET['export'] === 'pdf') {
+  $useUnicode = false;
+  if (file_exists(__DIR__ . '/fpdf/tfpdf.php')) {
+    require_once __DIR__ . '/fpdf/tfpdf.php';
+    if (class_exists('tFPDF')) {
+      if (!defined('_SYSTEM_TTFONTS')) {
+        define('_SYSTEM_TTFONTS', 'C:/Windows/Fonts');
+      }
+      $pdf = new tFPDF('P', 'mm', 'A4');
+      $pdf->AddPage();
+      $pdf->AddFont('Arial', '', 'arial.ttf', true);
+      $pdf->SetFont('Arial', '', 11);
+      $useUnicode = true;
+    }
+  }
+  if (!$useUnicode) {
+    require_once __DIR__ . '/fpdf/fpdf.php';
+    $pdf = new FPDF('P', 'mm', 'A4');
+    $pdf->AddPage();
+    $pdf->SetFont('Arial', '', 11);
+  }
+  $get = function ($key) {
+    return isset($_POST[$key]) ? $_POST[$key] : ''; };
+  $money = function ($n) use ($useUnicode) {
+    $f = is_numeric($n) ? (float) $n : 0;
+    $prefix = $useUnicode ? '₱ ' : 'PHP ';
+    return $prefix . number_format($f, 2); };
+  $data = [
+    'full_name' => $get('full_name'),
+    'emp_code' => $get('emp_code'),
+    'position' => $get('position'),
+    'employment_type' => $get('employment_type'),
+    'pay_date' => $get('pay_date'),
+    'pay_type' => $get('pay_type'),
+    'period' => $get('period'),
+    'monthly_rate' => $get('monthly_rate'),
+    'daily_rate' => $get('daily_rate'),
+    'hourly_rate' => $get('hourly_rate'),
+    'payment_method' => $get('payment_method'),
+    'basic_pay' => $get('basic_pay'),
+    'sub_basic_pay' => $get('sub_basic_pay'),
+    'ot_pay' => $get('ot_pay'),
+    'legal_holiday' => $get('legal_holiday'),
+    'special_holiday' => $get('special_holiday'),
+    'holiday_ot' => $get('holiday_ot'),
+    'rest_day_pay' => $get('rest_day_pay'),
+    'absent_units' => $get('absent_units'),
+    'absent_deduction' => $get('absent_deduction'),
+    'undertime_units' => $get('undertime_units'),
+    'undertime_deduction' => $get('undertime_deduction'),
+    'sss' => $get('sss'),
+    'philhealth' => $get('philhealth'),
+    'pagibig' => $get('pagibig'),
+    'tax' => $get('tax'),
+    'other_deductions' => $get('other_deductions'),
+    'gross_pay' => $get('gross_pay'),
+    'total_deduction' => $get('total_deduction'),
+    'net_pay' => $get('net_pay'),
+    'approved_by' => $get('approved_by'),
+    'received_by' => $get('received_by')
+  ];
+  // Header
+  $pdf->SetFont('Arial', 'B', 16);
+  $pdf->Cell(0, 12, 'Salary Slip', 0, 1, 'C');
+  $pdf->Ln(3);
+  $pdf->SetFont('Arial', '', 11);
+  $pdf->Cell(0, 8, 'Employee: ' . ($data['full_name'] ?: 'Employee'), 0, 1);
+  $pdf->Cell(0, 8, 'ID: ' . ($data['emp_code'] ?: ''), 0, 1);
+  $pdf->Cell(0, 8, 'Position: ' . ($data['position'] ?: ''), 0, 1);
+  $pdf->Cell(0, 8, 'Status: ' . ($data['employment_type'] ?: ''), 0, 1);
+  $pdf->Ln(2);
+  $pdf->SetFont('Arial', 'B', 12);
+  $pdf->Cell(0, 8, 'Pay Out Information', 0, 1);
+  $pdf->SetFont('Arial', '', 11);
+  $pdf->Cell(95, 8, 'Pay Date: ' . ($data['pay_date'] ?: ''), 0, 0);
+  $pdf->Cell(95, 8, 'Pay Type: ' . ($data['pay_type'] ?: ''), 0, 1);
+  $pdf->Cell(95, 8, 'Period: ' . ($data['period'] ?: ''), 0, 0);
+  $pdf->Cell(95, 8, 'Payment Method: ' . ($data['payment_method'] ?: ''), 0, 1);
+  $pdf->Cell(95, 8, 'Monthly Rate: ' . $money($data['monthly_rate']), 0, 0);
+  $pdf->Cell(95, 8, 'Daily Rate: ' . $money($data['daily_rate']), 0, 1);
+  $pdf->Cell(95, 8, 'Hourly Rate: ' . $money($data['hourly_rate']), 0, 1);
+  $pdf->Ln(2);
+  $pdf->SetFont('Arial', 'B', 12);
+  $pdf->Cell(0, 8, 'Earnings', 0, 1);
+  $pdf->SetFont('Arial', '', 11);
+  $pdf->Cell(130, 8, 'Basic Pay', 1, 0);
+  $pdf->Cell(60, 8, $money($data['basic_pay']), 1, 1, 'R');
+  $pdf->Cell(130, 8, 'Sub Basic Pay', 1, 0);
+  $pdf->Cell(60, 8, $money($data['sub_basic_pay']), 1, 1, 'R');
+  $pdf->Cell(130, 8, 'Overtime Pay', 1, 0);
+  $pdf->Cell(60, 8, $money($data['ot_pay']), 1, 1, 'R');
+  $pdf->Cell(130, 8, 'Legal Holiday', 1, 0);
+  $pdf->Cell(60, 8, $money($data['legal_holiday']), 1, 1, 'R');
+  $pdf->Cell(130, 8, 'Special Non-Working Holiday', 1, 0);
+  $pdf->Cell(60, 8, $money($data['special_holiday']), 1, 1, 'R');
+  $pdf->Cell(130, 8, 'Holiday OT', 1, 0);
+  $pdf->Cell(60, 8, $money($data['holiday_ot']), 1, 1, 'R');
+  $pdf->Cell(130, 8, 'Rest Day Pay', 1, 0);
+  $pdf->Cell(60, 8, $money($data['rest_day_pay']), 1, 1, 'R');
+  $pdf->Ln(2);
+  $pdf->SetFont('Arial', 'B', 12);
+  $pdf->Cell(0, 8, 'Deductions', 0, 1);
+  $pdf->SetFont('Arial', '', 11);
+  $pdf->Cell(130, 8, 'SSS', 1, 0);
+  $pdf->Cell(60, 8, $money($data['sss']), 1, 1, 'R');
+  $pdf->Cell(130, 8, 'PhilHealth', 1, 0);
+  $pdf->Cell(60, 8, $money($data['philhealth']), 1, 1, 'R');
+  $pdf->Cell(130, 8, 'Pag-IBIG', 1, 0);
+  $pdf->Cell(60, 8, $money($data['pagibig']), 1, 1, 'R');
+  $pdf->Cell(130, 8, 'Tax', 1, 0);
+  $pdf->Cell(60, 8, $money($data['tax']), 1, 1, 'R');
+  $pdf->Cell(130, 8, 'Other Deductions', 1, 0);
+  $pdf->Cell(60, 8, $money($data['other_deductions']), 1, 1, 'R');
+  $pdf->Cell(130, 8, 'Absent Deduction (' . ($data['absent_units'] ?: '0') . ')', 1, 0);
+  $pdf->Cell(60, 8, $money($data['absent_deduction']), 1, 1, 'R');
+  $pdf->Cell(130, 8, 'Undertime Deduction (' . ($data['undertime_units'] ?: '0') . ')', 1, 0);
+  $pdf->Cell(60, 8, $money($data['undertime_deduction']), 1, 1, 'R');
+  $pdf->Ln(2);
+  $pdf->SetFont('Arial', 'B', 12);
+  $pdf->Cell(130, 8, 'Gross Pay', 1, 0);
+  $pdf->Cell(60, 8, $money($data['gross_pay']), 1, 1, 'R');
+  $pdf->Cell(130, 8, 'Total Deduction', 1, 0);
+  $pdf->Cell(60, 8, $money($data['total_deduction']), 1, 1, 'R');
+  $pdf->Cell(130, 10, 'Net Pay', 1, 0);
+  $pdf->Cell(60, 10, $money($data['net_pay']), 1, 1, 'R');
+  if ($data['approved_by'] || $data['received_by']) {
+    $pdf->Ln(5);
+    $pdf->SetFont('Arial', 'B', 12);
+    $pdf->Cell(0, 8, 'Signatories', 0, 1);
+    $pdf->SetFont('Arial', '', 11);
+    if ($data['approved_by'])
+      $pdf->Cell(0, 8, 'Approved By: ' . $data['approved_by'], 0, 1);
+    if ($data['received_by'])
+      $pdf->Cell(0, 8, 'Received By: ' . $data['received_by'], 0, 1);
+  }
+  $filename = 'salary-slip-' . ($data['emp_code'] ?: 'employee') . '-' . date('Ymd') . '.pdf';
+  $pdf->Output('I', $filename);
+  exit;
+}
+
 // Fetch employee name
 $employeenameQuery = $conn->query("
     SELECT fullname 
@@ -73,9 +213,12 @@ if ($employeeID) {
 
   <style>
     :root {
-      --primary: #2563eb; /* Changed from #6674cc to blue */
-      --primary-dark: #1d4ed8; /* Changed from #4c5ecf to darker blue */
-      --primary-light: #dbeafe; /* Changed from #f0f2ff to light blue */
+      --primary: #2563eb;
+      /* Changed from #6674cc to blue */
+      --primary-dark: #1d4ed8;
+      /* Changed from #4c5ecf to darker blue */
+      --primary-light: #dbeafe;
+      /* Changed from #f0f2ff to light blue */
       --secondary: #3b82f6;
       --accent-green: #10b981;
       --accent-red: #dc2626;
@@ -194,7 +337,8 @@ if ($employeeID) {
     .filter-select:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); /* Updated to match primary blue */
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      /* Updated to match primary blue */
     }
 
     /* Overview Page */
@@ -285,7 +429,8 @@ if ($employeeID) {
     }
 
     .salary-overview-table thead {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); /* Updated to blue */
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      /* Updated to blue */
     }
 
     .salary-overview-table th {
@@ -302,7 +447,8 @@ if ($employeeID) {
     }
 
     .salary-overview-table tbody tr:hover {
-      background-color: var(--primary-light); /* Updated to light blue */
+      background-color: var(--primary-light);
+      /* Updated to light blue */
     }
 
     .salary-overview-table td {
@@ -352,7 +498,8 @@ if ($employeeID) {
       align-items: center;
       padding: 30px;
       border-bottom: 1px solid var(--border-color);
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); /* Updated to blue */
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      /* Updated to blue */
       color: white;
     }
 
@@ -425,7 +572,8 @@ if ($employeeID) {
     }
 
     .info-card-header {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); /* Updated to blue */
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      /* Updated to blue */
       color: white;
       padding: 15px 20px;
       font-weight: 600;
@@ -468,7 +616,8 @@ if ($employeeID) {
     }
 
     .received-by-header {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); /* Updated to blue */
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      /* Updated to blue */
       color: white;
       padding: 15px 20px;
       font-weight: 600;
@@ -492,11 +641,13 @@ if ($employeeID) {
     }
 
     .salary-slip-card {
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); /* Changed from purple gradient to blue */
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      /* Changed from purple gradient to blue */
       border-radius: var(--border-radius);
       padding: 30px;
       color: white;
-      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4); /* Updated to blue */
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+      /* Updated to blue */
     }
 
     .slip-header {
@@ -533,7 +684,8 @@ if ($employeeID) {
       align-items: center;
       justify-content: center;
       font-size: 24px;
-      color: var(--primary); /* Updated to blue */
+      color: var(--primary);
+      /* Updated to blue */
       flex-shrink: 0;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }
@@ -592,7 +744,8 @@ if ($employeeID) {
     .btn-back {
       align-self: flex-start;
       padding: 12px 30px;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); /* Updated to blue */
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      /* Updated to blue */
       color: white;
       border: none;
       border-radius: 8px;
@@ -706,6 +859,7 @@ if ($employeeID) {
     }
 
     @media print {
+
       .sidebar,
       .export-buttons,
       .btn-back,
@@ -848,12 +1002,10 @@ if ($employeeID) {
           </div>
           <div class="export-buttons">
             <span class="export-label">Export As</span>
-            <button class="btn-export" onclick="window.print()" title="Export as PDF">
+            <button class="btn-export" onclick="exportSalarySlipPDF()" title="Export as PDF">
               <i class="fa-solid fa-file-pdf"></i> PDF
             </button>
-            <button class="btn-export" onclick="exportAsImage()" title="Export as Image">
-              <i class="fa-solid fa-image"></i> Image
-            </button>
+
           </div>
         </div>
 
@@ -1236,6 +1388,46 @@ if ($employeeID) {
       // to capture the salary slip as an image
     }
 
+    function exportSalarySlipPDF() {
+      const form = document.getElementById('pdfExportForm');
+      const getText = sel => (document.querySelector(sel)?.textContent || '').trim();
+      const getNum = sel => getText(sel).replace(/[^0-9.\-]/g, '');
+      const setVal = (name, val) => { const inp = form.elements.namedItem(name); if (inp) inp.value = val; };
+      setVal('full_name', getText('.full_name'));
+      setVal('emp_code', getText('.empID'));
+      setVal('position', getText('.position'));
+      setVal('employment_type', getText('.status'));
+      setVal('pay_date', getText('.payDate'));
+      setVal('pay_type', getText('.payType'));
+      setVal('period', getText('.period'));
+      setVal('monthly_rate', getNum('.monthlyRate'));
+      setVal('daily_rate', getNum('.dailyRate'));
+      setVal('hourly_rate', getNum('.hourlyRate'));
+      setVal('payment_method', getText('.paymentMethod'));
+      setVal('basic_pay', getNum('.basicPay'));
+      setVal('sub_basic_pay', getNum('.subBasicPay'));
+      setVal('ot_pay', getNum('.overTimePay'));
+      setVal('legal_holiday', getNum('.legalHoliday'));
+      setVal('special_holiday', getNum('.specialNonWorkingHoliday'));
+      setVal('holiday_ot', getNum('.holidayOTPay'));
+      setVal('rest_day_pay', getNum('.restDayPay'));
+      setVal('absent_units', getText('.absent'));
+      setVal('absent_deduction', getNum('.absentPay'));
+      setVal('undertime_units', getText('.underTime'));
+      setVal('undertime_deduction', getNum('.underTimePay'));
+      setVal('sss', getNum('.sss'));
+      setVal('philhealth', getNum('.philHealth'));
+      setVal('pagibig', getNum('.pagIbig'));
+      setVal('tax', getNum('.tax'));
+      setVal('other_deductions', getNum('.otherDeduction'));
+      setVal('gross_pay', getNum('.grossPay'));
+      setVal('total_deduction', getNum('.totalDeduction'));
+      setVal('net_pay', getNum('.netPay'));
+      setVal('approved_by', getText('.approvedBy'));
+      setVal('received_by', getText('.receivedBy'));
+      form.submit();
+    }
+
     // Highlight active sidebar link
     const currentPage = window.location.pathname.split("/").pop();
     document.querySelectorAll(".sidebar .nav li a").forEach(link => {
@@ -1296,6 +1488,40 @@ if ($employeeID) {
       if (params.get('test') === '1') runSalarySlipTests();
     } catch (e) { }
   </script>
+  <form id="pdfExportForm" method="post" action="?export=pdf" style="display:none">
+    <input type="hidden" name="full_name" />
+    <input type="hidden" name="emp_code" />
+    <input type="hidden" name="position" />
+    <input type="hidden" name="employment_type" />
+    <input type="hidden" name="pay_date" />
+    <input type="hidden" name="pay_type" />
+    <input type="hidden" name="period" />
+    <input type="hidden" name="monthly_rate" />
+    <input type="hidden" name="daily_rate" />
+    <input type="hidden" name="hourly_rate" />
+    <input type="hidden" name="payment_method" />
+    <input type="hidden" name="basic_pay" />
+    <input type="hidden" name="sub_basic_pay" />
+    <input type="hidden" name="ot_pay" />
+    <input type="hidden" name="legal_holiday" />
+    <input type="hidden" name="special_holiday" />
+    <input type="hidden" name="holiday_ot" />
+    <input type="hidden" name="rest_day_pay" />
+    <input type="hidden" name="absent_units" />
+    <input type="hidden" name="absent_deduction" />
+    <input type="hidden" name="undertime_units" />
+    <input type="hidden" name="undertime_deduction" />
+    <input type="hidden" name="sss" />
+    <input type="hidden" name="philhealth" />
+    <input type="hidden" name="pagibig" />
+    <input type="hidden" name="tax" />
+    <input type="hidden" name="other_deductions" />
+    <input type="hidden" name="gross_pay" />
+    <input type="hidden" name="total_deduction" />
+    <input type="hidden" name="net_pay" />
+    <input type="hidden" name="approved_by" />
+    <input type="hidden" name="received_by" />
+  </form>
 </body>
 
 </html>
