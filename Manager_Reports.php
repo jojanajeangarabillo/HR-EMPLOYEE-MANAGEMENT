@@ -946,7 +946,7 @@ if (isset($_GET['export']) && $_GET['export'] == 'pdf') {
     <div class="main-content">
         <!-- Page Header -->
         <div class="page-header">
-            <h1><i class="fa-solid fa-chart-column"></i> Reports Dashboard</h1>
+            <h1><i class="fa-solid fa-chart-column"></i> Reports</h1>
             <div class="subtitle">Generate and analyze reports for better decision making</div>
         </div>
 

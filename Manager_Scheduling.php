@@ -650,33 +650,128 @@ function updateShiftPattern($pattern_id, $pattern_name, $description, $cycle_day
     }
 }
 
-// Function to delete shift pattern
-function deleteShiftPattern($pattern_id, $conn) {
-    // Check if pattern is assigned to any employee
-    $check_stmt = $conn->prepare("SELECT COUNT(*) as count FROM employee_shift_pattern WHERE pattern_id = ?");
+// ARCHIVE FUNCTIONS
+function archiveShiftPattern($pattern_id, $archived_by, $conn) {
+    // Check if pattern is assigned to any active employee
+    $check_stmt = $conn->prepare("SELECT COUNT(*) as count FROM employee_shift_pattern WHERE pattern_id = ? AND end_date >= CURDATE()");
     $check_stmt->bind_param("i", $pattern_id);
     $check_stmt->execute();
     $result = $check_stmt->get_result();
     $row = $result->fetch_assoc();
     
     if ($row['count'] > 0) {
-        return ["success" => false, "message" => "Cannot delete pattern. It is currently assigned to employees."];
+        return ["success" => false, "message" => "Cannot archive pattern. It is currently assigned to active employees."];
     }
     
-    // Delete pattern details first
-    $delete_details_stmt = $conn->prepare("DELETE FROM shift_pattern_details WHERE pattern_id = ?");
-    $delete_details_stmt->bind_param("i", $pattern_id);
-    $delete_details_stmt->execute();
+    // Get pattern data before archiving for log
+    $pattern_stmt = $conn->prepare("SELECT * FROM shift_patterns WHERE pattern_id = ?");
+    $pattern_stmt->bind_param("i", $pattern_id);
+    $pattern_stmt->execute();
+    $pattern_result = $pattern_stmt->get_result();
+    $pattern_data = $pattern_result->fetch_assoc();
     
-    // Delete pattern
-    $delete_stmt = $conn->prepare("DELETE FROM shift_patterns WHERE pattern_id = ?");
-    $delete_stmt->bind_param("i", $pattern_id);
+    // Archive pattern by setting is_archived = 1 and deactivate it
+    $archive_stmt = $conn->prepare("UPDATE shift_patterns SET is_archived = 1, is_active = 0, archived_by = ?, archived_at = NOW() WHERE pattern_id = ?");
+    $archive_stmt->bind_param("si", $archived_by, $pattern_id);
     
-    if ($delete_stmt->execute()) {
-        return ["success" => true, "message" => "Shift pattern deleted successfully"];
+    if ($archive_stmt->execute()) {
+        // Log the archive action
+        logArchiveAction('shift_patterns', $pattern_id, 'shift_pattern', 'ARCHIVE', $archived_by, $pattern_data, null, $conn);
+        
+        return ["success" => true, "message" => "Shift pattern archived successfully"];
     } else {
-        return ["success" => false, "message" => "Error deleting shift pattern: " . $conn->error];
+        return ["success" => false, "message" => "Error archiving shift pattern: " . $conn->error];
     }
+}
+
+function archiveStaffingRequirement($staffing_id, $archived_by, $conn) {
+    // Get staffing data before archiving for log
+    $staffing_stmt = $conn->prepare("SELECT * FROM expected_staffing WHERE staffing_id = ?");
+    $staffing_stmt->bind_param("i", $staffing_id);
+    $staffing_stmt->execute();
+    $staffing_result = $staffing_stmt->get_result();
+    $staffing_data = $staffing_result->fetch_assoc();
+    
+    $archive_stmt = $conn->prepare("UPDATE expected_staffing SET is_archived = 1, archived_by = ?, archived_at = NOW() WHERE staffing_id = ?");
+    $archive_stmt->bind_param("si", $archived_by, $staffing_id);
+    
+    if ($archive_stmt->execute()) {
+        // Log the archive action
+        logArchiveAction('expected_staffing', $staffing_id, 'staffing_requirement', 'ARCHIVE', $archived_by, $staffing_data, null, $conn);
+        
+        return ["success" => true, "message" => "Staffing requirement archived successfully"];
+    } else {
+        return ["success" => false, "message" => "Error archiving staffing requirement: " . $conn->error];
+    }
+}
+
+function getArchivedPatterns($conn) {
+    $stmt = $conn->query("SELECT * FROM shift_patterns WHERE is_archived = 1 ORDER BY archived_at DESC");
+    $patterns = [];
+    while ($row = $stmt->fetch_assoc()) {
+        $patterns[] = $row;
+    }
+    return $patterns;
+}
+
+function restoreShiftPattern($pattern_id, $restored_by, $conn) {
+    // Get archived pattern data for log
+    $pattern_stmt = $conn->prepare("SELECT * FROM shift_patterns WHERE pattern_id = ?");
+    $pattern_stmt->bind_param("i", $pattern_id);
+    $pattern_stmt->execute();
+    $pattern_result = $pattern_stmt->get_result();
+    $pattern_data_before = $pattern_result->fetch_assoc();
+    
+    $restore_stmt = $conn->prepare("UPDATE shift_patterns SET is_archived = 0, is_active = 1, restored_by = ?, restored_at = NOW(), archived_by = NULL, archived_at = NULL WHERE pattern_id = ?");
+    $restore_stmt->bind_param("si", $restored_by, $pattern_id);
+    
+    if ($restore_stmt->execute()) {
+        // Get pattern data after restoration
+        $pattern_stmt->execute();
+        $pattern_result = $pattern_stmt->get_result();
+        $pattern_data_after = $pattern_result->fetch_assoc();
+        
+        // Log the restore action
+        logArchiveAction('shift_patterns', $pattern_id, 'shift_pattern', 'RESTORE', $restored_by, $pattern_data_before, $pattern_data_after, $conn);
+        
+        return ["success" => true, "message" => "Shift pattern restored successfully"];
+    } else {
+        return ["success" => false, "message" => "Error restoring shift pattern: " . $conn->error];
+    }
+}
+
+function getArchivedStaffingRequirements($conn) {
+    $stmt = $conn->query("SELECT es.*, st.shift_name FROM expected_staffing es JOIN shift_templates st ON es.shift_id = st.shift_id WHERE es.is_archived = 1 ORDER BY es.archived_at DESC");
+    $requirements = [];
+    while ($row = $stmt->fetch_assoc()) {
+        $requirements[] = $row;
+    }
+    return $requirements;
+}
+
+function restoreStaffingRequirement($staffing_id, $restored_by, $conn) {
+    $restore_stmt = $conn->prepare("UPDATE expected_staffing SET is_archived = 0, restored_by = ?, restored_at = NOW(), archived_by = NULL, archived_at = NULL WHERE staffing_id = ?");
+    $restore_stmt->bind_param("si", $restored_by, $staffing_id);
+    
+    if ($restore_stmt->execute()) {
+        return ["success" => true, "message" => "Staffing requirement restored successfully"];
+    } else {
+        return ["success" => false, "message" => "Error restoring staffing requirement: " . $conn->error];
+    }
+}
+
+// Log archive/restore actions
+function logArchiveAction($table_name, $record_id, $record_type, $action, $action_by, $data_before = null, $data_after = null, $conn) {
+    $stmt = $conn->prepare("
+        INSERT INTO archive_logs (table_name, record_id, record_type, action, action_by, data_before, data_after) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ");
+    
+    $data_before_json = $data_before ? json_encode($data_before) : null;
+    $data_after_json = $data_after ? json_encode($data_after) : null;
+    
+    $stmt->bind_param("sisssss", $table_name, $record_id, $record_type, $action, $action_by, $data_before_json, $data_after_json);
+    $stmt->execute();
 }
 
 // Helper function for single date
@@ -696,6 +791,7 @@ function getExpectedEmployeesForDate($conn, $date) {
             AND st.shift_id = es.shift_id 
             AND DAYNAME(ess.schedule_date) = es.day_of_week
             AND (es.employment_status = 'Any' OR e.type_name = es.employment_status)
+            AND es.is_archived = 0
         WHERE ess.schedule_date = ?
         GROUP BY st.shift_name, e.department, es.required_count
     ";
@@ -736,6 +832,7 @@ function getExpectedEmployeesPerDay($conn, $startDate, $endDate) {
             AND st.shift_id = es.shift_id 
             AND DAYNAME(ess.schedule_date) = es.day_of_week
             AND (es.employment_status = 'Any' OR e.type_name = es.employment_status)
+            AND es.is_archived = 0
         WHERE ess.schedule_date BETWEEN ? AND ?
         GROUP BY ess.schedule_date, st.shift_name, e.department, es.required_count
         ORDER BY ess.schedule_date, e.department, st.shift_name
@@ -985,17 +1082,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
   
-  // Delete staffing requirement
-  if (isset($_POST['delete_staffing'])) {
+  // Archive staffing requirement
+  if (isset($_POST['archive_staffing'])) {
     $staffing_id = $_POST['staffing_id'];
     
-    $stmt = $conn->prepare("DELETE FROM expected_staffing WHERE staffing_id = ?");
-    $stmt->bind_param("i", $staffing_id);
+    $result = archiveStaffingRequirement($staffing_id, $managername, $conn);
     
-    if ($stmt->execute()) {
-      $_SESSION['success'] = "Staffing requirement deleted successfully!";
+    if ($result['success']) {
+      $_SESSION['success'] = $result['message'];
     } else {
-      $_SESSION['error'] = "Error deleting staffing requirement: " . $conn->error;
+      $_SESSION['error'] = $result['message'];
     }
   }
 
@@ -1091,11 +1187,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
   }
 
-  // NEW: Delete shift pattern
-  if (isset($_POST['delete_pattern'])) {
+  // NEW: Archive shift pattern
+  if (isset($_POST['archive_pattern'])) {
     $pattern_id = $_POST['pattern_id'];
     
-    $result = deleteShiftPattern($pattern_id, $conn);
+    $result = archiveShiftPattern($pattern_id, $managername, $conn);
+    
+    if ($result['success']) {
+        $_SESSION['success'] = $result['message'];
+    } else {
+        $_SESSION['error'] = $result['message'];
+    }
+  }
+
+  // NEW: Restore shift pattern
+  if (isset($_POST['restore_pattern'])) {
+    $pattern_id = $_POST['pattern_id'];
+    
+    $result = restoreShiftPattern($pattern_id, $managername, $conn);
+    
+    if ($result['success']) {
+        $_SESSION['success'] = $result['message'];
+    } else {
+        $_SESSION['error'] = $result['message'];
+    }
+  }
+
+  // NEW: Restore staffing requirement
+  if (isset($_POST['restore_staffing'])) {
+    $staffing_id = $_POST['staffing_id'];
+    
+    $result = restoreStaffingRequirement($staffing_id, $managername, $conn);
     
     if ($result['success']) {
         $_SESSION['success'] = $result['message'];
@@ -1225,6 +1347,7 @@ if (isset($_GET['ajax'])) {
           AND DAYNAME(ess.schedule_date) = es.day_of_week 
           AND ess.schedule_date BETWEEN ? AND ?
         WHERE es.day_of_week IN ('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday')
+        AND es.is_archived = 0
         GROUP BY es.day_of_week, es.required_count, es.department, st.shift_name
         HAVING scheduled_count < es.required_count
       ");
@@ -1328,7 +1451,7 @@ if (isset($_GET['ajax'])) {
                   AND e.department = es.department
                   AND (e.type_name = es.employment_status OR es.employment_status = 'Any')
               )
-          WHERE es.day_of_week = ?
+          WHERE es.day_of_week = ? AND es.is_archived = 0
           GROUP BY es.staffing_id, es.department, st.shift_name, es.day_of_week, es.required_count
           ORDER BY es.department, st.shift_name
       ";
@@ -1349,12 +1472,24 @@ if (isset($_GET['ajax'])) {
 
     // NEW AJAX HANDLERS FOR SHIFT PATTERNS
     if ($_GET['ajax'] == 'get_shift_patterns') {
-      $stmt = $conn->query("SELECT * FROM shift_patterns WHERE is_active = 1 ORDER BY pattern_name");
+      $stmt = $conn->query("SELECT * FROM shift_patterns WHERE is_active = 1 AND is_archived = 0 ORDER BY pattern_name");
       $patterns = [];
       while ($row = $stmt->fetch_assoc()) {
           $patterns[] = $row;
       }
       echo json_encode($patterns);
+      exit();
+    }
+
+    if ($_GET['ajax'] == 'get_archived_patterns') {
+      $patterns = getArchivedPatterns($conn);
+      echo json_encode($patterns);
+      exit();
+    }
+
+    if ($_GET['ajax'] == 'get_archived_staffing') {
+      $requirements = getArchivedStaffingRequirements($conn);
+      echo json_encode($requirements);
       exit();
     }
 
@@ -1364,6 +1499,7 @@ if (isset($_GET['ajax'])) {
           FROM employee_shift_pattern esp
           JOIN employee e ON esp.empID = e.empID
           JOIN shift_patterns sp ON esp.pattern_id = sp.pattern_id
+          WHERE sp.is_archived = 0
           ORDER BY esp.start_date DESC
       ");
       $employee_patterns = [];
@@ -1612,21 +1748,22 @@ while ($row = $emp_result->fetch_assoc()) {
     $employees[] = $row;
 }
 
-// Get staffing requirements
+// Get staffing requirements (only non-archived)
 $staffing_requirements = [];
 $staff_result = $conn->query("
   SELECT es.*, st.shift_name 
   FROM expected_staffing es 
   JOIN shift_templates st ON es.shift_id = st.shift_id
+  WHERE es.is_archived = 0
   ORDER BY es.department, es.day_of_week
 ");
 while ($row = $staff_result->fetch_assoc()) {
   $staffing_requirements[] = $row;
 }
 
-// Get shift patterns
+// Get shift patterns (only non-archived)
 $shift_patterns = [];
-$pattern_result = $conn->query("SELECT * FROM shift_patterns WHERE is_active = 1 ORDER BY pattern_name");
+$pattern_result = $conn->query("SELECT * FROM shift_patterns WHERE is_active = 1 AND is_archived = 0 ORDER BY pattern_name");
 while ($row = $pattern_result->fetch_assoc()) {
   $shift_patterns[] = $row;
 }
@@ -2094,6 +2231,46 @@ tbody tr:hover {
   border-color: #152C6B;
 }
 
+.btn-warning {
+  background-color: #ffc107;
+  border-color: #ffc107;
+}
+
+.btn-warning:hover {
+  background-color: #e0a800;
+  border-color: #e0a800;
+}
+
+.btn-danger {
+  background-color: #dc5c35ff;
+  border-color: #dc5c35ff;
+}
+
+.btn-danger:hover {
+  background-color: #dc5c35ff;
+  border-color: #dc5c35ff;
+}
+
+.btn-success {
+  background-color: #28a745;
+  border-color: #28a745;
+}
+
+.btn-success:hover {
+  background-color: #218838;
+  border-color: #218838;
+}
+
+.btn-info {
+  background-color: #17a2b8;
+  border-color: #17a2b8;
+}
+
+.btn-info:hover {
+  background-color: #138496;
+  border-color: #138496;
+}
+
 /* Shift Badges */
 .shift-badge {
   display: inline-block;
@@ -2312,6 +2489,17 @@ td:first-child {
     font-size: 0.75rem;
 }
 
+/* Archive specific styles */
+.archived-row {
+    background-color: #f8f9fa !important;
+    opacity: 0.8;
+}
+
+.archived-badge {
+    background-color: #6c757d;
+    color: white;
+}
+
 /* Responsive table */
 @media (max-width: 768px) {
     .main-content {
@@ -2397,6 +2585,25 @@ td:first-child {
     width: 3rem;
     height: 3rem;
 }
+
+/* Archive specific styles */
+.archive-actions {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.restore-btn {
+    background-color: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.restore-btn:hover {
+    background-color: #218838;
+    border-color: #218838;
+    color: white;
+}
   </style>
 </head>
 
@@ -2461,6 +2668,16 @@ td:first-child {
           <li>
             <button class="dropdown-item" onclick="showTab('patterns')">
               <i class="fa-solid fa-calendar-week"></i> Shift Patterns
+            </button>
+          </li>
+          <li>
+            <button class="dropdown-item" onclick="showTab('archived-patterns')">
+              <i class="fa-solid fa-box-archive"></i> Archived Patterns
+            </button>
+          </li>
+          <li>
+            <button class="dropdown-item" onclick="showTab('archived-staffing')">
+              <i class="fa-solid fa-archive"></i> Archived Staffing
             </button>
           </li>
           <li>
@@ -2609,7 +2826,7 @@ td:first-child {
                   SELECT sp.pattern_name 
                   FROM employee_shift_pattern esp
                   JOIN shift_patterns sp ON esp.pattern_id = sp.pattern_id
-                  WHERE esp.empID = ? AND esp.end_date >= CURDATE()
+                  WHERE esp.empID = ? AND esp.end_date >= CURDATE() AND sp.is_archived = 0
                   LIMIT 1
                 ");
                 $pattern_stmt->bind_param("s", $emp['empID']);
@@ -2824,6 +3041,77 @@ td:first-child {
         </div>
       </div>
 
+      <!-- NEW: Archived Patterns Tab -->
+      <div class="tab-pane fade" id="archived-patterns" role="tabpanel" aria-labelledby="archived-patterns-tab">
+        <div class="table-container">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Archived Shift Patterns</h3>
+            <button class="btn btn-primary" onclick="loadArchivedPatterns()">
+              <i class="fa-solid fa-rotate-right"></i> Refresh
+            </button>
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Pattern ID</th>
+                  <th>Pattern Name</th>
+                  <th>Description</th>
+                  <th>Cycle Days</th>
+                  <th>Archived By</th>
+                  <th>Archived At</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="archived-patterns-body">
+                <tr>
+                  <td colspan="7" class="text-center text-muted">
+                    Click "Refresh" to load archived patterns
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW: Archived Staffing Requirements Tab -->
+      <div class="tab-pane fade" id="archived-staffing" role="tabpanel" aria-labelledby="archived-staffing-tab">
+        <div class="table-container">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3>Archived Staffing Requirements</h3>
+            <button class="btn btn-primary" onclick="loadArchivedStaffing()">
+              <i class="fa-solid fa-rotate-right"></i> Refresh
+            </button>
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Department</th>
+                  <th>Shift</th>
+                  <th>Day of Week</th>
+                  <th>Required Count</th>
+                  <th>Employment Status</th>
+                  <th>Archived By</th>
+                  <th>Archived At</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="archived-staffing-body">
+                <tr>
+                  <td colspan="8" class="text-center text-muted">
+                    Click "Refresh" to load archived staffing requirements
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <!-- All Schedules Tab -->
       <div class="tab-pane fade" id="all-schedules" role="tabpanel" aria-labelledby="all-schedules-tab">
         <div class="table-container">
@@ -2962,12 +3250,12 @@ td:first-child {
                 echo "<td>" . $expected_count . "</td>";
                 echo "<td class='$status_class'>" . ($staffing_gap > 0 ? "-" . $staffing_gap : "0") . "</td>";
                 echo "<td class='$status_class'>" . $status_icon . "</td>";
-                echo "<td>
+                echo "<td class='archive-actions'>
                         <button class='btn btn-sm btn-warning edit-staffing-btn' data-id='" . $staff['staffing_id'] . "' data-bs-toggle='modal' data-bs-target='#editStaffingModal'>
                           <i class='fa-solid fa-pen'></i>
                         </button>
-                        <button class='btn btn-sm btn-danger delete-staffing-btn' data-id='" . $staff['staffing_id'] . "' data-bs-toggle='modal' data-bs-target='#deleteStaffingModal'>
-                          <i class='fa-solid fa-trash'></i>
+                        <button class='btn btn-sm btn-danger archive-staffing-btn' data-id='" . $staff['staffing_id'] . "' data-bs-toggle='modal' data-bs-target='#archiveStaffingModal'>
+                          <i class='fa-solid fa-archive'></i>
                         </button>
                       </td>";
                 echo "</tr>";
@@ -3052,6 +3340,7 @@ td:first-child {
         </div>
       </div>
     </div>
+  </div>
 
   <!-- Modals -->
   <!-- Assign Single Shift Modal -->
@@ -3383,27 +3672,59 @@ td:first-child {
     </div>
   </div>
 
-  <!-- NEW: Delete Pattern Modal -->
-  <div class="modal fade" id="deletePatternModal" tabindex="-1" aria-labelledby="deletePatternModalLabel" aria-hidden="true">
+  <!-- NEW: Archive Pattern Modal -->
+  <div class="modal fade" id="archivePatternModal" tabindex="-1" aria-labelledby="archivePatternModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <form method="POST" action="">
           <input type="hidden" name="active_tab" value="patterns">
           <div class="modal-header">
-            <h5 class="modal-title" id="deletePatternModalLabel">Delete Shift Pattern</h5>
+            <h5 class="modal-title" id="archivePatternModalLabel">Archive Shift Pattern</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <input type="hidden" name="pattern_id" id="delete_pattern_id">
-            <p>Are you sure you want to delete this shift pattern? This action cannot be undone.</p>
+            <input type="hidden" name="pattern_id" id="archive_pattern_id">
+            <p>Are you sure you want to archive this shift pattern?</p>
             <div class="alert alert-warning">
-              <i class="fa-solid fa-exclamation-triangle"></i>
-              <strong>Warning:</strong> This pattern may be assigned to employees. Deleting it will remove the pattern but not affect existing schedules.
+              <i class="fa-solid fa-archive"></i>
+              <strong>Note:</strong> Archived patterns will not be shown in active lists but can be restored later if needed.
+            </div>
+            <p class="text-muted"><small>Patterns assigned to active employees cannot be archived.</small></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" name="archive_pattern" class="btn btn-warning">
+              <i class="fa-solid fa-archive"></i> Archive Pattern
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW: Restore Pattern Modal -->
+  <div class="modal fade" id="restorePatternModal" tabindex="-1" aria-labelledby="restorePatternModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="">
+          <input type="hidden" name="active_tab" value="archived-patterns">
+          <div class="modal-header">
+            <h5 class="modal-title" id="restorePatternModalLabel">Restore Shift Pattern</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" name="pattern_id" id="restore_pattern_id">
+            <p>Are you sure you want to restore this archived shift pattern?</p>
+            <div class="alert alert-info">
+              <i class="fa-solid fa-rotate-left"></i>
+              <strong>Note:</strong> The pattern will become active and available for assignment.
             </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" name="delete_pattern" class="btn btn-danger">Delete Pattern</button>
+            <button type="submit" name="restore_pattern" class="btn btn-success">
+              <i class="fa-solid fa-rotate-left"></i> Restore Pattern
+            </button>
           </div>
         </form>
       </div>
@@ -3547,23 +3868,58 @@ td:first-child {
     </div>
   </div>
 
-  <!-- Delete Staffing Modal -->
-  <div class="modal fade" id="deleteStaffingModal" tabindex="-1" aria-labelledby="deleteStaffingModalLabel" aria-hidden="true">
+  <!-- Archive Staffing Modal -->
+  <div class="modal fade" id="archiveStaffingModal" tabindex="-1" aria-labelledby="archiveStaffingModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <form method="POST" action="">
           <input type="hidden" name="active_tab" value="staffing">
           <div class="modal-header">
-            <h5 class="modal-title" id="deleteStaffingModalLabel">Delete Staffing Requirement</h5>
+            <h5 class="modal-title" id="archiveStaffingModalLabel">Archive Staffing Requirement</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <input type="hidden" name="staffing_id" id="delete_staffing_id">
-            <p>Are you sure you want to delete this staffing requirement? This action cannot be undone.</p>
+            <input type="hidden" name="staffing_id" id="archive_staffing_id">
+            <p>Are you sure you want to archive this staffing requirement?</p>
+            <div class="alert alert-warning">
+              <i class="fa-solid fa-archive"></i>
+              <strong>Note:</strong> Archived requirements will not be used for staffing calculations but can be restored later.
+            </div>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" name="delete_staffing" class="btn btn-danger">Delete Requirement</button>
+            <button type="submit" name="archive_staffing" class="btn btn-warning">
+              <i class="fa-solid fa-archive"></i> Archive Requirement
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Restore Staffing Modal -->
+  <div class="modal fade" id="restoreStaffingModal" tabindex="-1" aria-labelledby="restoreStaffingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="">
+          <input type="hidden" name="active_tab" value="archived-staffing">
+          <div class="modal-header">
+            <h5 class="modal-title" id="restoreStaffingModalLabel">Restore Staffing Requirement</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" name="staffing_id" id="restore_staffing_id">
+            <p>Are you sure you want to restore this archived staffing requirement?</p>
+            <div class="alert alert-info">
+              <i class="fa-solid fa-rotate-left"></i>
+              <strong>Note:</strong> The requirement will become active and will be used for staffing calculations.
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" name="restore_staffing" class="btn btn-success">
+              <i class="fa-solid fa-rotate-left"></i> Restore Requirement
+            </button>
           </div>
         </form>
       </div>
@@ -3615,6 +3971,12 @@ td:first-child {
           break;
         case 'staffing-overview':
           loadStaffingOverview();
+          break;
+        case 'archived-patterns':
+          loadArchivedPatterns();
+          break;
+        case 'archived-staffing':
+          loadArchivedStaffing();
           break;
       }
     }
@@ -3928,12 +4290,12 @@ td:first-child {
                         <td>${item.expected_count}</td>
                         <td class="${statusClass}">${gap > 0 ? `-${gap}` : '0'}</td>
                         <td class="${statusClass}">${statusIcon} ${item.staffing_status}</td>
-                        <td>
+                        <td class="archive-actions">
                             <button class='btn btn-sm btn-warning edit-staffing-btn' data-id='${item.staffing_id}' data-bs-toggle='modal' data-bs-target='#editStaffingModal'>
                                 <i class='fa-solid fa-pen'></i>
                             </button>
-                            <button class='btn btn-sm btn-danger delete-staffing-btn' data-id='${item.staffing_id}' data-bs-toggle='modal' data-bs-target='#deleteStaffingModal'>
-                                <i class='fa-solid fa-trash'></i>
+                            <button class='btn btn-sm btn-danger archive-staffing-btn' data-id='${item.staffing_id}' data-bs-toggle='modal' data-bs-target='#archiveStaffingModal'>
+                                <i class='fa-solid fa-archive'></i>
                             </button>
                         </td>
                     </tr>
@@ -3941,6 +4303,9 @@ td:first-child {
             });
             
             tableBody.innerHTML = html;
+            
+            // Re-attach event listeners
+            attachStaffingActionListeners();
         }
     }
     
@@ -4029,6 +4394,28 @@ td:first-child {
             });
     }
 
+    function loadArchivedPatterns() {
+        fetch('?ajax=get_archived_patterns')
+            .then(response => response.json())
+            .then(data => {
+                renderArchivedPatterns(data);
+            })
+            .catch(error => {
+                console.error('Error loading archived patterns:', error);
+            });
+    }
+
+    function loadArchivedStaffing() {
+        fetch('?ajax=get_archived_staffing')
+            .then(response => response.json())
+            .then(data => {
+                renderArchivedStaffing(data);
+            })
+            .catch(error => {
+                console.error('Error loading archived staffing:', error);
+            });
+    }
+
     function loadEmployeePatterns() {
         fetch('?ajax=get_employee_patterns')
             .then(response => response.json())
@@ -4056,12 +4443,12 @@ td:first-child {
                             <i class="fa-solid fa-eye"></i> View Details
                         </button>
                     </td>
-                    <td>
+                    <td class="archive-actions">
                         <button class="btn btn-sm btn-warning edit-pattern-btn" data-id="${pattern.pattern_id}">
                             <i class="fa-solid fa-edit"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger delete-pattern-btn" data-id="${pattern.pattern_id}">
-                            <i class="fa-solid fa-trash"></i>
+                        <button class="btn btn-sm btn-danger archive-pattern-btn" data-id="${pattern.pattern_id}">
+                            <i class="fa-solid fa-archive"></i>
                         </button>
                     </td>
                 </tr>
@@ -4072,6 +4459,85 @@ td:first-child {
         
         // Attach event listeners to the new buttons
         attachPatternActionListeners();
+    }
+
+    function renderArchivedPatterns(patterns) {
+        const container = document.getElementById('archived-patterns-body');
+        
+        if (patterns.length === 0) {
+            container.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center text-muted">
+                        No archived patterns found.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        let html = '';
+        patterns.forEach(pattern => {
+            html += `
+                <tr class="archived-row">
+                    <td>${pattern.pattern_id}</td>
+                    <td><strong>${pattern.pattern_name}</strong></td>
+                    <td>${pattern.description}</td>
+                    <td>${pattern.cycle_days} days</td>
+                    <td>${pattern.archived_by || 'N/A'}</td>
+                    <td>${pattern.archived_at || 'N/A'}</td>
+                    <td class="archive-actions">
+                        <button class="btn btn-sm btn-success restore-pattern-btn" data-id="${pattern.pattern_id}">
+                            <i class="fa-solid fa-rotate-left"></i> Restore
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        container.innerHTML = html;
+        
+        // Attach restore button event listeners
+        attachArchivedPatternActionListeners();
+    }
+
+    function renderArchivedStaffing(requirements) {
+        const container = document.getElementById('archived-staffing-body');
+        
+        if (requirements.length === 0) {
+            container.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center text-muted">
+                        No archived staffing requirements found.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+        
+        let html = '';
+        requirements.forEach(req => {
+            html += `
+                <tr class="archived-row">
+                    <td>${req.department}</td>
+                    <td>${req.shift_name}</td>
+                    <td>${req.day_of_week}</td>
+                    <td>${req.required_count}</td>
+                    <td>${req.employment_status}</td>
+                    <td>${req.archived_by || 'N/A'}</td>
+                    <td>${req.archived_at || 'N/A'}</td>
+                    <td class="archive-actions">
+                        <button class="btn btn-sm btn-success restore-staffing-btn" data-id="${req.staffing_id}">
+                            <i class="fa-solid fa-rotate-left"></i> Restore
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        container.innerHTML = html;
+        
+        // Attach restore button event listeners
+        attachArchivedStaffingActionListeners();
     }
 
     function renderEmployeePatterns(employeePatterns) {
@@ -4117,13 +4583,13 @@ td:first-child {
             });
         });
         
-        // Delete pattern buttons
-        document.querySelectorAll('.delete-pattern-btn').forEach(button => {
+        // Archive pattern buttons
+        document.querySelectorAll('.archive-pattern-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const patternId = this.getAttribute('data-id');
-                document.getElementById('delete_pattern_id').value = patternId;
-                const deleteModal = new bootstrap.Modal(document.getElementById('deletePatternModal'));
-                deleteModal.show();
+                document.getElementById('archive_pattern_id').value = patternId;
+                const archiveModal = new bootstrap.Modal(document.getElementById('archivePatternModal'));
+                archiveModal.show();
             });
         });
         
@@ -4132,6 +4598,50 @@ td:first-child {
             button.addEventListener('click', function() {
                 const patternId = this.getAttribute('data-id');
                 viewPatternDetails(patternId);
+            });
+        });
+    }
+
+    function attachArchivedPatternActionListeners() {
+        // Restore pattern buttons
+        document.querySelectorAll('.restore-pattern-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const patternId = this.getAttribute('data-id');
+                document.getElementById('restore_pattern_id').value = patternId;
+                const restoreModal = new bootstrap.Modal(document.getElementById('restorePatternModal'));
+                restoreModal.show();
+            });
+        });
+    }
+
+    function attachArchivedStaffingActionListeners() {
+        // Restore staffing buttons
+        document.querySelectorAll('.restore-staffing-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const staffingId = this.getAttribute('data-id');
+                document.getElementById('restore_staffing_id').value = staffingId;
+                const restoreModal = new bootstrap.Modal(document.getElementById('restoreStaffingModal'));
+                restoreModal.show();
+            });
+        });
+    }
+
+    function attachStaffingActionListeners() {
+        // Edit staffing buttons
+        document.querySelectorAll('.edit-staffing-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const staffingId = this.getAttribute('data-id');
+                document.getElementById('edit_staffing_id').value = staffingId;
+            });
+        });
+        
+        // Archive staffing buttons
+        document.querySelectorAll('.archive-staffing-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const staffingId = this.getAttribute('data-id');
+                document.getElementById('archive_staffing_id').value = staffingId;
+                const archiveModal = new bootstrap.Modal(document.getElementById('archiveStaffingModal'));
+                archiveModal.show();
             });
         });
     }
@@ -4411,12 +4921,12 @@ td:first-child {
                     <td>${staff.expected_count}</td>
                     <td class="${status_class}">${staffing_gap > 0 ? '-' + staffing_gap : '0'}</td>
                     <td class="${status_class}">${status_icon}</td>
-                    <td>
+                    <td class="archive-actions">
                         <button class='btn btn-sm btn-warning edit-staffing-btn' data-id='${staff.staffing_id}' data-bs-toggle='modal' data-bs-target='#editStaffingModal'>
                             <i class='fa-solid fa-pen'></i>
                         </button>
-                        <button class='btn btn-sm btn-danger delete-staffing-btn' data-id='${staff.staffing_id}' data-bs-toggle='modal' data-bs-target='#deleteStaffingModal'>
-                            <i class='fa-solid fa-trash'></i>
+                        <button class='btn btn-sm btn-danger archive-staffing-btn' data-id='${staff.staffing_id}' data-bs-toggle='modal' data-bs-target='#archiveStaffingModal'>
+                            <i class='fa-solid fa-archive'></i>
                         </button>
                     </td>
                 </tr>
@@ -4426,19 +4936,7 @@ td:first-child {
         container.innerHTML = html;
         
         // Re-attach event listeners to the new buttons
-        document.querySelectorAll('.edit-staffing-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const staffingId = this.getAttribute('data-id');
-                document.getElementById('edit_staffing_id').value = staffingId;
-            });
-        });
-        
-        document.querySelectorAll('.delete-staffing-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const staffingId = this.getAttribute('data-id');
-                document.getElementById('delete_staffing_id').value = staffingId;
-            });
-        });
+        attachStaffingActionListeners();
     }
 
     // Add these JavaScript functions for All Schedules tab
@@ -4543,12 +5041,7 @@ td:first-child {
                                 data-shift-id="${schedule.shift_id}">
                             <i class="fa-solid fa-pen"></i> Edit
                         </button>
-                        <button class="btn btn-sm btn-danger delete-schedule-btn" 
-                                data-schedule-id="${schedule.schedule_id}"
-                                data-emp-name="${schedule.fullname}"
-                                data-date="${schedule.schedule_date}">
-                            <i class="fa-solid fa-trash"></i> Delete
-                        </button>
+                       
                     </td>
                 </tr>
             `;
@@ -4854,11 +5347,11 @@ td:first-child {
         });
       });
       
-      // Delete staffing buttons
-      document.querySelectorAll('.delete-staffing-btn').forEach(button => {
+      // Archive staffing buttons
+      document.querySelectorAll('.archive-staffing-btn').forEach(button => {
         button.addEventListener('click', function() {
           const staffingId = this.getAttribute('data-id');
-          document.getElementById('delete_staffing_id').value = staffingId;
+          document.getElementById('archive_staffing_id').value = staffingId;
         });
       });
 
